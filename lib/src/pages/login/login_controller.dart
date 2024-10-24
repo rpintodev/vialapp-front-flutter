@@ -2,6 +2,7 @@ import 'package:asistencia_vial_app/src/models/response_api.dart';
 import 'package:asistencia_vial_app/src/provider/usuario_provider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 
 class LoginController extends GetxController{
 
@@ -12,6 +13,9 @@ class LoginController extends GetxController{
 
   void gotoRegisterPage(){
     Get.toNamed('/register');
+  }
+  void gotoTrackerPage(){
+    Get.offNamedUntil('/admin/tracker',(route)=>false);
   }
 
   void login() async{
@@ -27,6 +31,9 @@ class LoginController extends GetxController{
       print('Response API ${responseApi.toJson()}');
 
       if(responseApi.success==true){
+
+        GetStorage().write('usuario', responseApi.data);//ALMACENANDO LOS DATOS DEL USUARIO EN SESION
+        gotoTrackerPage();
         Get.snackbar('Bienvenido', responseApi.message??'');
 
       }else{

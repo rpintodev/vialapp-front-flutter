@@ -18,7 +18,7 @@ class RegisterPage extends StatelessWidget {
 
           Column( //posicionar elementos uno sobre otro
             children: [
-              _imageCover(),
+              _imageCover(context),
             ],
           )
         ],
@@ -37,16 +37,19 @@ class RegisterPage extends StatelessWidget {
     );
   }
 
-  Widget _imageCover(){
+  Widget _imageCover(context){
 
     return SafeArea(
       child: Container(
         margin: EdgeInsets.only(top: 40, bottom: 5),
-        alignment: Alignment.center,
-        child: Image.asset(
-          'assets/img/registro.png',
-          width: 140,
-          height: 140,
+        alignment: Alignment.topCenter,
+        child: GestureDetector(
+          onTap: ()=> registerController.showAlertDialog(context),
+          child: CircleAvatar(
+            backgroundImage: AssetImage('assets/img/editar.png'),
+            radius: 60,
+            backgroundColor: Colors.white,
+          ),
         ),
       ),
     );

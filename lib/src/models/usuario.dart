@@ -5,49 +5,50 @@ Usuario usuarioFromJson(String str) => Usuario.fromJson(json.decode(str));
 String usuarioToJson(Usuario data) => json.encode(data.toJson());
 
 class Usuario {
-  String usuario;
-  String nombre;
-  String apellido;
-  String telefono;
-  String password;
+  String? id;
+  String? usuario;
+  String? nombre;
+  String? apellido;
+  String? telefono;
+  String? password;
   String? imagen;
-  int? idRol;
-  DateTime? fechaCreacion;
-  DateTime? fechaActualizado;
+  String? sessionToken;
+
 
   Usuario({
-    required this.usuario,
-    required this.nombre,
-    required this.apellido,
-    required this.password,
-    required this.telefono,
+     this.id,
+     this.usuario,
+     this.nombre,
+     this.apellido,
+     this.password,
+     this.telefono,
     this.imagen,
-     this.idRol,
-     this.fechaCreacion,
-     this.fechaActualizado,
+    this.sessionToken,
+
   });
 
   factory Usuario.fromJson(Map<String, dynamic> json) => Usuario(
+    id: json["Id"],
     usuario: json["Usuario"],
     nombre: json["Nombre"],
     apellido: json["Apellido"],
     telefono: json["Telefono"],
     password: json["Password"],
     imagen: json["Imagen"],
-    idRol: json["IdRol"],
-    fechaCreacion: DateTime.parse(json["Fecha_Creacion"]),
-    fechaActualizado: DateTime.parse(json["Fecha_Actualizado"]),
+    sessionToken: json["session_token"],
+
   );
 
   Map<String, dynamic> toJson() => {
+    "Id": id,
     "Usuario": usuario,
     "Nombre": nombre,
     "Apellido": apellido,
     "Telefono": telefono,
     "Password": password,
     "Imagen": imagen,
-    "IdRol": idRol,
-    "Fecha_Creacion": fechaCreacion,
-    "Fecha_Actualizado": fechaActualizado,
+    "session_token": sessionToken,
+
+
   };
 }
