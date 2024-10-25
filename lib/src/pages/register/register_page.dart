@@ -5,7 +5,7 @@ import 'package:get/get_state_manager/src/simple/list_notifier.dart';
 
 class RegisterPage extends StatelessWidget {
 
-  RegisterController registerController=RegisterController();
+  RegisterController registerController=Get.put(RegisterController());
 
   @override
   Widget build(BuildContext context) {
@@ -16,10 +16,12 @@ class RegisterPage extends StatelessWidget {
           _boxForm(context),
           _buttonBack(),
 
-          Column( //posicionar elementos uno sobre otro
-            children: [
-              _imageCover(context),
-            ],
+          SingleChildScrollView( //scrolear para registrarse
+            child: Column(
+              children: [
+                _imageCover(context),
+              ],
+            ),
           )
         ],
       ),
@@ -37,23 +39,27 @@ class RegisterPage extends StatelessWidget {
     );
   }
 
-  Widget _imageCover(context){
-
+  Widget _imageCover(context) {
     return SafeArea(
       child: Container(
-        margin: EdgeInsets.only(top: 40, bottom: 5),
+        margin: EdgeInsets.only(top: 25),
         alignment: Alignment.topCenter,
-        child: GestureDetector(
-          onTap: ()=> registerController.showAlertDialog(context),
-          child: CircleAvatar(
-            backgroundImage: AssetImage('assets/img/editar.png'),
+    child: GestureDetector(
+    onTap: () => registerController.showAlertDialog(context),
+        child: GetBuilder<RegisterController>(
+          builder: (value) => CircleAvatar(
+            backgroundImage: registerController.imageFile != null
+                ? FileImage(registerController.imageFile!)
+                : AssetImage('assets/img/editar.png') ,
             radius: 60,
             backgroundColor: Colors.white,
           ),
         ),
       ),
+      ),
     );
   }
+
 
   Widget _boxForm(BuildContext context){
     return Container(
@@ -83,7 +89,7 @@ class RegisterPage extends StatelessWidget {
             _textFieldTelefono(),
             _textFieldPassword(),
             _textFieldConfPassword(),
-            _bottomLogin(),
+            _bottomLogin(context),
           ],
 
         ),
@@ -91,7 +97,7 @@ class RegisterPage extends StatelessWidget {
     );
   }
 
-  Widget _bottomLogin(){
+  Widget _bottomLogin(BuildContext context){
     return Container(
       width: double.infinity,
       margin: EdgeInsets.symmetric(horizontal: 40, vertical: 40),
@@ -104,7 +110,7 @@ class RegisterPage extends StatelessWidget {
             shadowColor: Colors.black, // Color de la sombra
           ),
 
-          onPressed: ()=> registerController.register(),
+          onPressed: ()=> registerController.register(context),
           child: Text('Registrar',
             style: TextStyle(
                 color: Colors.white

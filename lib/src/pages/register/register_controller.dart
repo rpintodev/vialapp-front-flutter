@@ -1,12 +1,15 @@
+import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
+import 'package:asistencia_vial_app/src/models/response_api.dart';
 import 'package:asistencia_vial_app/src/models/usuario.dart';
 import 'package:asistencia_vial_app/src/provider/usuario_provider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:sn_progress_dialog/progress_dialog.dart';
 
 class RegisterController extends GetxController{
 
@@ -23,7 +26,7 @@ class RegisterController extends GetxController{
   File? imageFile;
 
 
-  void register() async{
+  void register(BuildContext context) async{
     String usuario = usuarioController.text;
     String nombre = nombreController.text;
     String apellido = apellidoController.text;
@@ -38,6 +41,9 @@ class RegisterController extends GetxController{
 
     if(isValidForm(usuario, nombre, apellido, telefono, password, confpassword)){
 
+      ProgressDialog progressDialog=ProgressDialog(context: context);
+      progressDialog.show(max: 100, msg: 'Registrando datos..');
+
       Usuario usuarios=Usuario(
           usuario: usuario,
           nombre: nombre,
@@ -48,11 +54,23 @@ class RegisterController extends GetxController{
 
       );
 
-      Response response= await usuarioProvider.create(usuarios);
+      Stream stream = await usuarioProvider.createWithImage(usuarios, imageFile!);
 
-      print('RESPONSE : ${response.body}');
-      clearField();
-      Get.snackbar('Bienvenido', 'Registro exitoso');
+      progressDialog.close();
+      stream.listen((res){
+        ResponseApi responseApi = ResponseApi.fromJson(json.decode(res));
+
+        if(responseApi.success==true){
+          Get.snackbar('Registro Existoso', 'El usuario ha sido registrado');
+          Get.offNamedUntil('/login',(route)=>false);
+        }else{
+          Get.snackbar('ERROR ', responseApi.message??'');
+
+        }
+
+      });
+
+
 
     }
   }
@@ -91,6 +109,12 @@ class RegisterController extends GetxController{
       return false;
     }
 
+    //QUITAR ESTA VALIDACION
+    if(imageFile == null){
+      Get.snackbar('Error', 'Debe seleccionar una imagen');
+      return false;
+    }
+
     return true;
 
   }
@@ -106,10 +130,12 @@ class RegisterController extends GetxController{
 
   Future selectImage(ImageSource imageSource) async{
     XFile? image = await picker.pickImage(source: imageSource);
-    if(image!=null){
+    if(image != null){
       imageFile = File(image.path);
+      update();
     }
   }
+
 
   void showAlertDialog(BuildContext context) {
     // Personalización del botón de la galería
@@ -163,6 +189,10 @@ class RegisterController extends GetxController{
     );
   }
 
+
+  void gotoLoginPage(){
+    Get.toNamed('/');
+  }
 
 }
 

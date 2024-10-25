@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:asistencia_vial_app/src/models/rol.dart';
 
 Usuario usuarioFromJson(String str) => Usuario.fromJson(json.decode(str));
 
@@ -13,6 +14,8 @@ class Usuario {
   String? password;
   String? imagen;
   String? sessionToken;
+  List<rol> roles=[];
+
 
 
   Usuario({
@@ -24,6 +27,7 @@ class Usuario {
      this.telefono,
     this.imagen,
     this.sessionToken,
+
 
   });
 
