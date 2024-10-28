@@ -1,12 +1,17 @@
+import 'package:asistencia_vial_app/src/models/rol.dart';
 import 'package:asistencia_vial_app/src/models/usuario.dart';
 import 'package:asistencia_vial_app/src/pages/admin/tracker/tracker_page.dart';
+import 'package:asistencia_vial_app/src/pages/chofer/asistencias/asistencias.dart';
 import 'package:asistencia_vial_app/src/pages/login/login_page.dart';
 import 'package:asistencia_vial_app/src/pages/register/register_page.dart';
+import 'package:asistencia_vial_app/src/pages/supervisor/asignacion/asignacion.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 
 Usuario userSession=Usuario.fromJson(GetStorage().read('usuario')??{});
+Rol? rol = userSession.roles?.isNotEmpty == true ? userSession.roles!.first : null;
+
 
 void main() async{
 
@@ -34,11 +39,16 @@ class _MyAppState extends State<MyApp> {
     return GetMaterialApp(
       title: 'Asistencias App',
       debugShowCheckedModeBanner: false,
-      initialRoute: userSession.id!=null ? '/admin/tracker' : '/',
+
+
+
+      initialRoute: userSession.id!=null ? rol?.ruta : '/',
       getPages: [
         GetPage(name: '/', page: () => LoginPage()),
         GetPage(name: '/register', page: () => RegisterPage()),
         GetPage(name: '/admin/tracker', page: () => TrackerPage()),
+        GetPage(name: '/supervisor/asignacion', page: () => AsignacionPage()),
+        GetPage(name: '/chofer/asistencias', page: () => AsistenciasPage()),
 
       ],
       theme: ThemeData(

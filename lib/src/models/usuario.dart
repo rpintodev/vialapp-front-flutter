@@ -14,7 +14,7 @@ class Usuario {
   String? password;
   String? imagen;
   String? sessionToken;
-  List<rol> roles=[];
+  List<Rol>? roles=[];
 
 
 
@@ -27,7 +27,7 @@ class Usuario {
      this.telefono,
     this.imagen,
     this.sessionToken,
-
+    this.roles,
 
   });
 
@@ -40,7 +40,7 @@ class Usuario {
     password: json["Password"],
     imagen: json["Imagen"],
     sessionToken: json["session_token"],
-
+    roles: json["Roles"] == null ? [] : List<Rol>.from(json["Roles"].map((modelo)=>Rol.fromJson(modelo))),
   );
 
   Map<String, dynamic> toJson() => {
@@ -52,7 +52,7 @@ class Usuario {
     "Password": password,
     "Imagen": imagen,
     "session_token": sessionToken,
-
+    "Roles": roles,
 
   };
 }

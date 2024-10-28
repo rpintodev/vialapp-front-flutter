@@ -6,8 +6,10 @@ class TrackerController extends GetxController{
 
   Usuario usuario = Usuario.fromJson(GetStorage().read('usuario')??{});
 
+
   TrackerController(){
     print('Usuario de session: ${usuario.toJson()}');
+
   }
 
 

@@ -1,8 +1,11 @@
 import 'package:asistencia_vial_app/src/models/response_api.dart';
+import 'package:asistencia_vial_app/src/models/rol.dart';
 import 'package:asistencia_vial_app/src/provider/usuario_provider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+
+import '../../models/usuario.dart';
 
 class LoginController extends GetxController{
 
@@ -10,6 +13,8 @@ class LoginController extends GetxController{
   TextEditingController passwordController = TextEditingController();
 
   UsuarioProvider usuarioProvider = UsuarioProvider();
+
+
 
   void gotoRegisterPage(){
     Get.toNamed('/register');
@@ -33,8 +38,14 @@ class LoginController extends GetxController{
       if(responseApi.success==true){
 
         GetStorage().write('usuario', responseApi.data);//ALMACENANDO LOS DATOS DEL USUARIO EN SESION
-        gotoTrackerPage();
+        Usuario usuario = Usuario.fromJson(GetStorage().read('usuario')??{});
+
+        Rol? rol = usuario.roles?.isNotEmpty == true ? usuario.roles!.first : null;
+
         Get.snackbar('Bienvenido', responseApi.message??'');
+        print(rol?.toJson());
+
+        Get.offNamedUntil(rol?.ruta ??'', (route)=>false);
 
       }else{
         Get.snackbar('Error', responseApi.message??'');
@@ -58,6 +69,10 @@ class LoginController extends GetxController{
 
     return true;
 
+  }
+
+  void goToPageRol(Rol rol){
+    Get.offNamedUntil(rol.ruta ??'', (route)=>false);
   }
 
 

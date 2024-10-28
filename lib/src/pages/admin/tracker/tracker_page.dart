@@ -2,6 +2,7 @@ import 'package:asistencia_vial_app/src/pages/admin/tracker/tracker_controller.d
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+
 class TrackerPage extends StatelessWidget {
 
   TrackerController trackerController = Get.put(TrackerController());

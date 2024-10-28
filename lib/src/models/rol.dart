@@ -1,22 +1,21 @@
 import 'dart:convert';
 
-ResponseApi responseApiFromJson(String str) => ResponseApi.fromJson(json.decode(str));
+Rol rolFromJson(String str) => Rol.fromJson(json.decode(str));
 
-String responseApiToJson(ResponseApi data) => json.encode(data.toJson());
+String rolToJson(Rol data) => json.encode(data.toJson());
 
-class ResponseApi {
+class Rol {
   String? id;
   String? nombre;
   String? ruta;
 
-
-  ResponseApi({
-    this.id,
-    this.nombre,
-    this.ruta,
+  Rol({
+     this.id,
+     this.nombre,
+     this.ruta,
   });
 
-  factory ResponseApi.fromJson(Map<String, dynamic> json) => ResponseApi(
+  factory Rol.fromJson(Map<String, dynamic> json) => Rol(
     id: json["Id"],
     nombre: json["Nombre"],
     ruta: json["Ruta"],
