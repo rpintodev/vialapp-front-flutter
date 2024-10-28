@@ -1,5 +1,7 @@
 import 'package:asistencia_vial_app/src/models/rol.dart';
 import 'package:asistencia_vial_app/src/models/usuario.dart';
+import 'package:asistencia_vial_app/src/pages/admin/profile/info/admin_profile.dart';
+import 'package:asistencia_vial_app/src/pages/admin/profile/update/admin_update.dart';
 import 'package:asistencia_vial_app/src/pages/admin/tracker/tracker_page.dart';
 import 'package:asistencia_vial_app/src/pages/chofer/asistencias/asistencias.dart';
 import 'package:asistencia_vial_app/src/pages/login/login_page.dart';
@@ -47,8 +49,12 @@ class _MyAppState extends State<MyApp> {
         GetPage(name: '/', page: () => LoginPage()),
         GetPage(name: '/register', page: () => RegisterPage()),
         GetPage(name: '/admin/tracker', page: () => TrackerPage()),
+        GetPage(name: '/admin/profile/info', page: () => AdminProfile()),
+        GetPage(name: '/admin/profile/update', page: () => AdminUpdate()),
         GetPage(name: '/supervisor/asignacion', page: () => AsignacionPage()),
         GetPage(name: '/chofer/asistencias', page: () => AsistenciasPage()),
+        GetPage(name: '/chofer/asistencias', page: () => AsistenciasPage()),
+
 
       ],
       theme: ThemeData(
@@ -63,6 +69,7 @@ class _MyAppState extends State<MyApp> {
             onError: Colors.grey,
             surface: Colors.white,
             onSurface: Colors.grey,
+
         ),
       ),
       navigatorKey: Get.key,

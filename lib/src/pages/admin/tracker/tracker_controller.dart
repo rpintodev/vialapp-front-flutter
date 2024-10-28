@@ -5,6 +5,11 @@ import 'package:get_storage/get_storage.dart';
 class TrackerController extends GetxController{
 
   Usuario usuario = Usuario.fromJson(GetStorage().read('usuario')??{});
+  var indexTab = 0.obs;
+
+  void chanceTab(int index){
+    indexTab.value=index;
+  }
 
 
   TrackerController(){
