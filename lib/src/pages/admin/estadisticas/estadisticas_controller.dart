@@ -3,10 +3,8 @@ import 'package:get_storage/get_storage.dart';
 
 import '../../../models/usuario.dart';
 
-class AsistenciasController extends GetxController{
-
+class EstadisticasController extends GetxController{
   Usuario usuario = Usuario.fromJson(GetStorage().read('usuario')??{});
-
 
 
   void signOut(){
@@ -15,6 +13,7 @@ class AsistenciasController extends GetxController{
 
   }
 
-
-
+  void gotoRegisterPage(){
+    Get.toNamed('/register');
+  }
 }

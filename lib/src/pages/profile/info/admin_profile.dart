@@ -1,8 +1,8 @@
-import 'package:asistencia_vial_app/src/pages/admin/profile/info/admin_profile_controller.dart';
+import 'package:asistencia_vial_app/src/pages/profile/info/admin_profile_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../../../../models/rol.dart';
+import '../../../models/rol.dart';
 
 class AdminProfile extends StatelessWidget {
 
@@ -13,7 +13,7 @@ class AdminProfile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(
+      body: Obx(()=> Stack(
         children: [
           _backgroundCover(context),
           _boxForm(context),
@@ -21,7 +21,7 @@ class AdminProfile extends StatelessWidget {
           _buttonSignOut(),
 
         ],
-      ),
+      )),
     );
   }
 
@@ -32,7 +32,7 @@ class AdminProfile extends StatelessWidget {
     return Container(
       width: double.infinity,
       height: MediaQuery.of(context).size.height*1,
-      color: Color(0xFF0077B6),
+      color: Color(0xFF368983),
     );
   }
 
@@ -42,8 +42,8 @@ class AdminProfile extends StatelessWidget {
         margin: EdgeInsets.only(top: 25),
         alignment: Alignment.topCenter,
         child: CircleAvatar(
-          backgroundImage: adminProfileController.usuario.imagen != null
-              ? NetworkImage(adminProfileController.usuario.imagen!)
+          backgroundImage: adminProfileController.usuario.value.imagen != null
+              ? NetworkImage(adminProfileController.usuario.value.imagen!)
               : AssetImage('assets/img/editar.png') ,
           radius: 60,
           backgroundColor: Colors.white,
@@ -83,6 +83,7 @@ class AdminProfile extends StatelessWidget {
             _textUsuario(),
             _textphone(),
             _textRol(),
+            _textPeaje(),
             _bottomUpdate(context),
           ],
 
@@ -98,7 +99,7 @@ class AdminProfile extends StatelessWidget {
 
       child: ElevatedButton(
           style: ElevatedButton.styleFrom(
-            backgroundColor: Color(0xFF0077B6),
+            backgroundColor: Color(0xFF368983),
             padding: EdgeInsets.symmetric(vertical: 15),
             elevation: 10, // Controla la intensidad de la sombra
             shadowColor: Colors.black, // Color de la sombra
@@ -121,7 +122,7 @@ class AdminProfile extends StatelessWidget {
         margin: EdgeInsets.symmetric(horizontal: 20),
         child: ListTile(
           leading: Icon(Icons.perm_contact_cal_sharp),
-          title: Text('${adminProfileController.usuario.nombre??''} ${adminProfileController.usuario.apellido??''}',
+          title: Text('${adminProfileController.usuario.value.nombre??''} ${adminProfileController.usuario.value.apellido??''}',
             style: TextStyle(color: Colors.black)),
           subtitle:  Text('Nombres'),
 
@@ -130,7 +131,7 @@ class AdminProfile extends StatelessWidget {
   }
 
   Widget _textRol(){
-    Rol? rol = adminProfileController.usuario.roles?.isNotEmpty == true ? adminProfileController.usuario.roles!.first : null;
+    Rol? rol = adminProfileController.usuario.value.roles?.isNotEmpty == true ? adminProfileController.usuario.value.roles!.first : null;
 
     return Container(
         margin: EdgeInsets.symmetric(horizontal: 20),
@@ -151,7 +152,7 @@ class AdminProfile extends StatelessWidget {
         margin: EdgeInsets.symmetric(horizontal: 20),
         child: ListTile(
         leading: Icon(Icons.person_outlined),
-        title: Text('${adminProfileController.usuario.usuario??''}', style: TextStyle(color: Colors.black),),
+        title: Text('${adminProfileController.usuario.value.usuario??''}', style: TextStyle(color: Colors.black),),
         subtitle:  Text('Usuario'),
 
       )
@@ -163,8 +164,23 @@ class AdminProfile extends StatelessWidget {
         margin: EdgeInsets.symmetric(horizontal: 20),
         child: ListTile(
           leading: Icon(Icons.phone),
-          title: Text('${adminProfileController.usuario.telefono??''}', style: TextStyle(color: Colors.black),),
+          title: Text('${adminProfileController.usuario.value.telefono??''}', style: TextStyle(color: Colors.black),),
           subtitle:  Text('Telefono'),
+
+        )
+    );
+  }
+
+  Widget _textPeaje(){
+    return Container(
+        margin: EdgeInsets.symmetric(horizontal: 20),
+        child: ListTile(
+          leading: Icon(Icons.gps_fixed),
+          title: Text('${adminProfileController.usuario.value.idPeaje??''}',
+
+            style: TextStyle(color: Colors.black),
+          ),
+          subtitle:  Text('Peaje'),
 
         )
     );

@@ -10,13 +10,11 @@ class LoginPage extends StatelessWidget {
       body: Stack(
         children: [
           _backgroundCover(context),
+
           _boxForm(context),
-          Column( //posicionar elementos uno sobre otro
-            children: [
-              _imageCover(),
-              _textAppName()
-            ],
-          )
+          _imageCover(),
+
+
         ],
       ),
     );
@@ -27,12 +25,12 @@ class LoginPage extends StatelessWidget {
     return Container(
       width: double.infinity,
       height: MediaQuery.of(context).size.height*1,
-      color: Color(0xFF0077B6),
+      color: Color(0xFF368983),
     );
   }
 
   Widget _textAppName(){
-    return Text('ASISTENCIA VIAL',
+    return Text('VIAL25 APP',
     style: TextStyle(
         fontSize: 25,
         fontWeight: FontWeight.bold,
@@ -45,12 +43,12 @@ class LoginPage extends StatelessWidget {
 
     return SafeArea(
       child: Container(
-        margin: EdgeInsets.only(top: 20, bottom: 15),
+        margin: EdgeInsets.only(top: 0, bottom: 375),
         alignment: Alignment.center,
         child: Image.asset(
-          'assets/img/login.png',
-          width: 140,
-          height: 140,
+          'assets/img/vial25.png',
+          width: 500,
+          height: 300,
         ),
       ),
     );
@@ -80,8 +78,7 @@ class LoginPage extends StatelessWidget {
             _textoLogin(),
             _textFieldUsuario(),
             _textFieldPassword(),
-            _bottomLogin(),
-            _textoRegistro()
+            _bottomLogin()
           ],
 
         ),
@@ -96,7 +93,7 @@ class LoginPage extends StatelessWidget {
 
       child: ElevatedButton(
           style: ElevatedButton.styleFrom(
-            backgroundColor: Color(0xFF0077B6),
+            backgroundColor: Color(0xFF368983),
             padding: EdgeInsets.symmetric(vertical: 15),
             elevation: 10, // Controla la intensidad de la sombra
             shadowColor: Colors.black, // Color de la sombra
@@ -120,7 +117,7 @@ class LoginPage extends StatelessWidget {
         keyboardType: TextInputType.text,
         decoration: InputDecoration(
             hintText: 'Usuario',
-              prefixIcon: Icon(Icons.account_circle, color: Color(0xFF0077B6))
+              prefixIcon: Icon(Icons.account_circle, color: Color(0xFF368983))
         ),
       ),
     );
@@ -136,7 +133,7 @@ class LoginPage extends StatelessWidget {
         obscureText: true,
         decoration: InputDecoration(
             hintText: 'Contraseña',
-            prefixIcon: Icon(Icons.lock, color: Color(0xFF0077B6))
+            prefixIcon: Icon(Icons.lock, color: Color(0xFF368983))
         ),
       ),
     );
@@ -156,25 +153,6 @@ class LoginPage extends StatelessWidget {
     );
   }
 
-  Widget _textoRegistro() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        GestureDetector(
-        onTap: () => loginController.gotoRegisterPage(),
-
-        child: Text(
-          'Registro de Usuarios',
-          style: TextStyle(
-            color: Color(0xFF0077B6),
-            fontSize: 15,
-          ),
-        ),
-        ),
-      ],
-
-    );
-  }
 
 
 }

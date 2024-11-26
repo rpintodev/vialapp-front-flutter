@@ -3,28 +3,36 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_state_manager/src/simple/list_notifier.dart';
 
+import '../../models/peaje.dart';
+import '../../models/rol.dart';
+import '../../provider/rol_provider.dart';
+
 class RegisterPage extends StatelessWidget {
 
   RegisterController registerController=Get.put(RegisterController());
+  RolProvider rolProvider=RolProvider();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(
+      body:  Obx(()=>Stack(
         children: [
           _backgroundCover(context),
           _boxForm(context),
-          _buttonBack(),
 
           SingleChildScrollView( //scrolear para registrarse
             child: Column(
               children: [
+
                 _imageCover(context),
+
               ],
             ),
-          )
+          ),
+          _buttonBack(),
+
         ],
-      ),
+    )),
     );
   }
 
@@ -35,7 +43,7 @@ class RegisterPage extends StatelessWidget {
     return Container(
       width: double.infinity,
       height: MediaQuery.of(context).size.height*1,
-      color: Color(0xFF0077B6),
+      color: Color(0xFF368983),
     );
   }
 
@@ -89,6 +97,12 @@ class RegisterPage extends StatelessWidget {
             _textFieldTelefono(),
             _textFieldPassword(),
             _textFieldConfPassword(),
+            if(registerController.usuarioSession.roles?.first.id  == '1')...[
+            _dropDownRoles(registerController.roles),
+            _dropdownPeaje(registerController.peajes),
+            ]else...[
+              _dropdownGrupo(registerController.grupos),
+            ],
             _bottomLogin(context),
           ],
 
@@ -97,6 +111,94 @@ class RegisterPage extends StatelessWidget {
     );
   }
 
+
+  List<DropdownMenuItem<String>>_dropDowItemsRoles(List<Rol> roles){
+    List<DropdownMenuItem<String>> list=[];
+    roles.forEach((rol){
+      list.add(DropdownMenuItem(
+        child: Text(rol.nombre??''),
+        value: rol.id,
+      ));
+    });
+    return list;
+  }
+
+  Widget _dropDownRoles(List<Rol> roles){
+    return Container(
+        width: double.infinity,
+        margin: EdgeInsets.symmetric(horizontal: 65, vertical: 5),
+        child: DropdownButton(
+          underline: Container(
+            alignment: Alignment.centerRight,
+            child: Icon(
+              Icons.keyboard_arrow_down,
+              color: Color(0xFF368983),
+            ),
+          ),
+          elevation: 3,
+          isExpanded: true,
+          hint: Text(
+            'Seleecione el rol',
+            style: TextStyle(
+                color: Colors.black,
+                fontSize: 16
+            ),
+          ),
+          items: _dropDowItemsRoles(roles),
+          value: registerController.idRol.value==''?null:registerController.idRol.value,
+          onChanged: (option){
+            registerController.idRol.value=option.toString();
+          },
+
+        )
+    );
+  }
+
+  List<DropdownMenuItem<String>>_dropDownItemsPeaje(List<Peaje> peajes){
+    List<DropdownMenuItem<String>> list=[];
+    peajes.forEach((peaje){
+      list.add(DropdownMenuItem(
+        child: Text(peaje.nombre??''),
+        value: peaje.id,
+      ));
+    });
+    return list;
+  }
+
+
+  Widget _dropdownPeaje(List<Peaje> peajes){
+    return Container(
+        width: double.infinity,
+        margin: EdgeInsets.symmetric(horizontal: 65, vertical: 5),
+        child: DropdownButton(
+          underline: Container(
+            alignment: Alignment.centerRight,
+            child: Icon(
+              Icons.keyboard_arrow_down,
+              color: Color(0xFF368983),
+            ),
+          ),
+          elevation: 3,
+          isExpanded: true,
+          hint: Text(
+            'Seleecione el peaje',
+            style: TextStyle(
+                color: Colors.black,
+                fontSize: 16
+            ),
+          ),
+          items: _dropDownItemsPeaje(peajes),
+          value: registerController.idPeaje.value==''?null:registerController.idPeaje.value,
+          onChanged: (option){
+            registerController.idPeaje.value=option.toString();
+          },
+
+        )
+    );
+  }
+
+
+
   Widget _bottomLogin(BuildContext context){
     return Container(
       width: double.infinity,
@@ -104,7 +206,7 @@ class RegisterPage extends StatelessWidget {
 
       child: ElevatedButton(
           style: ElevatedButton.styleFrom(
-            backgroundColor: Color(0xFF0077B6),
+            backgroundColor: Color(0xFF368983),
             padding: EdgeInsets.symmetric(vertical: 15),
             elevation: 10, // Controla la intensidad de la sombra
             shadowColor: Colors.black, // Color de la sombra
@@ -128,7 +230,7 @@ class RegisterPage extends StatelessWidget {
         keyboardType: TextInputType.text,
         decoration: InputDecoration(
             hintText: 'Usuario',
-            prefixIcon: Icon(Icons.account_circle, color: Color(0xFF0077B6))
+            prefixIcon: Icon(Icons.account_circle, color: Color(0xFF368983))
         ),
       ),
     );
@@ -143,7 +245,7 @@ class RegisterPage extends StatelessWidget {
         keyboardType: TextInputType.text,
         decoration: InputDecoration(
             hintText: 'Nombre',
-            prefixIcon: Icon(Icons.supervised_user_circle, color: Color(0xFF0077B6))
+            prefixIcon: Icon(Icons.supervised_user_circle, color: Color(0xFF368983))
         ),
       ),
     );
@@ -157,7 +259,7 @@ class RegisterPage extends StatelessWidget {
         keyboardType: TextInputType.text,
         decoration: InputDecoration(
             hintText: 'Apellido',
-            prefixIcon: Icon(Icons.supervised_user_circle_outlined, color: Color(0xFF0077B6))
+            prefixIcon: Icon(Icons.supervised_user_circle_outlined, color: Color(0xFF368983))
         ),
       ),
     );
@@ -172,7 +274,7 @@ class RegisterPage extends StatelessWidget {
         keyboardType: TextInputType.phone,
         decoration: InputDecoration(
             hintText: 'Teléfono',
-            prefixIcon: Icon(Icons.call, color: Color(0xFF0077B6))
+            prefixIcon: Icon(Icons.call, color: Color(0xFF368983))
         ),
       ),
     );
@@ -189,7 +291,7 @@ class RegisterPage extends StatelessWidget {
         obscureText: true,
         decoration: InputDecoration(
             hintText: 'Contraseña',
-            prefixIcon: Icon(Icons.lock, color: Color(0xFF0077B6))
+            prefixIcon: Icon(Icons.lock, color: Color(0xFF368983))
         ),
       ),
     );
@@ -205,7 +307,7 @@ class RegisterPage extends StatelessWidget {
         obscureText: true,
         decoration: InputDecoration(
             hintText: 'Confirmar Contraseña',
-            prefixIcon: Icon(Icons.lock, color: Color(0xFF0077B6))
+            prefixIcon: Icon(Icons.lock, color: Color(0xFF368983))
         ),
       ),
     );
@@ -213,13 +315,15 @@ class RegisterPage extends StatelessWidget {
 
   Widget _textoLogin(){
     return Container(
-      margin: EdgeInsets.only(top: 30, bottom: 50),
+      margin: EdgeInsets.only(top: 30, bottom: 15),
       child: Text(
 
         'REGISTRO DE USUARIOS',
         style: TextStyle(
           color: Colors.black,
           fontSize: 20,
+          fontWeight: FontWeight.bold,
+
         ),
       ),
     );
@@ -233,6 +337,49 @@ class RegisterPage extends StatelessWidget {
             onPressed: () => Get.back(),
             icon: Icon(Icons.arrow_back_ios), color: Colors.white),
       ),
+    );
+  }
+
+  List<DropdownMenuItem<String>>_dropDowItemsGrupos(List<String> grupos){
+    List<DropdownMenuItem<String>> list=[];
+    grupos.forEach((grupo){
+      list.add(DropdownMenuItem(
+        child: Text('Grupo: $grupo'??''),
+        value: grupo,
+      ));
+    });
+    return list;
+  }
+
+
+  Widget _dropdownGrupo(List<String> grupos){
+    return Container(
+        width: double.infinity,
+        margin: EdgeInsets.symmetric(horizontal: 65, vertical: 5),
+        child: DropdownButton(
+          underline: Container(
+            alignment: Alignment.centerRight,
+            child: Icon(
+              Icons.keyboard_arrow_down,
+              color: Color(0xFF368983),
+            ),
+          ),
+          elevation: 3,
+          isExpanded: true,
+          hint: Text(
+            'Selecione el grupo',
+            style: TextStyle(
+                color: Colors.black,
+                fontSize: 16
+            ),
+          ),
+          items: _dropDowItemsGrupos(grupos),
+          value: registerController.grupoSeleccionado.value==''?null:registerController.grupoSeleccionado.value,
+          onChanged: (option){
+            registerController.grupoSeleccionado.value=option.toString();
+          },
+
+        )
     );
   }
 

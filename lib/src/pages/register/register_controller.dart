@@ -3,15 +3,25 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:asistencia_vial_app/src/models/response_api.dart';
+import 'package:asistencia_vial_app/src/models/rol.dart';
 import 'package:asistencia_vial_app/src/models/usuario.dart';
+import 'package:asistencia_vial_app/src/provider/rol_provider.dart';
 import 'package:asistencia_vial_app/src/provider/usuario_provider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:sn_progress_dialog/progress_dialog.dart';
 
+import '../../models/peaje.dart';
+import '../../provider/peaje_provider.dart';
+
 class RegisterController extends GetxController{
+
+  Usuario usuarioSession = Usuario.fromJson(GetStorage().read('usuario')??{});
+
+
 
   TextEditingController usuarioController = TextEditingController();
   TextEditingController nombreController = TextEditingController();
@@ -20,13 +30,65 @@ class RegisterController extends GetxController{
   TextEditingController passwordController = TextEditingController();
   TextEditingController conPasswordController = TextEditingController();
 
+
   UsuarioProvider usuarioProvider=UsuarioProvider();
+  RolProvider rolProvider=RolProvider();
+  PeajeProvider peajeProvider=PeajeProvider();
 
   ImagePicker picker = ImagePicker();
   File? imageFile;
 
+  //TRAER LA LISTA DE ROLES Y PONERLOS EN EL DROPDOWN
+  List<Rol> roles=<Rol>[].obs;
+
+  var idRol=''.obs;
+
+  void getRoles()async{
+    var result=await rolProvider.getAll();
+    roles.clear();
+    roles.addAll(result);
+
+
+  }
+
+
+  //TRAER LA LISTA DE GRUPOS Y PONERLOS EN EL DROPDOWN
+  List<String> grupos=<String>[].obs;
+  var grupoSeleccionado=''.obs;
+  void getGrupos()async{
+    var result =await usuarioProvider.getGrupos();
+    grupos.clear();
+    grupos.addAll(result);
+
+  }
+
+
+
+  //TRAER LA LISTA DE ROLES Y PONERLOS EN EL DROPDOWN
+  List<Peaje> peajes=<Peaje>[].obs;
+  var idPeaje=''.obs;
+
+  void getPeajes()async{
+    var result=await peajeProvider.getAll();
+    peajes.clear();
+    peajes.addAll(result);
+
+  }
+
+
+  //CARGA DE INFORAMCION AL CONSTRUCTOR
+  RegisterController(){
+    getRoles();
+    getGrupos();
+    getPeajes();
+    update();
+  }
+
+
+
 
   void register(BuildContext context) async{
+
     String usuario = usuarioController.text;
     String nombre = nombreController.text;
     String apellido = apellidoController.text;
@@ -34,8 +96,20 @@ class RegisterController extends GetxController{
     String password = passwordController.text;
     String confpassword = conPasswordController.text;
 
+    //FALTA
+    if(usuarioSession.roles?.first.id  == '1'){
+      String idRolS = idRol.value;
+      String idGrupoS='1';
+    }else{
+      String idRolS = '3';
+    }
+
     print('Usuario: $usuario');
     print('Constraseña: $password');
+    print('IdRol: $idRol');
+    print('IdPeaje: $idPeaje');
+
+
 
 
 
@@ -45,30 +119,56 @@ class RegisterController extends GetxController{
       progressDialog.show(max: 100, msg: 'Registrando datos..');
 
       Usuario usuarios=Usuario(
+
+
+
           usuario: usuario,
           nombre: nombre,
           apellido: apellido,
           telefono: telefono,
           password: password,
+          //CAMBIE EL TIPO DE DATO Y QUITE LOS PARSE
+          idRol: idRol.value,
+          idPeaje: idPeaje.value,
 
 
       );
 
-      Stream stream = await usuarioProvider.createWithImage(usuarios, imageFile!);
 
-      progressDialog.close();
-      stream.listen((res){
-        ResponseApi responseApi = ResponseApi.fromJson(json.decode(res));
+      if(imageFile==null) {
+        Response response = await usuarioProvider.create(usuarios);
+        print('Response Api Data: ${response.body}');
+        progressDialog.close();
+        if(response.statusCode ==201){
+          Get.snackbar('Registro Existosa', 'El usuario ha sido registrado');
+          Get.offNamedUntil('/home', (route)=>false);
 
-        if(responseApi.success==true){
-          Get.snackbar('Registro Existoso', 'El usuario ha sido registrado');
-          Get.offNamedUntil('/login',(route)=>false);
         }else{
-          Get.snackbar('ERROR ', responseApi.message??'');
+          Get.snackbar('ERROR ', response.statusText??'');
 
         }
 
-      });
+
+      }else{
+
+        Stream stream = await usuarioProvider.createWithImage(usuarios, imageFile!);
+
+        progressDialog.close();
+        stream.listen((res){
+          ResponseApi responseApi = ResponseApi.fromJson(json.decode(res));
+
+          if(responseApi.success==true){
+            Get.snackbar('Registro Existoso', 'El usuario ha sido registrado');
+            Get.offNamedUntil('/home', (route)=>false);
+          }else{
+            Get.snackbar('ERROR ', responseApi.message??'');
+
+          }
+
+        });
+
+      }
+
 
 
 
@@ -76,6 +176,16 @@ class RegisterController extends GetxController{
   }
 
   bool isValidForm(String usuario, String nombre, String apellido, String telefono, String password, String confpassword){
+
+    if(idRol.isEmpty){
+      Get.snackbar('Error', 'Debe seleccionar un rol');
+      return false;
+    }
+
+    if(idPeaje.isEmpty){
+      Get.snackbar('Error', 'Debe seleccionar un peaje');
+      return false;
+    }
 
     if(usuario.isEmpty){
       Get.snackbar('Error', 'Debe ingresar el usuario');
@@ -109,9 +219,14 @@ class RegisterController extends GetxController{
       return false;
     }
 
-    //QUITAR ESTA VALIDACION
-    if(imageFile == null){
-      Get.snackbar('Error', 'Debe seleccionar una imagen');
+
+    if(idRol.value==''){
+      Get.snackbar('Error', 'Debe seleccionar un rol');
+      return false;
+    }
+
+    if(idPeaje.value==''){
+      Get.snackbar('Error', 'Debe seleccionar un peaje');
       return false;
     }
 
@@ -141,7 +256,7 @@ class RegisterController extends GetxController{
     // Personalización del botón de la galería
     Widget galleryButton = ElevatedButton(
       style: ElevatedButton.styleFrom(
-        backgroundColor: Color(0xFF0077B6),
+        backgroundColor: Color(0xFF368983),
         elevation: 10, // Controla la intensidad de la sombra
         shadowColor: Colors.black, // C
       ),
@@ -155,7 +270,7 @@ class RegisterController extends GetxController{
 
     Widget cameraButton = ElevatedButton(
       style: ElevatedButton.styleFrom(
-        backgroundColor: Color(0xFF0077B6),
+        backgroundColor: Color(0xFF368983),
         elevation: 10, // Controla la intensidad de la sombra
         shadowColor: Colors.black, // C
       ),
@@ -189,10 +304,6 @@ class RegisterController extends GetxController{
     );
   }
 
-
-  void gotoLoginPage(){
-    Get.toNamed('/');
-  }
 
 }
 

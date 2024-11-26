@@ -14,6 +14,11 @@ class Usuario {
   String? password;
   String? imagen;
   String? sessionToken;
+  String? idRol;
+  String? nombreRol;
+  String? nombrePeaje;
+  String? idPeaje;
+  String? grupo;
   List<Rol>? roles=[];
 
 
@@ -27,6 +32,11 @@ class Usuario {
      this.telefono,
     this.imagen,
     this.sessionToken,
+    this.idRol,
+    this.nombreRol,
+    this.nombrePeaje,
+    this.idPeaje,
+    this.grupo,
     this.roles,
 
   });
@@ -39,6 +49,11 @@ class Usuario {
     telefono: json["Telefono"],
     password: json["Password"],
     imagen: json["Imagen"],
+    idRol: json["IdRol"],
+    nombreRol: json["NombreRol"],
+    nombrePeaje: json["NombrePeaje"],
+    idPeaje: json["IdPeaje"],
+    grupo: json["Grupo"],
     sessionToken: json["session_token"],
     roles: json["Roles"] == null ? [] : List<Rol>.from(json["Roles"].map((modelo)=>Rol.fromJson(modelo))),
   );
@@ -51,8 +66,39 @@ class Usuario {
     "Telefono": telefono,
     "Password": password,
     "Imagen": imagen,
+    "IdRol": idRol,
+    "NombreRol": nombreRol,
+    "NombrePeaje": nombrePeaje,
+    "IdPeaje": idPeaje,
+    "Grupo": grupo,
     "session_token": sessionToken,
     "Roles": roles,
 
   };
+
+  static List<Usuario> fromJsonList(List<dynamic> jsonList){
+    List<Usuario> toList=[];
+
+    jsonList.forEach((jsonUsuario){
+      Usuario usuario = Usuario.fromJson(jsonUsuario);
+      toList.add(usuario);
+    });
+    return toList;
+  }
+
+  static List<String> extractDistinctGroups(List<dynamic> jsonList) {
+    // Usamos un conjunto para garantizar que los valores sean únicos
+    Set<String> uniqueGroups = {};
+
+    jsonList.forEach((jsonUsuario) {
+      // Validamos si existe la clave 'Grupo' en el JSON y si no es nula
+      if (jsonUsuario.containsKey('Grupo') && jsonUsuario['Grupo'] != null) {
+        uniqueGroups.add(jsonUsuario['Grupo'].toString());
+      }
+    });
+
+    // Convertimos el conjunto en una lista y la devolvemos
+    return uniqueGroups.toList();
+  }
+
 }

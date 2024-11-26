@@ -20,7 +20,7 @@ class LoginController extends GetxController{
     Get.toNamed('/register');
   }
   void gotoTrackerPage(){
-    Get.offNamedUntil('/admin/tracker',(route)=>false);
+    Get.offNamedUntil('/admin/home',(route)=>false);
   }
 
   void login() async{

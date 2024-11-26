@@ -12,7 +12,7 @@ class AsignacionPage extends StatelessWidget {
       body: Center(
         child: ElevatedButton(
             style: ElevatedButton.styleFrom(
-                backgroundColor: Color(0xFF0077B6)),
+                backgroundColor: Color(0xFF368983)),
             onPressed: ()=>asignacionController.signOut(),
             child: Text('Cerrar Sesión - ASIGNACION',
               style: TextStyle(color: Colors.white),)),
