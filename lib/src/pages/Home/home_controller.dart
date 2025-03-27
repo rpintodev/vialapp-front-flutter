@@ -7,7 +7,20 @@ class HomeSupController extends GetxController{
 
   Usuario usuario = Usuario.fromJson(GetStorage().read('usuario')??{});
 
+
+
   var indexTab = 0.obs;
+
+  @override
+  void onInit() {
+    super.onInit();
+    // Lee los argumentos pasados al Home
+    var args = Get.arguments;
+    if (args != null && args['index'] != null) {
+      indexTab.value = args['index'];
+    }
+  }
+
 
   void chanceTab(int index){
     indexTab.value=index;

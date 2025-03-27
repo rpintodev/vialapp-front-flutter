@@ -27,15 +27,14 @@ class LoginController extends GetxController{
     String usuario = usuarioController.text.trim();
     String password = passwordController.text;
 
-    print('Usuario: $usuario');
-    print('Constraseña: $password');
 
     if(isValidForm(usuario, password)){
 
       ResponseApi responseApi=await usuarioProvider.login(usuario, password);
-      print('Response API ${responseApi.toJson()}');
-
+      print(responseApi.data);
       if(responseApi.success==true){
+        Usuario user = Usuario.fromJson(responseApi.data);
+        if(user.estado=='1'){
 
         GetStorage().write('usuario', responseApi.data);//ALMACENANDO LOS DATOS DEL USUARIO EN SESION
         Usuario usuario = Usuario.fromJson(GetStorage().read('usuario')??{});
@@ -43,17 +42,16 @@ class LoginController extends GetxController{
         Rol? rol = usuario.roles?.isNotEmpty == true ? usuario.roles!.first : null;
 
         Get.snackbar('Bienvenido', responseApi.message??'');
-        print(rol?.toJson());
 
         Get.offNamedUntil(rol?.ruta ??'', (route)=>false);
+        }else{
+          Get.snackbar('Error', 'Este usuario se encuentra inactivo');
+        }
 
       }else{
         Get.snackbar('Error', responseApi.message??'');
-
       }
-
     }
-
   }
 
   bool isValidForm(String usuario, String password){

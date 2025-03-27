@@ -9,9 +9,9 @@
 
     <application
         android:enableOnBackInvokedCallback="true"
-        android:label="asistencia_vial_app"
+        android:label="VialApp"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@mipmap/launcher_icon"
         android:usesCleartextTraffic="true"
         >
         <activity

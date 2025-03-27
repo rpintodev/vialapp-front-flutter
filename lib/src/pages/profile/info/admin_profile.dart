@@ -19,6 +19,8 @@ class AdminProfile extends StatelessWidget {
           _boxForm(context),
           _imageCover(context),
           _buttonSignOut(),
+          _buttonBack(),
+
 
         ],
       )),
@@ -79,15 +81,30 @@ class AdminProfile extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
+
             _textName(),
             _textUsuario(),
             _textphone(),
             _textRol(),
             _textPeaje(),
-            _bottomUpdate(context),
+           // _bottomUpdate(context),
           ],
 
+
         ),
+
+
+      ),
+    );
+  }
+
+  Widget _buttonBack(){
+    return SafeArea(
+      child: Container(
+        margin: EdgeInsets.only(left: 20),
+        child: IconButton(
+            onPressed: () => Get.back(),
+            icon: Icon(Icons.arrow_back_ios), color: Colors.white),
       ),
     );
   }
@@ -176,7 +193,7 @@ class AdminProfile extends StatelessWidget {
         margin: EdgeInsets.symmetric(horizontal: 20),
         child: ListTile(
           leading: Icon(Icons.gps_fixed),
-          title: Text('${adminProfileController.usuario.value.idPeaje??''}',
+          title: Text('${adminProfileController.usuario.value.nombrePeaje??''}',
 
             style: TextStyle(color: Colors.black),
           ),

@@ -5,6 +5,7 @@ import 'package:asistencia_vial_app/src/models/usuario.dart';
 import 'package:get/get.dart';
 
 import '../models/peaje.dart';
+import '../models/response_api.dart';
 
 
 class PeajeProvider extends GetConnect{
@@ -32,6 +33,33 @@ class PeajeProvider extends GetConnect{
     List<Peaje> peajes= Peaje.fromJsonList(response.body);
     return peajes;
 
+  }
+
+
+  Future<ResponseApi> update(Usuario usuario) async{
+
+    Response response = await post(
+        '$url/updatePeaje',
+        usuario.toJson(),
+        headers: {
+          'Content-type': 'application/json',
+          'Authorization': usuario.sessionToken??''
+        }
+
+    );
+
+    if(response.body==null){
+      Get.snackbar('Error', 'No se pudo realizar la peticion');
+      return ResponseApi();
+    }
+
+    if(response.statusCode==401){
+      Get.snackbar('Error', 'No se esta autorizado para realizar esta peticion');
+      return ResponseApi();
+    }
+
+    ResponseApi responseApi = ResponseApi.fromJson(response.body);
+    return responseApi;
   }
 
 

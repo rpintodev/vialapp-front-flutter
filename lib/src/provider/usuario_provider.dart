@@ -4,7 +4,6 @@ import 'package:get_storage/get_storage.dart';
 import 'package:path/path.dart';
 import 'package:asistencia_vial_app/src/environment/environment.dart';
 import 'package:asistencia_vial_app/src/models/usuario.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 
@@ -65,6 +64,54 @@ class UsuarioProvider extends GetConnect{
     final response = await request.send();
     return response.stream.transform(utf8.decoder);
   }
+
+  Future<Stream> createWithSignature(Usuario usuario,File signature) async {
+    Uri uri = Uri.http(Environment.API_URL_OLD, '/api/usuarios/createWithSignature');
+
+    final request = http.MultipartRequest('POST', uri);
+
+    // Agregar la firma como archivo en la solicitud
+    request.files.add(http.MultipartFile(
+      'signature',
+      http.ByteStream(signature.openRead().cast()),
+      await signature.length(),
+      filename: basename(signature.path),
+    ));
+    request.fields['usuario']=json.encode(usuario);
+    final response = await request.send();
+    return response.stream.transform(utf8.decoder);
+
+  }
+
+  Future<Stream> createWithSignatureAndImage(Usuario usuario, File signature, File image) async {
+    Uri uri = Uri.http(Environment.API_URL_OLD, '/api/usuarios/createWithSignatureAndImage');
+
+    final request = http.MultipartRequest('POST', uri);
+
+    request.files.add(http.MultipartFile(
+      'signature',
+      http.ByteStream(signature.openRead().cast()),
+      await signature.length(),
+      filename: basename(signature.path),
+    ));
+
+      request.files.add(http.MultipartFile(
+        'image',
+        http.ByteStream(image.openRead().cast()),
+        await image.length(),
+        filename: basename(image.path),
+      ));
+
+
+    request.fields['usuario'] = json.encode(usuario);
+    final response = await request.send();
+    return response.stream.transform(utf8.decoder);
+  }
+
+
+
+
+
 
   Future<Stream> updateWithImage(Usuario usuario, File image)async{
     Uri uri = Uri.http(Environment.API_URL_OLD,'/api/usuarios/update');
@@ -186,10 +233,15 @@ class UsuarioProvider extends GetConnect{
 
   }
 
-  Future<List<Usuario>> findByGrupo(String idGrupo) async {
+  Future<List<Usuario>> findByGrupo(String idGrupo,String idpeaje) async {
 
-    Response response = await get(
-        '$url/findByGrupo/$idGrupo',
+    Response response = await post(
+        '$url/findByGrupo',
+        {
+          'id_grupo': idGrupo,
+          'id_peaje': idpeaje
+
+        },
         headers: {
           'Content-type': 'application/json',
           'Authorization': usuario.sessionToken??''
@@ -204,6 +256,50 @@ class UsuarioProvider extends GetConnect{
     List<Usuario> usuarios= Usuario.fromJsonList(response.body);
     return usuarios;
 
+  }
+
+  Future<List<Usuario>> findByEstadoTurno(String idEstado, String idPeaje) async {
+
+    Response response = await post(
+        '$url/findByEstadoTurno',
+        {
+          'id_estado': idEstado,
+          'id_peaje': idPeaje
+
+        },
+        headers: {
+          'Content-type': 'application/json',
+          'Authorization': usuario.sessionToken??''
+        }
+    );
+
+    if (response.statusCode == 401) {
+      Get.snackbar('Peticion Denegada', 'No tienes acceso a esta información');
+      return [];
+    }
+
+    List<Usuario> usuarios= Usuario.fromJsonList(response.body);
+    return usuarios;
+
+  }
+
+  Future<Response> eliminar(String idUsuario) async {
+    Response response = await post(
+      '$url/delete',
+      {
+        'IdUsuario': idUsuario
+      },
+      headers: {
+        'Content-type': 'application/json',
+        'Authorization': usuario.sessionToken ?? ''
+      },
+    );
+
+    if (response.statusCode == 401) {
+      Get.snackbar('Petición Denegada', 'No tienes permiso para realizar esta acción');
+    }
+
+    return response;
   }
 
 }

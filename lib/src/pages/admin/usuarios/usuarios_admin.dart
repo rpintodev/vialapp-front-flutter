@@ -29,6 +29,8 @@ class UsuariosAdmin extends StatelessWidget {
               ),
             ),
             bottom: TabBar(
+
+              tabAlignment: TabAlignment.center,
               isScrollable: true,
               indicatorColor: Color(0xFF368983),
               labelColor: Colors.black,
@@ -51,7 +53,7 @@ class UsuariosAdmin extends StatelessWidget {
                     return ListView.builder(
                         itemCount: snapshot.data?.length??0,
                         itemBuilder: (_, index){
-                          return _cardUsuario(context, snapshot.data![index]);
+                          return _cardUsuario(context, snapshot.data![index],int.parse(rol.id??'1'));
                         }
                     );
                   }else{
@@ -65,7 +67,7 @@ class UsuariosAdmin extends StatelessWidget {
     ));
   }
 
-  Widget _cardUsuario(BuildContext context, Usuario usuario) {
+  Widget _cardUsuario(BuildContext context, Usuario usuario, int cardIndex) {
     return GestureDetector(
       onTap: ()=> usuariosAdminController.openBottomSheet(context, usuario),
       child: Padding(
@@ -108,10 +110,15 @@ class UsuariosAdmin extends StatelessWidget {
                 color: Colors.grey[600],
               ),
             ),
-            trailing: Icon(
-              Icons.arrow_forward_ios,
-              color: Colors.grey[400],
-              size: 16.0,
+            trailing: PopupMenuButton<String>(
+              icon: Icon(
+                Icons.menu,
+                color: Colors.grey[400],
+                size: 16.0,
+              ),
+              itemBuilder: (BuildContext context) {
+                return _getOptionsForCard(context, usuario, cardIndex); // Pasamos el índice de la tarjeta
+              },
             ),
           ),
         ),
@@ -133,34 +140,183 @@ class UsuariosAdmin extends StatelessWidget {
   }
 
 
+  /// Método para obtener las opciones según el índice de la tarjeta
+  List<PopupMenuEntry<String>> _getOptionsForCard(BuildContext context, Usuario usuario,int cardIndex) {
+    switch (cardIndex) {
+      case 1:
+        return [
+          PopupMenuItem<String>(
+            value: "Actualizar",
+            child: Row(
+              children: [
+                Icon(Icons.update, color: Colors.blue),
+                SizedBox(width: 10),
+                Text("Actualizar"),
+              ],
+            ),
+            onTap: () => usuariosAdminController.goToActualizar(usuario)
+          ),
+          PopupMenuItem<String>(
+            value: "Eliminar",
+            child: Row(
+              children: [
+                Icon(Icons.delete_outline
+                    , color: Colors.redAccent),
+                SizedBox(width: 10),
+                Text("Eliminar"),
+              ],
+            ),
+            onTap: () {
+              // Mostrar el cuadro de diálogo de confirmación
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                _showDeleteConfirmationDialog(context, usuario);
+              });
+            },
+          ),
+
+        ];
+      case 2:
+        return [
+          PopupMenuItem<String>(
+              value: "Actualizar",
+              child: Row(
+                children: [
+                  Icon(Icons.update, color: Colors.blue),
+                  SizedBox(width: 10),
+                  Text("Actualizar"),
+                ],
+              ),
+              onTap: () => usuariosAdminController.goToActualizar(usuario)
+          ),
+          PopupMenuItem<String>(
+            value: "Eliminar",
+            child: Row(
+              children: [
+                Icon(Icons.delete_outline
+                    , color: Colors.redAccent),
+                SizedBox(width: 10),
+                Text("Eliminar"),
+              ],
+            ),
+            onTap: () {
+              // Mostrar el cuadro de diálogo de confirmación
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                _showDeleteConfirmationDialog(context, usuario);
+              });
+            },
+          ),
+        ];
+      case 3:
+        return [
+          PopupMenuItem<String>(
+              value: "Actualizar",
+              child: Row(
+                children: [
+                  Icon(Icons.update, color: Colors.blue),
+                  SizedBox(width: 10),
+                  Text("Actualizar"),
+                ],
+              ),
+              onTap: () => usuariosAdminController.goToActualizar(usuario)
+          ),
+          PopupMenuItem<String>(
+            value: "Eliminar",
+            child: Row(
+              children: [
+                Icon(Icons.delete_outline
+                    , color: Colors.redAccent),
+                SizedBox(width: 10),
+                Text("Eliminar"),
+              ],
+            ),
+            onTap: () {
+              // Mostrar el cuadro de diálogo de confirmación
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                _showDeleteConfirmationDialog(context, usuario);
+              });
+            },
+          ),
+        ];
+      default:
+        return [
+          PopupMenuItem<String>(
+              value: "Actualizar",
+              child: Row(
+                children: [
+                  Icon(Icons.update, color: Colors.blue),
+                  SizedBox(width: 10),
+                  Text("Actualizar"),
+                ],
+              ),
+              onTap: () => usuariosAdminController.goToActualizar(usuario)
+          ),
+          PopupMenuItem<String>(
+            value: "Eliminar",
+            child: Row(
+              children: [
+                Icon(Icons.delete_outline
+                    , color: Colors.redAccent),
+                SizedBox(width: 10),
+                Text("Eliminar"),
+              ],
+            ),
+            onTap: () {
+              // Mostrar el cuadro de diálogo de confirmación
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                _showDeleteConfirmationDialog(context, usuario);
+              });
+            },
+          ),
+        ];
+    }
+  }
+
   Widget _textFieldSearch(BuildContext context){
     return SafeArea(
       child: Container(
-        width: MediaQuery.of(context).size.width *0.7,
-        child: TextField(
-          decoration: InputDecoration(
-              hintText: 'Buscar usuario',
-              suffixIcon: Icon(Icons.search, color: Color(0xFF368983)),
-              hintStyle: TextStyle(
-                  fontSize: 17,
-                  color: Color(0xFF368983)
-              ),
-              enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(15),
-                  borderSide: BorderSide(
-                      color: Color(0xFF368983)
-                  )
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(15),
-                borderSide: BorderSide(
-                    color: Colors.grey
-                ),
-              ),
-              contentPadding: EdgeInsets.all(15)
+        width: MediaQuery.of(context).size.width *0.6,
+        alignment: Alignment.center,
+        child: Text(
+          'Usuarios',
+          style: TextStyle(
+            fontSize: 24, // Tamaño del texto
+            fontWeight: FontWeight.bold, // Peso del texto
+            color: Colors.black, // Color del texto
           ),
         ),
       ),
+    );
+  }
+
+  void _showDeleteConfirmationDialog(BuildContext context, Usuario usuario) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Confirmar eliminación"),
+          content: Text(
+            "¿Estás seguro de que deseas eliminar al usuario ${usuario.nombre} ${usuario.apellido}?",
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Cierra el cuadro de diálogo
+              },
+              child: Text("Cancelar", style: TextStyle(color: Colors.grey)),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.redAccent,
+              ),
+              onPressed: () {
+                Navigator.of(context).pop(); // Cierra el cuadro de diálogo
+                usuariosAdminController.deleteUsuario(usuario.id??'1'); // Llama al método para eliminar el usuario
+              },
+              child: Text("Eliminar"),
+            ),
+          ],
+        );
+      },
     );
   }
 

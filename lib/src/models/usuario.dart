@@ -15,9 +15,14 @@ class Usuario {
   String? imagen;
   String? sessionToken;
   String? idRol;
+  String? idTurno;
+  String? turno;
+  String? via;
+  String? firma;
   String? nombreRol;
   String? nombrePeaje;
   String? idPeaje;
+  String? estado;
   String? grupo;
   List<Rol>? roles=[];
 
@@ -33,9 +38,14 @@ class Usuario {
     this.imagen,
     this.sessionToken,
     this.idRol,
+    this.idTurno,
+    this.turno,
+    this.via,
+    this.firma,
     this.nombreRol,
     this.nombrePeaje,
     this.idPeaje,
+    this.estado,
     this.grupo,
     this.roles,
 
@@ -50,9 +60,14 @@ class Usuario {
     password: json["Password"],
     imagen: json["Imagen"],
     idRol: json["IdRol"],
+    idTurno: json["IdTurno"],
+    turno: json["Turno"],
+    via: json["Via"],
+    firma: json["Firma"],
     nombreRol: json["NombreRol"],
     nombrePeaje: json["NombrePeaje"],
     idPeaje: json["IdPeaje"],
+    estado: json["Estado"],
     grupo: json["Grupo"],
     sessionToken: json["session_token"],
     roles: json["Roles"] == null ? [] : List<Rol>.from(json["Roles"].map((modelo)=>Rol.fromJson(modelo))),
@@ -67,9 +82,14 @@ class Usuario {
     "Password": password,
     "Imagen": imagen,
     "IdRol": idRol,
+    "IdTurno": idTurno,
+    "Turno": turno,
+    "Via": via,
+    "Firma": firma,
     "NombreRol": nombreRol,
     "NombrePeaje": nombrePeaje,
     "IdPeaje": idPeaje,
+    "Estado": estado,
     "Grupo": grupo,
     "session_token": sessionToken,
     "Roles": roles,

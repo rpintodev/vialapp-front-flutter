@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:math';
-
+import 'dart:typed_data';
+import 'package:path_provider/path_provider.dart';
 import 'package:asistencia_vial_app/src/models/response_api.dart';
 import 'package:asistencia_vial_app/src/models/rol.dart';
 import 'package:asistencia_vial_app/src/models/usuario.dart';
@@ -20,7 +20,7 @@ import '../../provider/peaje_provider.dart';
 class RegisterController extends GetxController{
 
   Usuario usuarioSession = Usuario.fromJson(GetStorage().read('usuario')??{});
-
+  Uint8List? signature;
 
 
   TextEditingController usuarioController = TextEditingController();
@@ -96,20 +96,19 @@ class RegisterController extends GetxController{
     String password = passwordController.text;
     String confpassword = conPasswordController.text;
 
-    //FALTA
-    if(usuarioSession.roles?.first.id  == '1'){
-      String idRolS = idRol.value;
-      String idGrupoS='1';
-    }else{
-      String idRolS = '3';
-    }
+
 
     print('Usuario: $usuario');
     print('Constraseña: $password');
     print('IdRol: $idRol');
     print('IdPeaje: $idPeaje');
 
-
+    if(usuarioSession.roles?.first.id  == '1'){
+      grupoSeleccionado.value='1';
+    }else{
+      idRol.value = '3';
+      idPeaje.value=usuarioSession.idPeaje??'';
+    }
 
 
 
@@ -117,6 +116,9 @@ class RegisterController extends GetxController{
 
       ProgressDialog progressDialog=ProgressDialog(context: context);
       progressDialog.show(max: 100, msg: 'Registrando datos..');
+
+
+
 
       Usuario usuarios=Usuario(
 
@@ -128,6 +130,8 @@ class RegisterController extends GetxController{
           telefono: telefono,
           password: password,
           //CAMBIE EL TIPO DE DATO Y QUITE LOS PARSE
+
+          grupo: grupoSeleccionado.value,
           idRol: idRol.value,
           idPeaje: idPeaje.value,
 
@@ -135,43 +139,63 @@ class RegisterController extends GetxController{
       );
 
 
-      if(imageFile==null) {
-        Response response = await usuarioProvider.create(usuarios);
-        print('Response Api Data: ${response.body}');
-        progressDialog.close();
-        if(response.statusCode ==201){
-          Get.snackbar('Registro Existosa', 'El usuario ha sido registrado');
-          Get.offNamedUntil('/home', (route)=>false);
+          if(imageFile==null && signature == null) {
+            Response response = await usuarioProvider.create(usuarios);
+            print('Response Api Data: ${response.body}');
+            progressDialog.close();
+            if (response.statusCode == 201) {
+              Get.snackbar(
+                  'Registro Existosa', 'El usuario ha sido registrado');
+              Get.offNamedUntil(
+                  '/home', (route) => false, arguments: {'index': 3});
+            }
+          }else if(imageFile != null && signature == null){
+            Stream stream = await usuarioProvider.createWithImage(usuarios, imageFile!);
+            progressDialog.close();
 
-        }else{
-          Get.snackbar('ERROR ', response.statusText??'');
+              stream.listen((res){
+                ResponseApi responseApi = ResponseApi.fromJson(json.decode(res));
 
-        }
+                  if(responseApi.success==true){
+                    Get.snackbar('Registro Existoso', 'El usuario ha sido registrado');
+                    Get.offNamedUntil(
+                        '/home', (route) => false, arguments: {'index': 3});
+                  }
+              });
+
+          }else if (imageFile == null && signature != null) {
+
+            File signatureFile = await convertUint8ListToFile(signature!);
+            Stream stream = await usuarioProvider.createWithSignature(usuarios, signatureFile);
+            progressDialog.close();
+
+            stream.listen((res){
+              ResponseApi responseApi = ResponseApi.fromJson(json.decode(res));
+
+              if(responseApi.success==true){
+                Get.snackbar('Registro Existoso', 'El usuario ha sido registrado');
+                Get.offNamedUntil(
+                    '/home', (route) => false, arguments: {'index': 3});
+              }
+            });
 
 
-      }else{
+          } else {
 
-        Stream stream = await usuarioProvider.createWithImage(usuarios, imageFile!);
+            File signatureFile = await convertUint8ListToFile(signature!);
+            Stream stream = await usuarioProvider.createWithSignatureAndImage(usuarios, signatureFile,imageFile!);
+            progressDialog.close();
 
-        progressDialog.close();
-        stream.listen((res){
-          ResponseApi responseApi = ResponseApi.fromJson(json.decode(res));
+            stream.listen((res){
+              ResponseApi responseApi = ResponseApi.fromJson(json.decode(res));
 
-          if(responseApi.success==true){
-            Get.snackbar('Registro Existoso', 'El usuario ha sido registrado');
-            Get.offNamedUntil('/home', (route)=>false);
-          }else{
-            Get.snackbar('ERROR ', responseApi.message??'');
-
+              if(responseApi.success==true){
+                Get.snackbar('Registro Existoso', 'El usuario ha sido registrado');
+                Get.offNamedUntil(
+                    '/home', (route) => false, arguments: {'index': 3});
+              }
+            });
           }
-
-        });
-
-      }
-
-
-
-
     }
   }
 
@@ -302,6 +326,18 @@ class RegisterController extends GetxController{
         return alertDialog;
       },
     );
+  }
+
+  void saveSignature(Uint8List newSignature) {
+    signature = newSignature;
+    update(); // Actualiza la interfaz si es necesario
+  }
+
+  Future<File> convertUint8ListToFile(Uint8List signature) async {
+    final tempDir = await getTemporaryDirectory(); // Obtén un directorio temporal
+    final tempFile = File('${tempDir.path}/signature.png'); // Crea un archivo temporal con extensión .png
+    await tempFile.writeAsBytes(signature); // Escribe el contenido del Uint8List en el archivo
+    return tempFile; // Devuelve el archivo
   }
 
 

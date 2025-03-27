@@ -50,7 +50,6 @@ class AdminUpdateController extends GetxController{
   }
 
 
-  AdminProfileController adminProfileController = Get.find();
 
   AdminUpdateController(Usuario? usuario){
 
@@ -133,9 +132,8 @@ class AdminUpdateController extends GetxController{
         progressDialog.close();
 
         if(responseApi.success ==true){
-          adminProfileController.usuario.value= Usuario.fromJson(GetStorage().read('usuario')??{});
           Get.snackbar('Actualizacion Existosa', 'El usuario ha sido actualizado');
-          Get.offNamedUntil('/home', (route)=>false);
+          Get.offNamedUntil('/home', (route)=>false, arguments: {'index': 3});
 
         }
       }else{

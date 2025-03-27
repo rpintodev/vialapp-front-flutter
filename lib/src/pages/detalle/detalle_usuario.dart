@@ -16,7 +16,7 @@ class DetalleUsuario extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: MediaQuery.of(context).size.height * 0.8, // Modal ocupa el 60% de la pantalla
+      height: MediaQuery.of(context).size.height * 0.6, // Modal ocupa el 60% de la pantalla
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.only(
@@ -103,7 +103,6 @@ class DetalleUsuario extends StatelessWidget {
             _textInfo('Rol', usuario?.nombreRol ?? 'No registrado', Icons.work),
             _textInfo('Peaje', usuario?.nombrePeaje ?? 'No registrado', Icons.gps_fixed),
             SizedBox(height: 20), // Espaciado antes de los botones
-            _actionButtons(context, usuario!),
           ],
         ),
       ),
@@ -148,25 +147,6 @@ class DetalleUsuario extends StatelessWidget {
           fontWeight: FontWeight.bold,
         ),
       ),
-    );
-  }
-
-  /// **Widget: Botones de Acción**
-  Widget _actionButtons(BuildContext context, Usuario usuario) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        _customButton(
-          text: 'Asignar Turno',
-          color: Color(0xFF368983),
-          onPressed: () => {}),
-        _customButton(
-          text: 'Actualizar Perfil',
-          color: Colors.grey[600]!,
-        onPressed: () => detalleUsuarioController.goToActualizar(usuario)
-
-        ),
-      ],
     );
   }
 

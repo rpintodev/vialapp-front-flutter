@@ -2,6 +2,7 @@ import 'package:asistencia_vial_app/src/pages/register/register_controller.dart'
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_state_manager/src/simple/list_notifier.dart';
+import 'package:signature/signature.dart';
 
 import '../../models/peaje.dart';
 import '../../models/rol.dart';
@@ -11,6 +12,7 @@ class RegisterPage extends StatelessWidget {
 
   RegisterController registerController=Get.put(RegisterController());
   RolProvider rolProvider=RolProvider();
+  final SignatureController signatureController = SignatureController();
 
   @override
   Widget build(BuildContext context) {
@@ -102,7 +104,10 @@ class RegisterPage extends StatelessWidget {
             _dropdownPeaje(registerController.peajes),
             ]else...[
               _dropdownGrupo(registerController.grupos),
+
+
             ],
+            _signatureBox(context),
             _bottomLogin(context),
           ],
 
@@ -381,6 +386,111 @@ class RegisterPage extends StatelessWidget {
 
         )
     );
+  }
+
+
+  Widget _signatureBox(BuildContext context) {
+    return GestureDetector(
+      onTap: () => _openSignaturePad(context),
+      child: GetBuilder<RegisterController>(
+        builder: (controller) => Container(
+          margin: EdgeInsets.symmetric(horizontal: 40, vertical: 10),
+          padding: EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.grey),
+            borderRadius: BorderRadius.circular(5),
+          ),
+          child: Column(
+            children: [
+              controller.signature == null
+                  ? Column(
+                children: [
+                  Icon(Icons.edit, size: 30, color: Color(0xFF368983)),
+                  SizedBox(height: 5),
+                  Text(
+                    'Capturar Firma',
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                ],
+              )
+                  : Image.memory(
+                controller.signature!,
+                height: 100,
+                width: double.infinity,
+                fit: BoxFit.cover,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+
+  void _openSignaturePad(BuildContext context) {
+    final signatureController = SignatureController();
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Captura tu Firma"),
+          content: SizedBox(
+         width: MediaQuery.of(context).size.width * 0.9,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Signature(
+                controller: signatureController,
+                height: 150,
+                backgroundColor: Colors.grey[200]!,
+              ),
+              SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  ElevatedButton(
+                    onPressed: () => signatureController.clear(),
+                    child: Text("Borrar"),
+                  ),
+                  ElevatedButton(
+                    onPressed: () async {
+                      if (signatureController.isNotEmpty) {
+                        final signature = await signatureController.toPngBytes();
+                        if (signature != null) {
+                          registerController.saveSignature(signature);
+                        }
+                        Navigator.of(context).pop(); // Cierra el diálogo
+                      } else {
+                        Get.snackbar(
+                          "Error",
+                          "La firma está vacía.",
+                          backgroundColor: Colors.red,
+                          colorText: Colors.white,
+                        );
+                      }
+                    },
+                    child: Text("Guardar"),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          ),
+        );
+      },
+    );
+  }
+
+
+  void _saveSignature(BuildContext context) async {
+    if (signatureController.isNotEmpty) {
+      final signature = await signatureController.toPngBytes();
+      registerController.saveSignature(signature!); // Guardar firma en el controlador
+      Navigator.of(context).pop(); // Cierra el diálogo
+    } else {
+      Get.snackbar("Error", "La firma está vacía.", backgroundColor: Colors.red, colorText: Colors.white);
+    }
   }
 
 

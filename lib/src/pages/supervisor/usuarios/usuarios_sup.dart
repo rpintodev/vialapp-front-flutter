@@ -7,12 +7,13 @@ import '../../../models/usuario.dart';
 class UsuariosSup extends StatelessWidget {
 
   UsuariosSupController usuariosSupController = Get.put(UsuariosSupController());
+  List<String> groupLabels = ['A', 'B', 'C', 'D', 'E'];
 
 
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 4,
+      length: 5,
       child: Scaffold(
         appBar: PreferredSize(
           preferredSize: Size.fromHeight(110),
@@ -24,27 +25,33 @@ class UsuariosSup extends StatelessWidget {
                 direction: Axis.horizontal,
                 children: [
                   _textFieldSearch(context),
-                  _iconAddUser()
+                  _iconAddUser(),
+                  _iconAsignar(),
                 ],
               ),
             ),
             bottom: TabBar(
+              tabAlignment: TabAlignment.center,
               isScrollable: true,
               indicatorColor: Color(0xFF368983),
               labelColor: Colors.black,
               unselectedLabelColor: Colors.grey[400],
-              tabs: List<Widget>.generate(4,(index){
-                return Tab(
-                    child: Text('Grupo ${index + 1}')
-                );
-              }),
+              onTap: (index) {
+                usuariosSupController.updateTabIndex(index);
+              },
+
+            tabs: List<Widget>.generate(5, (index) {
+              return Tab(
+                child: Text('Grupo ${groupLabels[index]}'),
+              );
+            }),
             ),
           ),
         ),
         body: TabBarView(
-          children: List<Widget>.generate(4, (index) {
+          children: List<Widget>.generate(5, (index2) {
             return FutureBuilder(
-              future: usuariosSupController.getUsuariosGrupo((index + 1).toString()), // Cambia para manejar los grupos
+              future: usuariosSupController.getUsuariosGrupo((index2 + 1).toString(),usuariosSupController.usuarioSession.idPeaje??'1'), // Cambia para manejar los grupos
               builder: (context, AsyncSnapshot<List<Usuario>> snapshot) {
                 if (snapshot.hasData) {
                   return ListView.builder(
@@ -108,10 +115,14 @@ class UsuariosSup extends StatelessWidget {
                 color: Colors.grey[600],
               ),
             ),
-            trailing: Icon(
-              Icons.arrow_forward_ios,
-              color: Colors.grey[400],
-              size: 16.0,
+            trailing: PopupMenuButton<String>(
+              icon: Icon(
+                Icons.more_vert,
+                color: Colors.grey[400],
+                size: 20.0,
+              ),
+
+              itemBuilder: (BuildContext context) => _getPopupMenuItems(context,usuario),
             ),
           ),
         ),
@@ -122,7 +133,7 @@ class UsuariosSup extends StatelessWidget {
   Widget _iconAddUser(){
     return SafeArea(
       child: Container(
-        margin: EdgeInsets.only(left: 10),
+        margin: EdgeInsets.only(left: 1),
         child: IconButton(
             onPressed: ()=>usuariosSupController.gotoRegisterPage(),
             icon: Icon(Icons.person_add,color: Color(0xFF368983),
@@ -132,32 +143,99 @@ class UsuariosSup extends StatelessWidget {
     );
   }
 
+  Widget _iconAsignar() {
+    return SafeArea(
+      child: Container(
+        margin: EdgeInsets.only(left: 1),
+        child: IconButton(
+          onPressed: () async {
+            int groupIndex = usuariosSupController.currentTabIndex.value;
+
+            // Carga los usuarios del grupo antes de mostrar el cuadro de diálogo
+            await usuariosSupController.loadUsuariosGrupoActual(groupIndex,usuariosSupController.usuarioSession.idPeaje??'1');
+
+            _showAssignDialog(groupIndex);
+          },
+          icon: Icon(
+            Icons.fact_check,
+            color: Color(0xFF368983),
+            size: 25,
+          ),
+        ),
+      ),
+    );
+  }
+
+
+  void _showAssignDialog(int groupIndex) {
+    showDialog(
+      context: Get.context!,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Asignar Turno', style: TextStyle(color: Colors.black),),
+          content: Text('¿Deseas asignar todo el Grupo ${groupIndex}?',style: TextStyle(color: Colors.black)),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Cierra el cuadro de diálogo
+              },
+              child: Text('Cancelar'),
+            ),
+            ElevatedButton(
+              onPressed: ()  {
+                usuariosSupController.asignarTurnoLote(context);
+
+                // Cierra el cuadro de diálogo
+                Navigator.of(context).pop();
+              },
+              child: Text('Asignar'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+
+
+
+  List<PopupMenuEntry<String>> _getPopupMenuItems(BuildContext context, Usuario usuario) {
+    return [
+      PopupMenuItem<String>(
+        child: Row(
+          children: [
+            Icon(Icons.work_history, color: Colors.green),
+            SizedBox(width: 10),
+            Text("Asignar Turno"),
+          ],
+        ),
+          onTap: () => usuariosSupController.asignarTuno(context, usuario)
+      ),
+      PopupMenuItem<String>(
+        child: Row(
+          children: [
+            Icon(Icons.update, color: Colors.blue),
+            SizedBox(width: 10),
+            Text("Actualizar Perfil"),
+          ],
+        ),
+          onTap: () => usuariosSupController.goToActualizar(usuario)
+      ),
+
+    ];
+  }
 
   Widget _textFieldSearch(BuildContext context){
     return SafeArea(
       child: Container(
-        width: MediaQuery.of(context).size.width *0.7,
-        child: TextField(
-          decoration: InputDecoration(
-              hintText: 'Buscar usuario',
-              suffixIcon: Icon(Icons.search, color: Color(0xFF368983)),
-              hintStyle: TextStyle(
-                  fontSize: 17,
-                  color: Color(0xFF368983)
-              ),
-              enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(15),
-                  borderSide: BorderSide(
-                      color: Color(0xFF368983)
-                  )
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(15),
-                borderSide: BorderSide(
-                    color: Colors.grey
-                ),
-              ),
-              contentPadding: EdgeInsets.all(15)
+        width: MediaQuery.of(context).size.width *0.6,
+        alignment: Alignment.center,
+        child: Text(
+          'Cajeros',
+          style: TextStyle(
+            fontSize: 24, // Tamaño del texto
+            fontWeight: FontWeight.bold, // Peso del texto
+            color: Colors.black, // Color del texto
           ),
         ),
       ),

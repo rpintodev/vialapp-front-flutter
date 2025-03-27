@@ -1,158 +1,166 @@
 import 'package:asistencia_vial_app/src/pages/login/login_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:flutter/material.dart';
 
-class LoginPage extends StatelessWidget {
+class LoginPage extends StatefulWidget {
+  const LoginPage({super.key});
+
+  @override
+  State<LoginPage> createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
+  late Color myColor;
+  late Size mediaSize;
   LoginController loginController = Get.put(LoginController());
+
+  bool rememberUser = false;
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold( //posicionar uno encima de otro
-      body: Stack(
-        children: [
-          _backgroundCover(context),
-
-          _boxForm(context),
-          _imageCover(),
-
-
-        ],
-      ),
-    );
-  }
-
-  Widget _backgroundCover(BuildContext context){
-
+    myColor = Theme.of(context).primaryColor;
+    mediaSize = MediaQuery.of(context).size;
     return Container(
-      width: double.infinity,
-      height: MediaQuery.of(context).size.height*1,
-      color: Color(0xFF368983),
-    );
-  }
-
-  Widget _textAppName(){
-    return Text('VIAL25 APP',
-    style: TextStyle(
-        fontSize: 25,
-        fontWeight: FontWeight.bold,
-        color: Colors.white
-    ),
-    );
-  }
-
-  Widget _imageCover(){
-
-    return SafeArea(
-      child: Container(
-        margin: EdgeInsets.only(top: 0, bottom: 375),
-        alignment: Alignment.center,
-        child: Image.asset(
-          'assets/img/vial25.png',
-          width: 500,
-          height: 300,
+      decoration: BoxDecoration(
+        color: myColor,
+        image: DecorationImage(
+          image: const AssetImage("assets/img/PeajeLogin.jpg"),
+          fit: BoxFit.cover,
+          alignment: Alignment.topCenter,
+          colorFilter:
+          ColorFilter.mode(myColor.withOpacity(0.2), BlendMode.dstATop),
         ),
       ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: Stack(children: [
+          Positioned(top: 80, child: _buildTop()),
+          Positioned(bottom: 0, child: _buildBottom()),
+        ]),
+      ),
     );
   }
 
-  Widget _boxForm(BuildContext context){
-    return Container(
-      height: MediaQuery.of(context).size.height *1,
-      margin: EdgeInsets.only(top: MediaQuery.of(context).size.height * 0.33),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: <BoxShadow>[ //sombras
-          BoxShadow(
-            color: Colors.black54,
-            blurRadius: 15,
-            offset: Offset(0, 0.75)
+  Widget _buildTop() {
+    return SizedBox(
+      width: mediaSize.width,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Image.asset(
+            "assets/img/vial25blanco.png", // Ruta de la imagen PNG en assets
+            height: 80, // Ajusta el tamaño según lo necesites
+          ),
+          Text(
+            "Version 1.0.0",
+            style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w500,
+                fontSize: 15,
+                letterSpacing: 1),
           )
         ],
-          borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(20), // Radio superior izquierdo
-          topRight: Radius.circular(20), // Radio superior derecho
-    ),
       ),
-      child: SingleChildScrollView(
-        child: Column(
-          children: [
-            _textoLogin(),
-            _textFieldUsuario(),
-            _textFieldPassword(),
-            _bottomLogin()
-          ],
+    );
+  }
+
+  Widget _buildBottom() {
+    return SizedBox(
+      width: mediaSize.width,
+      child: Card(
+        shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(30),
+              topRight: Radius.circular(30),
+            )),
+        child: Padding(
+          padding: const EdgeInsets.all(32.0),
+
+            child: _buildForm(),
 
         ),
       ),
     );
   }
 
-  Widget _bottomLogin(){
-    return Container(
-      width: double.infinity,
-      margin: EdgeInsets.symmetric(horizontal: 40, vertical: 40),
-
-      child: ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Color(0xFF368983),
-            padding: EdgeInsets.symmetric(vertical: 15),
-            elevation: 10, // Controla la intensidad de la sombra
-            shadowColor: Colors.black, // Color de la sombra
-          ),
-
-          onPressed: () => loginController.login(),
-          child: Text('Iniciar Sesión',
-            style: TextStyle(
-              color: Colors.white
-            ),
-          )),
-    );
-  }
-
-  Widget _textFieldUsuario(){
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 40,vertical: 10),
-
-      child: TextField(
-        controller: loginController.usuarioController,
-        keyboardType: TextInputType.text,
-        decoration: InputDecoration(
-            hintText: 'Usuario',
-              prefixIcon: Icon(Icons.account_circle, color: Color(0xFF368983))
-        ),
-      ),
-    );
-  }
-
-  Widget _textFieldPassword(){
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 40),
-
-      child: TextField(
-        controller: loginController.passwordController,
-        keyboardType: TextInputType.text,
-        obscureText: true,
-        decoration: InputDecoration(
-            hintText: 'Contraseña',
-            prefixIcon: Icon(Icons.lock, color: Color(0xFF368983))
-        ),
-      ),
-    );
-  }
-
-  Widget _textoLogin(){
-    return Container(
-      margin: EdgeInsets.only(top: 40, bottom: 50),
-      child: Text(
-
-        'INGRESA ESTA INFORMACIÓN',
+  Widget _buildForm() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          "Bienvenido/a",
           style: TextStyle(
-            color: Colors.black,
-            fontSize: 15,
-          ),
-      ),
+              color: myColor, fontSize: 32, fontWeight: FontWeight.w500),
+        ),
+        _buildGreyText("Ingresa tus credenciales"),
+        const SizedBox(height: 30),
+        _buildGreyText("Usuario"),
+        _buildInputField(loginController.usuarioController),
+        const SizedBox(height: 20),
+        _buildGreyText("Constraseña"),
+        _buildInputField(loginController.passwordController, isPassword: true),
+        const SizedBox(height: 30),
+        _buildLoginButton(),
+        const SizedBox(height: 10),
+      ],
     );
   }
 
+  Widget _buildGreyText(String text) {
+    return Text(
+      text,
+      style: const TextStyle(color: Colors.grey),
+    );
+  }
+
+  Widget _buildInputField(TextEditingController controller,
+      {isPassword = false}) {
+    return TextField(
+      controller: controller,
+      decoration: InputDecoration(
+        suffixIcon: isPassword ? Icon(Icons.remove_red_eye) : Icon(Icons.done),
+      ),
+      obscureText: isPassword,
+    );
+  }
+
+  Widget _buildRememberForgot() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Row(
+          children: [
+            Checkbox(
+                value: rememberUser,
+                onChanged: (value) {
+                  setState(() {
+                    rememberUser = value!;
+                  });
+                }),
+            _buildGreyText("Remember me"),
+          ],
+        ),
+        TextButton(
+            onPressed: () {}, child: _buildGreyText("I forgot my password"))
+      ],
+    );
+  }
+
+  Widget _buildLoginButton() {
+    return ElevatedButton(
+      onPressed: () {
+        loginController.login();
+      },
+      style: ElevatedButton.styleFrom(
+        shape: const StadiumBorder(),
+        elevation: 20,
+        shadowColor: myColor,
+        minimumSize: const Size.fromHeight(60),
+      ),
+      child: const Text("LOGIN"),
+    );
+  }
 
 
 }
