@@ -16,6 +16,7 @@ class LiquidacionesPage extends StatelessWidget {
 
   LiquidacionesPage({@required this.usuario,@required this.movimientos}){
     liquidacionesController=Get.put(LiquidacionesController(usuario!,movimientos!));
+
   }
 
 
@@ -319,9 +320,13 @@ class LiquidacionesPage extends StatelessWidget {
         ? '0'
         : liquidacionesController.Moneda1Controller.text;
 
-    // Calcular el total de retiros parciales
-    final totalRetirosParciales = movimientos?.where((m) => m.idTipoMovimiento == '2').isNotEmpty == true
-        ? movimientos!.map((movimiento) {
+    // Calcular el total de retiros parciales  movimientos!.where((m) => m.idTipoMovimiento == '2'
+    final retirosparciales=movimientos?.where((m) => m.idTipoMovimiento == '2').toList();
+
+
+
+    final totalRetirosParciales = retirosparciales!.where((m) => m.idTipoMovimiento == '2').isNotEmpty == true
+        ? retirosparciales!.map((movimiento) {
       final recibido = (int.parse(movimiento.recibe20D ?? '0') * 20) +
           (int.parse(movimiento.recibe10D ?? '0') * 10) +
           (int.parse(movimiento.recibe5D ?? '0') * 5) +

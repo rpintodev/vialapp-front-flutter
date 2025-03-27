@@ -86,7 +86,7 @@ class AsignacionController extends GetxController{
     );
   }
 
-  void goToLiquidaciones(Usuario usuario) async{
+  void  goToLiquidaciones(Usuario usuario) async{
     List<Movimiento>? movimientos;
     var result = await movimientoProvider.getMovimientoByTurno(usuario.idTurno??'0'); //cambiar getApertura
     movimientos =  result;
