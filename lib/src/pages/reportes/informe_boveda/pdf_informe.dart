@@ -28,7 +28,7 @@ Future<Uint8List> pdfInformeBoveda(List<Boveda> bovedas, List<Movimiento> movimi
   final retirosParciales = movimientos.where((m) => m.idTipoMovimiento == '2').toList();
   final registrosFortius = movimientos.where((m) => m.idTipoMovimiento == '5').toList();
   final boveda=bovedas.where((b) => b.esactual=='1').first;
-  final bovedaSecretaria=bovedas.where((b) => b.esactual=='2').first;
+  final bovedaSecretaria=bovedas.where((b) => b.esactual=='3').first;
 
   // Calcular los totales solicitados
   final totalAperturas = _calculateTotalAperturas(movimientos);
@@ -360,7 +360,7 @@ Future<Uint8List> pdfInformeBoveda(List<Boveda> bovedas, List<Movimiento> movimi
                       decoration: pw.BoxDecoration(border: pw.Border.all()),padding: pw.EdgeInsets.all(3), child: pw.Text("Supervisor Turno 2", textAlign: pw.TextAlign.center,style: pw.TextStyle(fontSize: 7))),
                 ]),
                 pw.TableRow(children: [
-                  pw.Padding(padding: pw.EdgeInsets.all(3), child: pw.Text("${aperturas.last.nombreSupervisor}", textAlign: pw.TextAlign.start,style: pw.TextStyle(fontSize: 7))),
+                  pw.Padding(padding: pw.EdgeInsets.all(3), child: pw.Text("${aperturas.first.nombreSupervisor}", textAlign: pw.TextAlign.start,style: pw.TextStyle(fontSize: 7))),
                   pw.Padding(padding: pw.EdgeInsets.all(3), child: pw.Text("${usuarioSessio.nombre}", textAlign: pw.TextAlign.start,style: pw.TextStyle(fontSize: 7))),
                 ]),
 

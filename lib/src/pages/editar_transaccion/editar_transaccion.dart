@@ -353,7 +353,7 @@ class EditarTransaccionPage extends StatelessWidget {
     final billetes5Recibe = getValue(editarTransaccionController.billetes5RecibeController);
     final billetes1Recibe = getValue(editarTransaccionController.billetes1RecibeController);
 
-    final billetes20Entrega = getValue(editarTransaccionController.billetes20Controller);
+    final billetes20Entrega = getValue(editarTransaccionController.billetes20EntregaController);
     final billetes10Entrega = getValue(editarTransaccionController.billetes10EntregaController);
     final billetes5Entrega = getValue(editarTransaccionController.billetes5EntregaController);
     final billetes1Entrega = getValue(editarTransaccionController.billetes1EntregaController);

@@ -365,7 +365,10 @@ class DetalleTransaccion extends StatelessWidget {
         (int.parse(movimientos?.first.recibe1C ?? '0') * 0.01).toDouble();
 
     // Calcula el total de los retiros parciales relacionados
-    final totalRetirosParciales = movimientos
+
+    final retirosparciales=movimientos?.where((m) => m.idTipoMovimiento == '2').toList();
+
+    final totalRetirosParciales = retirosparciales
         ?.where((mov) => mov.idTipoMovimiento == '2')
         .fold(0, (sum, mov) {
       return sum +

@@ -27,6 +27,7 @@ class RetiroParcialPage extends StatelessWidget {
         ),
         backgroundColor: Color(0xFF368983),
         elevation: 0,
+
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(16.0),

@@ -27,7 +27,7 @@ class RetiroAperturaPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Retiro de Apertura',
+          'Retiro de Apertura - ${usuario!.nombre} ${usuario!.apellido}',
           style: TextStyle(
               fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
         ),

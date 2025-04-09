@@ -3,6 +3,7 @@ import 'package:asistencia_vial_app/src/pages/supervisor/faltante/faltante.dart'
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:intl/intl.dart';
 
 import '../../../models/movimiento.dart';
 import '../../../models/response_api.dart';
@@ -19,6 +20,7 @@ class FaltanteController extends GetxController{
   Usuario? usuario;
   List<Movimiento>? movimientos;
   int? bandera;
+  String? pdt;
 
   TextEditingController simulacionesCantidadController = TextEditingController();
   TextEditingController simulacionesValorController = TextEditingController();
@@ -57,8 +59,12 @@ class FaltanteController extends GetxController{
 
     final liquidacion1 = movimientos.firstWhere((m) => m.idTipoMovimiento == '4', orElse: () => Movimiento());
     final faltante =  movimientos.firstWhere((m) => m.idTipoMovimiento == '6', orElse: () => Movimiento());
+    String formattedFechaHoy=DateFormat('ddMMyyyy').format(DateTime.now());
+    pdt='${usuario.via??'0'}$formattedFechaHoy';
 
-    parteTrabajoController.text = liquidacion1.partetrabajo?.toString() ?? '';
+
+
+    parteTrabajoController.text = liquidacion1.partetrabajo?.toString() ?? pdt??'';
     simulacionesCantidadController.text = liquidacion1.simulaciones?.toString() ?? '';
     simulacionesValorController.text = liquidacion1.valorsimulaciones?.toString() ?? '';
     anulacionesCantidadController.text = liquidacion1.anulaciones?.toString() ?? '';
@@ -84,8 +90,6 @@ class FaltanteController extends GetxController{
     faltante.recibe5C=='0'?faltante.recibe5C='':Moneda5ControllerE.text = faltante.recibe5C??'';
 
     idmovimiento=faltante.id?.toString()??'0';
-
-
 
   }
 
@@ -262,13 +266,14 @@ class FaltanteController extends GetxController{
       if (totalRecibido > 0) {
 
         if(idmovimiento=='0'){//SI SE CREA UN NUEVO FALTANTE
+
           Response response = await movimientoProvider.create(movimiento);
 
           ResponseApi responseApi = await movimientoProvider.updateLiquidacion(movimiento2);
 
           if(responseApi.success==true && response.statusCode == 201){
 
-            Get.snackbar('Liquidacion existosa', 'La liquidacion ha sido actualizada');
+            Get.snackbar('Liquidacion existosa', 'La liquidacion ha sido actualizada se añadio el faltante');
             var result = await movimientoProvider.getMovimientoByTurno(usuario.idTurno??''); //cambiar getApertura
             movimientos = result;
             Get.off(

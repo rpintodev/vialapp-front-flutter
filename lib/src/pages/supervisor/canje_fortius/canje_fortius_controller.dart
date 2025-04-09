@@ -83,7 +83,7 @@ class CanjeFortiusController extends GetxController{
 
          if (response.statusCode == 201) {
             Get.snackbar('Canje Exitosa', 'El canje ha sido registrado');
-            Get.offNamedUntil('/home', (route) => false, arguments: {'index': 1});
+            Get.offNamedUntil('/home', (route) => false, arguments: {'index': 0});
          } else if (response.statusCode == 400) {
             Get.snackbar('Error', 'Es posible que el cajero esté asignado');
          } else {

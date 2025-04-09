@@ -25,6 +25,7 @@ class EditarTransaccionController extends GetxController{
   TextEditingController Moneda10RecibeController = TextEditingController();
   TextEditingController Moneda5RecibeController = TextEditingController();
   TextEditingController Moneda1RecibeController = TextEditingController();
+
   TextEditingController billetes1RecibeController = TextEditingController();
   TextEditingController billetes10EntregaController = TextEditingController();
   TextEditingController billetes5EntregaController = TextEditingController();
