@@ -7,7 +7,7 @@ import 'package:http/http.dart' as http;
 import '../../../models/movimiento.dart';
 import '../../../models/usuario.dart';
 
-Future<Uint8List> pdfLiquidacion(Usuario usuario, List<Movimiento> movimientos) async {
+Future<Uint8List> pdfLiquidacion(List<Movimiento> movimientos) async {
   final pdf = pw.Document();
 
   final logo = pw.MemoryImage(
@@ -39,7 +39,7 @@ Future<Uint8List> pdfLiquidacion(Usuario usuario, List<Movimiento> movimientos) 
   final totalApertura = ((int.tryParse(apertura.entrega10D ?? '0') ?? 0) * 10) +
       ((int.tryParse(apertura.entrega5D ?? '0') ?? 0) * 5) +
       ((int.tryParse(apertura.entrega1D ?? '0') ?? 0) * 1);
-  final fechaLiquidacion = formatDate(DateTime.parse(liquidacion.fecha??'0'), [dd, '/', mm, '/', yyyy,]);
+  final fechaLiquidacion = formatDate(DateTime.parse(apertura.fecha??'0'), [dd, '/', mm, '/', yyyy,]);
 
 
   final totalRecibido =

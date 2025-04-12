@@ -15,8 +15,8 @@ class ReporteLiquidacion extends StatelessWidget {
   Usuario? usuario;
   List<Movimiento>? movimientos;
 
-  ReporteLiquidacion({@required this.usuario,@required this.movimientos}){
-    reporteLiquidacionController=Get.put(ReporteLiquidacionController(usuario!,movimientos!));
+  ReporteLiquidacion({@required this.movimientos}){
+    reporteLiquidacionController=Get.put(ReporteLiquidacionController(movimientos!));
   }
 
   @override
@@ -38,7 +38,7 @@ class ReporteLiquidacion extends StatelessWidget {
         maxScale: 4,
         child: PdfPreview(
           loadingWidget: const CupertinoActivityIndicator(),
-          build: (context) => pdfLiquidacion(usuario!,movimientos!),
+          build: (context) => pdfLiquidacion(movimientos!),
         ),
       ),
 

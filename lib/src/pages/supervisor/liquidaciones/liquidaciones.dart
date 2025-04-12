@@ -175,33 +175,12 @@ class LiquidacionesPage extends StatelessWidget {
           children: [
             Expanded(
               child: _inputField(
-                label: '\$2',
-                assetIcon: 'assets/img/billete.png',
-                controller: liquidacionesController.billetes2Controller,
-              ),
-            ),
-            SizedBox(width: 2),
-            Expanded(
-              child: _inputField(
-                label: '\$1',
-                assetIcon: 'assets/img/billete.png',
-                controller: liquidacionesController.billetes1Controller,
-              ),
-            ),
-            SizedBox(width: 2),
-            Expanded(
-              child: _inputField(
                 label: '\$1',
                 assetIcon: 'assets/img/moneda.png',
                 controller: liquidacionesController.moneda1dController,
               ),
-            ),
-          ],
-        ),
-        SizedBox(height: 8), // Espaciado vertical entre filas
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
+            ),            SizedBox(width: 2),
+
             Expanded(
               child: _inputField(
                 label: ' 50C',
@@ -217,21 +196,20 @@ class LiquidacionesPage extends StatelessWidget {
                 controller: liquidacionesController.Moneda25Controller,
               ),
             ),
-            SizedBox(width: 2),
+          ],
+        ),
+        SizedBox(height: 8), // Espaciado vertical entre filas
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
             Expanded(
               child: _inputField(
                 label: ' 10C',
                 assetIcon: 'assets/img/moneda.png',
                 controller: liquidacionesController.Moneda10Controller,
               ),
-            ),
-          ],
-        ),
+            ),            SizedBox(width: 2),
 
-        SizedBox(height: 8), // Espaciado vertical entre filas
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
             Expanded(
               child: _inputField(
                 label: ' 5 C',
@@ -239,7 +217,7 @@ class LiquidacionesPage extends StatelessWidget {
                 controller: liquidacionesController.Moneda5Controller,
               ),
             ),
-            SizedBox(width: 10), // Espaciado horizontal entre columnas
+            SizedBox(width: 2), // Espaciado horizontal entre columnas
             Expanded(
               child: _inputField(
                 label: ' 1 C',
@@ -249,6 +227,7 @@ class LiquidacionesPage extends StatelessWidget {
             ),
           ],
         ),
+
       ],
     );
   }

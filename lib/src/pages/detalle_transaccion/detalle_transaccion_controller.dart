@@ -7,6 +7,7 @@ import 'package:get_storage/get_storage.dart';
 import '../../models/movimiento.dart';
 import '../../models/usuario.dart';
 import '../reportes/liquidacion_cajero/reporte_liquidacion.dart';
+import '../supervisor/faltante/faltante.dart';
 
 class DetalleTransaccionController extends GetxController{
 
@@ -29,6 +30,16 @@ class DetalleTransaccionController extends GetxController{
 
   }
 
+  void goToFaltantes(String idturno,int bandera) async{
+
+    List<Movimiento>? movimientos;
+    var result = await movimientoProvider.getMovimientoByTurno(idturno??''); //cambiar getApertura
+    movimientos = result;
+    Get.to(
+          () => FaltantesPage(movimientos: movimientos, bandera: bandera), // Página a la que navegas
+    );
+
+  }
 
   void goToReportes(String idturno) async{
     List<Movimiento>? movimientos;
@@ -36,7 +47,7 @@ class DetalleTransaccionController extends GetxController{
     var result = await movimientoProvider.getMovimientoByTurno(idturno); //cambiar getApertura
     movimientos = result;
     Get.to(
-          () => ReporteLiquidacion(usuario: usuarioSession,movimientos: movimientos), // Página a la que navegas
+          () => ReporteLiquidacion(movimientos: movimientos), // Página a la que navegas
       arguments: usuarioSession, // Envía el objeto Usuario como argumento
     );
 

@@ -52,15 +52,16 @@ class FaltanteController extends GetxController{
   late String idmovimiento;
 
 
-  FaltanteController(Usuario usuario,List<Movimiento> movimientos,int bandera) {
+  FaltanteController(List<Movimiento> movimientos,int bandera) {
     this.usuario=usuario;
     this.movimientos=movimientos;
     this.bandera=bandera;
 
     final liquidacion1 = movimientos.firstWhere((m) => m.idTipoMovimiento == '4', orElse: () => Movimiento());
     final faltante =  movimientos.firstWhere((m) => m.idTipoMovimiento == '6', orElse: () => Movimiento());
-    String formattedFechaHoy=DateFormat('ddMMyyyy').format(DateTime.now());
-    pdt='${usuario.via??'0'}$formattedFechaHoy';
+    final apertura= movimientos.firstWhere((m)=> m.idTipoMovimiento=='1', orElse: () => Movimiento());
+    String formattedFechaHoy=DateFormat('ddMMyyyy').format(DateTime.parse(apertura.fecha??''));
+    pdt='${apertura.via??'0'}$formattedFechaHoy';
 
 
 
@@ -95,9 +96,10 @@ class FaltanteController extends GetxController{
 
 
 
-  void actualizarLiquidacion(BuildContext context, Usuario usuario, List<Movimiento> movimientos) async {
+  void actualizarLiquidacion(BuildContext context,List<Movimiento> movimientos) async {
 
     final liquidacion = movimientos.firstWhere((m) => m.idTipoMovimiento == '4', orElse: () => Movimiento());
+    final primerMovimiento= movimientos.firstWhere((m)=> m.idTipoMovimiento=='1', orElse: () => Movimiento());
 
     try {
 
@@ -139,12 +141,12 @@ class FaltanteController extends GetxController{
 
       // Crear el objeto Movimiento
       Movimiento movimiento = Movimiento(
-          turno: usuario.turno,
-          idturno: usuario.idTurno,
+          turno: primerMovimiento.turno,
+          idturno: primerMovimiento.idturno,
           idSupervisor: usuarioSession.id,
-          idCajero: usuario.id,
+          idCajero: primerMovimiento.idCajero,
           idTipoMovimiento: '6',
-          via: usuario.via,
+          via: primerMovimiento.via,
           idPeaje: usuarioSession.idPeaje,
           recibe1C: '0',
           partetrabajo: '0',
@@ -183,12 +185,12 @@ class FaltanteController extends GetxController{
       );
 
       Movimiento movimiento3 = Movimiento(
-          turno: usuario.turno,
-          idturno: usuario.idTurno,
+          turno: primerMovimiento.turno,
+          idturno: primerMovimiento.idturno,
           idSupervisor: usuarioSession.id,
-          idCajero: usuario.id,
+          idCajero: primerMovimiento.idCajero,
           idTipoMovimiento: '4',
-          via: usuario.via,
+          via: primerMovimiento.via,
           idPeaje: usuarioSession.idPeaje,
           partetrabajo: partetrabajo,
           recibe1C: '0',
@@ -217,12 +219,12 @@ class FaltanteController extends GetxController{
 
       Movimiento movimiento4 = Movimiento(
           id:idmovimiento,
-          turno: usuario.turno,
-          idturno: usuario.idTurno,
+          turno: primerMovimiento.turno,
+          idturno: primerMovimiento.idturno,
           idSupervisor: usuarioSession.id,
-          idCajero: usuario.id,
+          idCajero: primerMovimiento.idCajero,
           idTipoMovimiento: '6',
-          via: usuario.via,
+          via: primerMovimiento.via,
           idPeaje: usuarioSession.idPeaje,
           recibe1C: '0',
           partetrabajo: '0',
@@ -274,10 +276,10 @@ class FaltanteController extends GetxController{
           if(responseApi.success==true && response.statusCode == 201){
 
             Get.snackbar('Liquidacion existosa', 'La liquidacion ha sido actualizada se añadio el faltante');
-            var result = await movimientoProvider.getMovimientoByTurno(usuario.idTurno??''); //cambiar getApertura
+            var result = await movimientoProvider.getMovimientoByTurno(primerMovimiento.idturno??''); //cambiar getApertura
             movimientos = result;
             Get.off(
-                  () => ReporteLiquidacion(usuario: usuario,movimientos: movimientos), // Página a la que navegas
+                  () => ReporteLiquidacion(movimientos: movimientos), // Página a la que navegas
               arguments: usuario,
             );
           }else{
@@ -291,7 +293,7 @@ class FaltanteController extends GetxController{
           if(responseApi.success==true && responseapi2.success==true){
 
             Get.snackbar('Liquidacion existosa', 'La liquidacion ha sido modificada');
-            var result = await movimientoProvider.getMovimientoByTurno(usuario.idTurno??''); //cambiar getApertura
+            var result = await movimientoProvider.getMovimientoByTurno(primerMovimiento.idturno??''); //cambiar getApertura
             movimientos = result;
             Get.offNamedUntil('/home', (route) => false, arguments: {'index': 2});
           }else{
@@ -309,11 +311,11 @@ class FaltanteController extends GetxController{
         if(responseApi.success==true){
 
 
-          Get.snackbar('Liquidacion existosa', 'La liquidacion ha sido actualizada');
-          var result = await movimientoProvider.getMovimientoByTurno(usuario.idTurno??''); //cambiar getApertura
+          Get.snackbar('Liquidacion existosa', 'La liquidacion ha sido actualizada ${movimiento2.sobrante}');
+          var result = await movimientoProvider.getMovimientoByTurno(primerMovimiento.idturno??''); //cambiar getApertura
           movimientos = result;
           Get.off(
-                () => ReporteLiquidacion(usuario: usuario,movimientos: movimientos), // Página a la que navegas
+                () => ReporteLiquidacion(movimientos: movimientos), // Página a la que navegas
             arguments: usuario, // Envía el objeto Usuario como argumento
           );
 

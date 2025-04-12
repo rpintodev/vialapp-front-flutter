@@ -20,71 +20,79 @@ class AsignacionPage extends StatelessWidget {
             flexibleSpace: Container(
               margin: EdgeInsets.only(bottom: 10),
               alignment: Alignment.center,
-              child: Wrap(
-                direction: Axis.horizontal,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
                     'Asignación de Turnos',
                     style: TextStyle(
-                      fontSize: 24, // Tamaño del texto
-                      fontWeight: FontWeight.bold, // Peso del texto
-                      color: Colors.black, // Color del texto
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
                     ),
+                  ),
+                  SizedBox(width: 10),
+                  IconButton(
+                    onPressed: () {
+                      asignacionController.getEstados(); // método para recargar, o llama getUsuarios si prefieres
+                    },
+                    icon: Icon(Icons.refresh, color: Colors.black),
+                    tooltip: 'Recargar',
                   ),
                 ],
               ),
             ),
             bottom: TabBar(
-                  tabAlignment: TabAlignment.center,
-                  isScrollable: true, // Permite desplazamiento
-                  indicatorColor: Color(0xFF368983), // Color del indicador
-                  labelColor: Colors.black, // Color de las etiquetas seleccionadas
-                  unselectedLabelColor: Colors.grey[400], // Color de las etiquetas no seleccionadas
-                  tabs: List<Widget>.generate(
-                    asignacionController.estados.length,
-                        (index) {
-                      return Tab(
-                        child: Text(
-                          asignacionController.estados[index].nombre ?? ' ',
-                        ),
-                      );
-                    },
-                  ),
-                ),
+              tabAlignment: TabAlignment.center,
+              isScrollable: true, // Permite desplazamiento
+              indicatorColor: Color(0xFF368983), // Color del indicador
+              labelColor: Colors.black, // Color de las etiquetas seleccionadas
+              unselectedLabelColor: Colors.grey[400], // Color de las etiquetas no seleccionadas
+              tabs: List<Widget>.generate(
+                asignacionController.estados.length,
+                    (index) {
+                  return Tab(
+                    child: Text(
+                      asignacionController.estados[index].nombre ?? ' ',
+                    ),
+                  );
+                },
               ),
+            ),
+          ),
 
         ),
         body:  RefreshIndicator(
           onRefresh: _pullToRefresh,
           child: TabBarView(
-          children: List<Widget>.generate(4, (index2) {
-            return FutureBuilder(
-              future: asignacionController
-                  .getUsuarios((index2 + 1).toString(),asignacionController.usuario.idPeaje??'1'), // Cambia para manejar los grupos
-              builder: (context, AsyncSnapshot<List<Usuario>> snapshot) {
-                if (snapshot.hasData) {
-                  return ListView.builder(
-                    physics: AlwaysScrollableScrollPhysics(),
-                    itemCount: snapshot.data?.length ?? 0,
-                    itemBuilder: (_, index) {
-                      return _cardUsuario(
-                          context, snapshot.data![index], index2); // Pasamos el índice de la tarjeta aquí
-                    },
-                  );
-                } else {
-                  return Container();
-                }
-              },
-            );
-          }),
-        ),
-      ),),
+            children: List<Widget>.generate(asignacionController.estados.length, (index2) {
+              return FutureBuilder(
+                future: asignacionController
+                    .getUsuarios((index2 + 1).toString(),asignacionController.usuario.idPeaje??'1'), // Cambia para manejar los grupos
+                builder: (context, AsyncSnapshot<List<Usuario>> snapshot) {
+                  if (snapshot.hasData) {
+                    return ListView.builder(
+                      physics: AlwaysScrollableScrollPhysics(),
+                      itemCount: snapshot.data?.length ?? 0,
+                      itemBuilder: (_, index) {
+                        return _cardUsuario(
+                            context, snapshot.data![index], index2); // Pasamos el índice de la tarjeta aquí
+                      },
+                    );
+                  } else {
+                    return Container();
+                  }
+                },
+              );
+            }),
+          ),
+        ),),
     ));
   }
 
 
   Future<void> _pullToRefresh() async {
-     asignacionController.getUsuarios(
+    asignacionController.getUsuarios(
         "1", asignacionController.usuario.idPeaje ?? '1');
   }
 
@@ -98,10 +106,9 @@ class AsignacionPage extends StatelessWidget {
         if (snapshot.connectionState == ConnectionState.waiting) {
           aperturaEstado = "Cargando...";
         } else if (snapshot.hasData) {
-          final movimiento = snapshot.data!;
+          Movimiento movimiento = snapshot.data!;
           aperturaEstado = _validarApertura(movimiento);
         }
-
         return GestureDetector(
           onTap: () => cardIndex == 2
               ? asignacionController.openBottomSheetLiquidacion(context, usuario.idTurno ?? '0',0)
@@ -124,14 +131,14 @@ class AsignacionPage extends StatelessWidget {
                 contentPadding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                 leading: ClipRRect(
                   borderRadius: BorderRadius.circular(8.0),
-                  child: FadeInImage(
-                    image: usuario.imagen != null
-                        ? NetworkImage(usuario.imagen!)
-                        : AssetImage('assets/img/no-image.png') as ImageProvider,
+                  child: FadeInImage.assetNetwork(
+                    placeholder: 'assets/img/no-image.png',
+                    image: usuario.imagen ?? '',
                     fit: BoxFit.cover,
-                    fadeOutDuration: Duration(milliseconds: 50),
-                    placeholder: AssetImage('assets/img/no-image.png'),
-                  ),
+                    imageErrorBuilder: (context, error, stackTrace) {
+                      return Image.asset('assets/img/no-image.png');
+                    },
+                  )
                 ),
                 title: Text(
                   '${usuario.nombre} ${usuario.apellido}' ?? '',
@@ -180,7 +187,7 @@ class AsignacionPage extends StatelessWidget {
                     size: 16.0,
                   ),
                   itemBuilder: (BuildContext context) {
-                    return _getOptionsForCard(context, cardIndex, usuario, usuario.id ?? '1', usuario.idTurno ?? '1');
+                    return _getOptionsForCard(context, cardIndex, usuario, usuario.id ?? '1', usuario.idTurno ?? '1',aperturaEstado);
                   },
                 ),
               ),
@@ -193,20 +200,16 @@ class AsignacionPage extends StatelessWidget {
 
 
 
-  List<PopupMenuEntry<String>> _getOptionsForCard(BuildContext context, int cardIndex, Usuario usuario, String idCajero,String idTurno) {
-  asignacionController.getApertura(usuario.idTurno??'');
-  asignacionController.getFaltante(usuario.idTurno??'');
-  // Obtén la apertura individualmente
-
-  // Valida el estado de apertura
-  String aperturaEstado = "Cargando...";
-  if (asignacionController.movimiento != null) {
-    aperturaEstado = _validarApertura(asignacionController.movimiento);
-  }
+  List<PopupMenuEntry<String>> _getOptionsForCard(BuildContext context, int cardIndex, Usuario usuario, String idCajero,String idTurno, String aperturaEstado) {
+    asignacionController.getApertura(usuario.idTurno??'');
+    asignacionController.getFaltante(usuario.idTurno??'');
+    // Obtén la apertura individualmente
+    // Valida el estado de apertura
 
 
+    print("Apertura estado ${aperturaEstado}");
 
-  switch (cardIndex) {
+    switch (cardIndex) {
       case 0:
         return [
           PopupMenuItem<String>(
@@ -243,7 +246,7 @@ class AsignacionPage extends StatelessWidget {
               ],
             ),
             onTap: () {
-                asignacionController.goToRetiroApertura(usuario, asignacionController.movimiento);
+              asignacionController.goToRetiroApertura(usuario, asignacionController.movimiento);
 
             },
           ),
@@ -273,7 +276,7 @@ class AsignacionPage extends StatelessWidget {
 
             onTap:() =>
             asignacionController.faltante.partetrabajo== null ?
-                asignacionController.goToFaltantes(usuario,1):Get.dialog(
+            asignacionController.goToFaltantes(usuario,1):Get.dialog(
               AlertDialog(
                 title: Text("Parte de Trabajo registrado!"),
                 content: Text("Ya se ha registrado el parte de trabajo"),
@@ -298,7 +301,28 @@ class AsignacionPage extends StatelessWidget {
                 Text("Liquidacion temprana"),
               ],
             ),
-            onTap:() => asignacionController.goToLiquidaciones(usuario),
+            onTap:() => aperturaEstado == "Apertura Completa" ?
+            asignacionController.goToLiquidaciones(usuario):
+            Get.dialog(
+              AlertDialog(
+                title: Text("Apertura Incompleta!"),
+                content: Text("No se ha retirado la apertura de ${usuario.nombre} ${usuario.apellido}"),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Get.back(); // Cierra el diálogo
+                    },
+                    child: Text("Regresar"),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      asignacionController.goToRetiroApertura(usuario, asignacionController.movimiento); // Cierra el diálogo
+                    },
+                    child: Text("Retirar apertura"),
+                  ),
+                ],
+              ),
+            ),
 
           ),
         ];
@@ -347,7 +371,28 @@ class AsignacionPage extends StatelessWidget {
                 Text("Liquidacion"),
               ],
             ),
-            onTap:() => asignacionController.goToLiquidaciones(usuario),
+            onTap:() => aperturaEstado == "Apertura Completa" ?
+            asignacionController.goToLiquidaciones(usuario):
+            Get.dialog(
+              AlertDialog(
+                title: Text("Apertura Incompleta!"),
+                content: Text("No se ha retirado la apertura de ${usuario.nombre} ${usuario.apellido}"),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Get.back(); // Cierra el diálogo
+                    },
+                    child: Text("Regresar"),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      asignacionController.goToRetiroApertura(usuario, asignacionController.movimiento); // Cierra el diálogo
+                    },
+                    child: Text("Retirar apertura"),
+                  ),
+                ],
+              ),
+            ),
 
           ),
           PopupMenuItem<String>(
@@ -369,7 +414,7 @@ class AsignacionPage extends StatelessWidget {
               children: [
                 Icon(Icons.arrow_back_ios, color: Colors.blue),
                 SizedBox(width: 10),
-                Text("Enviar a Turno"),
+                Text("Enviar a Turno $aperturaEstado"),
               ],
             ),
             onTap: () {
@@ -389,12 +434,38 @@ class AsignacionPage extends StatelessWidget {
                 Text("Eliminar"),
               ],
             ),
-            onTap: () {
-              // Mostrar el cuadro de diálogo de confirmación
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                _showDeleteConfirmationDialog(context, usuario);
-              });
-            },
+            onTap: () =>
+
+            aperturaEstado == "Sin Apertura"  ?
+            // Mostrar el cuadro de diálogo de confirmación
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+            _showDeleteConfirmationDialog(context, usuario);
+            }):
+            Get.dialog(
+              AlertDialog(
+                title: Text("Apertura Incompleta!"),
+                content: Text("No se ha retirado la apertura de ${usuario.nombre} ${usuario.apellido}"),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Get.back(); // Cierra el diálogo
+                    },
+                    child: Text("Regresar"),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      asignacionController.goToRetiroApertura(usuario, asignacionController.movimiento); // Cierra el diálogo
+                    },
+                    child: Text("Retirar apertura"),
+                  ),
+                ],
+              ),
+            ),
+
+
+
+
+
 
           ),
         ];
@@ -410,7 +481,7 @@ class AsignacionPage extends StatelessWidget {
               ],
             ),
             onTap: () {
-                asignacionController.goToFaltantes(usuario,0);
+              asignacionController.goToFaltantes(usuario,0);
             },
 
 
@@ -441,9 +512,9 @@ class AsignacionPage extends StatelessWidget {
 
     final totalRecibido =
         (int.tryParse(movimiento.recibe20D ?? '0') ?? 0) * 20+
-        (int.tryParse(movimiento.recibe10D ?? '0') ?? 0) * 10+
-        (int.tryParse(movimiento.recibe5D ?? '0') ?? 0) * 5+
-        (int.tryParse(movimiento.recibe1D ?? '0') ?? 0) * 1;
+            (int.tryParse(movimiento.recibe10D ?? '0') ?? 0) * 10+
+            (int.tryParse(movimiento.recibe5D ?? '0') ?? 0) * 5+
+            (int.tryParse(movimiento.recibe1D ?? '0') ?? 0) * 1;
 
     return ( totalEntregado-totalRecibido) == 0
         ? "Apertura Completa"

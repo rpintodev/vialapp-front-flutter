@@ -9,12 +9,11 @@ class FaltantesPage extends StatelessWidget {
 
   late FaltanteController faltanteController;
 
-  Usuario? usuario;
   List<Movimiento>? movimientos;
   int? bandera;
 
-  FaltantesPage({@required this.usuario,@required this.movimientos,@required this.bandera}){
-    faltanteController=Get.put(FaltanteController(usuario!,movimientos!,bandera!));
+  FaltantesPage({@required this.movimientos,@required this.bandera}){
+    faltanteController=Get.put(FaltanteController(movimientos!,bandera!));
     print('bandera $bandera');
   }
 
@@ -470,7 +469,7 @@ class FaltantesPage extends StatelessWidget {
               ),
               onPressed: () {
                 Navigator.of(context).pop(); // Cierra el cuadro de diálogo
-                faltanteController.actualizarLiquidacion(context, usuario!, movimientos!);
+                faltanteController.actualizarLiquidacion(context,movimientos!);
               },
               child: Text("Guardar"),
             ),
@@ -524,7 +523,7 @@ class FaltantesPage extends StatelessWidget {
           Center(
             child: ElevatedButton(
               onPressed: () {
-                faltanteController.actualizarLiquidacion(context, usuario!, movimientos!);
+                faltanteController.actualizarLiquidacion(context, movimientos!);
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF368983),

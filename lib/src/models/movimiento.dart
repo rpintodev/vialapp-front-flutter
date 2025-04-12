@@ -3,6 +3,7 @@
 //     final movimiento = movimientoFromJson(jsonString);
 
 import 'dart:convert';
+import 'dart:ffi';
 
 Movimiento movimientoFromJson(String str) => Movimiento.fromJson(json.decode(str));
 

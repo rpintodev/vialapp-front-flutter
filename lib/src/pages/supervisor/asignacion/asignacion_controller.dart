@@ -29,6 +29,9 @@ class AsignacionController extends GetxController{
   TurnoProvider turnoProvider=TurnoProvider();
   List<Estado> estados= <Estado>[].obs;
 
+
+
+
   Movimiento movimiento=Movimiento();
   Movimiento faltante=Movimiento();
 
@@ -38,7 +41,10 @@ class AsignacionController extends GetxController{
 
   }
 
-
+/*
+  void refresh() {
+    getEstados();
+  }*/
 
   void clearMovimiento() {
     movimiento = Movimiento();
@@ -120,7 +126,7 @@ class AsignacionController extends GetxController{
     var result = await movimientoProvider.getMovimientoByTurno(usuario.idTurno??''); //cambiar getApertura
     movimientos = result;
     Get.to(
-          () => ReporteLiquidacion(usuario: usuario,movimientos: movimientos), // Página a la que navegas
+          () => ReporteLiquidacion(movimientos: movimientos), // Página a la que navegas
       arguments: usuario, // Envía el objeto Usuario como argumento
     );
 
@@ -132,13 +138,11 @@ class AsignacionController extends GetxController{
     var result = await movimientoProvider.getMovimientoByTurno(usuario.idTurno??''); //cambiar getApertura
     movimientos = result;
     Get.to(
-          () => FaltantesPage(usuario: usuario,movimientos: movimientos, bandera: bandera), // Página a la que navegas
+          () => FaltantesPage(movimientos: movimientos, bandera: bandera), // Página a la que navegas
       arguments: usuario, // Envía el objeto Usuario como argumento
     );
 
   }
-
-
 
 
   void getEstados() async{
@@ -209,10 +213,7 @@ class AsignacionController extends GetxController{
     List<Movimiento> movimientos = [];
 
       var result2 = await movimientoProvider.getMovimientoByTurno(idturno);
-      var result = await movimientoProvider.getRetirosParciales(idturno);
     movimientos.addAll(result2);
-
-    movimientos.addAll(result);
 
       showBarModalBottomSheet(
         context: context,

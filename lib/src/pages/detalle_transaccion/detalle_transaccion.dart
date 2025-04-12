@@ -190,6 +190,7 @@ class DetalleTransaccion extends StatelessWidget {
 
   /// Construye los detalles dinámicos según el tipo de movimiento
   Widget _buildDetails() {
+    print("Movimiento id ${movimientos?.first.idTipoMovimiento}");
     switch (int.parse(movimientos?.first.idTipoMovimiento??'1')) {
       case 1: // Apertura
         return _buildAperturaDetails();
@@ -201,6 +202,8 @@ class DetalleTransaccion extends StatelessWidget {
         return _buildLiquidacionDetails();
       case 5: // Fortius
         return _buildFortiusDetails();
+      case 6: // Fortius
+        return _buildLiquidacionDetails();
       case 7: // Fortius
         return _buildTagDetails();
       default:
@@ -352,17 +355,19 @@ class DetalleTransaccion extends StatelessWidget {
 
   Widget _buildLiquidacionDetails() {
     // Calcula el total de la liquidación actual
-    final totalRecibido = (int.parse(movimientos?.first.recibe20D ?? '0') * 20) +
-        (int.parse(movimientos?.first.recibe10D ?? '0') * 10) +
-        (int.parse(movimientos?.first.recibe5D ?? '0') * 5) +
-        (int.parse(movimientos?.first.recibe1D ?? '0') * 1) +
-        (int.parse(movimientos?.first.recibe1DB ?? '0') * 1) +
-        (int.parse(movimientos?.first.recibe2D ?? '0') * 2) +
-        (int.parse(movimientos?.first.recibe50C ?? '0') * 0.5).toDouble() +
-        (int.parse(movimientos?.first.recibe25C ?? '0') * 0.25).toDouble() +
-        (int.parse(movimientos?.first.recibe10C ?? '0') * 0.1).toDouble() +
-        (int.parse(movimientos?.first.recibe5C ?? '0') * 0.05).toDouble() +
-        (int.parse(movimientos?.first.recibe1C ?? '0') * 0.01).toDouble();
+
+    final liquidacion=movimientos?.firstWhere((m)=> m.idTipoMovimiento=='4');
+    final totalRecibido = (int.parse(liquidacion?.recibe20D ?? '0') * 20) +
+        (int.parse(liquidacion?.recibe10D ?? '0') * 10) +
+        (int.parse(liquidacion?.recibe5D ?? '0') * 5) +
+        (int.parse(liquidacion?.recibe1D ?? '0') * 1) +
+        (int.parse(liquidacion?.recibe1DB ?? '0') * 1) +
+        (int.parse(liquidacion?.recibe2D ?? '0') * 2) +
+        (int.parse(liquidacion?.recibe50C ?? '0') * 0.5).toDouble() +
+        (int.parse(liquidacion?.recibe25C ?? '0') * 0.25).toDouble() +
+        (int.parse(liquidacion?.recibe10C ?? '0') * 0.1).toDouble() +
+        (int.parse(liquidacion?.recibe5C ?? '0') * 0.05).toDouble() +
+        (int.parse(liquidacion?.recibe1C ?? '0') * 0.01).toDouble();
 
     // Calcula el total de los retiros parciales relacionados
 
@@ -408,7 +413,7 @@ class DetalleTransaccion extends StatelessWidget {
         SizedBox(height: 12),
         _confirmButton(movimientos?.first.idturno??'0'),
         SizedBox(height: 10),
-        _canjeBottom(movimientos?.first.idturno??'0'),
+        _canjeBottom(movimientos?.first.idturno??''),
       ],
     );
   }
@@ -531,7 +536,7 @@ class DetalleTransaccion extends StatelessWidget {
     return Center(
       child: ElevatedButton(
         onPressed: () {
-          detalleTransaccionController.goToReporteCaneje(idturno);
+          detalleTransaccionController.goToFaltantes(idturno,0);
         },
         style: ElevatedButton.styleFrom(
           backgroundColor: Color(0xFF368983),
@@ -541,7 +546,7 @@ class DetalleTransaccion extends StatelessWidget {
           ),
         ),
         child: Text(
-          'Reporte de Canjes',
+          'Agregar Faltantes/Sobrantes',
           style: TextStyle(
             color: Colors.white,
             fontSize: 16,

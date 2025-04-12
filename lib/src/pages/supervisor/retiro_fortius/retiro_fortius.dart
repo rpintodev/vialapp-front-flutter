@@ -217,7 +217,7 @@ class RetiroFortiusPage extends StatelessWidget {
           ),
         ),
         child: Text(
-          'Confirmar Retiro',
+          'Confirmar Deposito',
           style: TextStyle(
             color: Colors.white,
             fontSize: 16,

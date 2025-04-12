@@ -8,11 +8,9 @@ class ReporteLiquidacionController extends GetxController{
 
   Usuario usuarioSession = Usuario.fromJson(GetStorage().read('usuario')??{});
 
-  Usuario? usuario;
   List<Movimiento>? movimientos;
 
-  ReporteLiquidacionController(Usuario usuario,List<Movimiento> movimientos) {
-    this.usuario=usuario;
+  ReporteLiquidacionController(List<Movimiento> movimientos) {
     this.movimientos=movimientos;
   }
 }

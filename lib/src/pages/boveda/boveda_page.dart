@@ -366,18 +366,6 @@ class BovedaPage extends StatelessWidget {
         "icon": 'assets/img/billete.png'
       },
       {
-        "label": "\$2",
-        "cantidad": int.tryParse(boveda.billete2 ?? "0") ?? 0,
-        "valor": numberFormat.format((int.tryParse(boveda.billete2 ?? "0") ?? 0) * 2.0),
-        "icon": 'assets/img/billete.png'
-      },
-      {
-        "label": "\$1",
-        "cantidad": int.tryParse(boveda.billete1 ?? "0") ?? 0,
-        "valor": numberFormat.format((int.tryParse(boveda.billete1 ?? "0") ?? 0) * 1.0),
-        "icon": 'assets/img/billete.png'
-      },
-      {
         "label": "\$1",
         "cantidad": int.tryParse(boveda.moneda1 ?? "0") ?? 0,
         "valor": numberFormat.format((int.tryParse(boveda.moneda1 ?? "0") ?? 0) * 1.0),
