@@ -18,6 +18,13 @@ Future<Uint8List> pdfLiquidacion(List<Movimiento> movimientos) async {
   final retirosParciales = movimientos.where((m) => m.idTipoMovimiento == '2').toList();
   final apertura = movimientos.firstWhere((m) => m.idTipoMovimiento == '1', orElse: () => Movimiento());
 
+  final canjes = movimientos.where((m) => m.idTipoMovimiento == '3').toList();
+  if (canjes.length <= 1) {
+    final canjes=[];
+  }
+
+  final primerCanje = movimientos.firstWhere((m) => m.idTipoMovimiento == '3',orElse: () => Movimiento());
+
 
   // Detalle de la última entrega de valores
   final liquidacion = movimientos.firstWhere((m) => m.idTipoMovimiento == '4', orElse: () => Movimiento());
@@ -39,7 +46,10 @@ Future<Uint8List> pdfLiquidacion(List<Movimiento> movimientos) async {
   final totalApertura = ((int.tryParse(apertura.entrega10D ?? '0') ?? 0) * 10) +
       ((int.tryParse(apertura.entrega5D ?? '0') ?? 0) * 5) +
       ((int.tryParse(apertura.entrega1D ?? '0') ?? 0) * 1);
-  final fechaLiquidacion = formatDate(DateTime.parse(apertura.fecha??'0'), [dd, '/', mm, '/', yyyy,]);
+
+  final totalPrimerCanje = ((int.tryParse(primerCanje.entrega10D ?? '0') ?? 0) * 10) +
+      ((int.tryParse(primerCanje.entrega5D ?? '0') ?? 0) * 5) +
+      ((int.tryParse(primerCanje.entrega1D ?? '0') ?? 0) * 1);
 
 
   final totalRecibido =
@@ -74,13 +84,13 @@ Future<Uint8List> pdfLiquidacion(List<Movimiento> movimientos) async {
                 // Header: Logo y nombre del peaje
                 pw.Row(
                   children: [
-                pw.Column(
-                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                  children: [
-                    pw.Image(logo, width: 60, height: 40),
-                    pw.Text("Peaje ${liquidacion.idPeaje == null ? 'Desconocido' : (liquidacion.idPeaje == '1' ? 'Congoma' : 'Los Angeles')}", style: pw.TextStyle(fontSize: 10)),
-                  ],
-                ),pw.SizedBox(width: 50),
+                    pw.Column(
+                      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                      children: [
+                        pw.Image(logo, width: 60, height: 40),
+                        pw.Text("Peaje ${liquidacion.idPeaje == null ? 'Desconocido' : (liquidacion.idPeaje == '1' ? 'Congoma' : 'Los Angeles')}", style: pw.TextStyle(fontSize: 10)),
+                      ],
+                    ),pw.SizedBox(width: 50),
                     pw.Text('COMPROBANTE DE APERTURA, RENDICIÓN DE CAJA Y \n REGISTRO DE INCIDENCIAS', style: pw.TextStyle(fontSize: 10), textAlign: pw.TextAlign.center),
 
                   ],
@@ -102,7 +112,7 @@ Future<Uint8List> pdfLiquidacion(List<Movimiento> movimientos) async {
                     pw.TableRow(children: [
 
                       pw.Container(color: PdfColors.blue50,padding: pw.EdgeInsets.all(3),child: pw.Text("Fecha", style: pw.TextStyle(fontSize: 8)),),
-                      pw.Padding(padding: pw.EdgeInsets.all(3), child: pw.Text(fechaLiquidacion, style: pw.TextStyle(fontSize: 8))),
+                      pw.Padding(padding: pw.EdgeInsets.all(3), child: pw.Text(formatDate(DateTime.parse(apertura.fecha??'0'), [dd, '/', mm, '/', yyyy,]), style: pw.TextStyle(fontSize: 8))),
                       pw.Container(color: PdfColors.blue50,padding: pw.EdgeInsets.all(3), child: pw.Text("Guía de Remisión", style: pw.TextStyle(fontSize: 8))),
                       pw.Padding(padding: pw.EdgeInsets.all(3), child: pw.Text(apertura.idturno??'', style: pw.TextStyle(fontSize: 8))),
                     ]),
@@ -116,7 +126,7 @@ Future<Uint8List> pdfLiquidacion(List<Movimiento> movimientos) async {
                     // Fila 3
                     pw.TableRow(children: [
                       pw.Container(color: PdfColors.blue50,padding: pw.EdgeInsets.all(3), child: pw.Text("Vía", style: pw.TextStyle(fontSize: 8))),
-                      pw.Padding(padding: pw.EdgeInsets.all(3), child: pw.Text("3", style: pw.TextStyle(fontSize: 8))),
+                      pw.Padding(padding: pw.EdgeInsets.all(3), child: pw.Text(apertura.via??'Via no asignada', style: pw.TextStyle(fontSize: 8))),
                       pw.Container(color: PdfColors.blue50,padding: pw.EdgeInsets.all(3), child: pw.Text("Nombre del Cajero", style: pw.TextStyle(fontSize: 8))),
                       pw.Padding(padding: pw.EdgeInsets.all(3), child: pw.Text(movimientos.first.nombreCajero ?? "No registrado", style: pw.TextStyle(fontSize: 8))),
                     ]),
@@ -161,9 +171,9 @@ Future<Uint8List> pdfLiquidacion(List<Movimiento> movimientos) async {
                           color: PdfColors.blue100,
                           padding: pw.EdgeInsets.all(3),
                           child: pw.Align(
-                            alignment: pw.Alignment.center,
+                              alignment: pw.Alignment.center,
 
-                            child: pw.Text("RECUADACIONES PARCIALES", style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold))
+                              child: pw.Text("RECUADACIONES PARCIALES", style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold))
                           ),
 
                         ),
@@ -231,51 +241,51 @@ Future<Uint8List> pdfLiquidacion(List<Movimiento> movimientos) async {
                   ],
                 ),
                 pw.Table(
-                columnWidths: {
-                  0: pw.FlexColumnWidth(1), // La primera columna ocupará la mitad del espacio
-                  1: pw.FlexColumnWidth(1),
-                  2: pw.FlexColumnWidth(1),
-                  3: pw.FlexColumnWidth(2),
-                  4: pw.FlexColumnWidth(3),
-                },
-                children: [
-                  pw.TableRow(
-                    children: [
-                      pw.Container(),
-                      pw.Container(
-                        decoration: pw.BoxDecoration(color: PdfColors.blue50,border: pw.Border.all()),
-                        padding: pw.EdgeInsets.all(5),
-                        child: pw.Expanded(
-                          flex: 3, // Combina la primera y segunda columna
-                          child: pw.Text("TOTAL", style: pw.TextStyle(fontSize: 8), textAlign: pw.TextAlign.center),
+                  columnWidths: {
+                    0: pw.FlexColumnWidth(1), // La primera columna ocupará la mitad del espacio
+                    1: pw.FlexColumnWidth(1),
+                    2: pw.FlexColumnWidth(1),
+                    3: pw.FlexColumnWidth(2),
+                    4: pw.FlexColumnWidth(3),
+                  },
+                  children: [
+                    pw.TableRow(
+                      children: [
+                        pw.Container(),
+                        pw.Container(
+                          decoration: pw.BoxDecoration(color: PdfColors.blue50,border: pw.Border.all()),
+                          padding: pw.EdgeInsets.all(5),
+                          child: pw.Expanded(
+                            flex: 3, // Combina la primera y segunda columna
+                            child: pw.Text("TOTAL", style: pw.TextStyle(fontSize: 8), textAlign: pw.TextAlign.center),
+                          ),
                         ),
-                      ),
 
-                      pw.Container(
-                        decoration: pw.BoxDecoration(color: PdfColors.blue50,border: pw.Border.all()),
-                        padding: pw.EdgeInsets.all(5),
-                        child: pw.Text("\$${retirosParciales.fold<double>(0, (sum, r) {
-                          double totalR = ((int.tryParse(r.recibe20D ?? '0') ?? 0) * 20) +
-                              ((int.tryParse(r.recibe10D ?? '0') ?? 0) * 10) +
-                              ((int.tryParse(r.recibe5D ?? '0') ?? 0) * 5) +
-                              ((int.tryParse(r.recibe1D ?? '0') ?? 0) * 1);
-                          return sum + totalR;
-                        }).toStringAsFixed(2)}", style: pw.TextStyle(fontSize: 8), textAlign: pw.TextAlign.center),
-                      ),
-                      pw.Padding(
-                        padding: pw.EdgeInsets.all(5),
-                        child:  pw.Container(decoration: pw.BoxDecoration(color: PdfColors.blue50,border: pw.Border(bottom: pw.BorderSide.none))),
+                        pw.Container(
+                          decoration: pw.BoxDecoration(color: PdfColors.blue50,border: pw.Border.all()),
+                          padding: pw.EdgeInsets.all(5),
+                          child: pw.Text("\$${retirosParciales.fold<double>(0, (sum, r) {
+                            double totalR = ((int.tryParse(r.recibe20D ?? '0') ?? 0) * 20) +
+                                ((int.tryParse(r.recibe10D ?? '0') ?? 0) * 10) +
+                                ((int.tryParse(r.recibe5D ?? '0') ?? 0) * 5) +
+                                ((int.tryParse(r.recibe1D ?? '0') ?? 0) * 1);
+                            return sum + totalR;
+                          }).toStringAsFixed(2)}", style: pw.TextStyle(fontSize: 8), textAlign: pw.TextAlign.center),
+                        ),
+                        pw.Padding(
+                          padding: pw.EdgeInsets.all(5),
+                          child:  pw.Container(decoration: pw.BoxDecoration(color: PdfColors.blue50,border: pw.Border(bottom: pw.BorderSide.none))),
 
-                      ),
-                      pw.Padding(
-                        padding: pw.EdgeInsets.all(5),
-                        child: pw.SizedBox(), // Quinta columna vacía
-                      ),
-                      pw.Container(),
-                      pw.Container(),
-                    ],
-                  ),
-                ],
+                        ),
+                        pw.Padding(
+                          padding: pw.EdgeInsets.all(5),
+                          child: pw.SizedBox(), // Quinta columna vacía
+                        ),
+                        pw.Container(),
+                        pw.Container(),
+                      ],
+                    ),
+                  ],
                 ),
 
 
@@ -544,7 +554,7 @@ Future<Uint8List> pdfLiquidacion(List<Movimiento> movimientos) async {
                     pw.TableRow(children: [
 
                       pw.Container(
-                        decoration: pw.BoxDecoration(border: pw.Border.all(),color: PdfColors.blue50),padding: pw.EdgeInsets.all(4),child: pw.Text("ANULACIONES", style: pw.TextStyle(fontSize: 7), textAlign: pw.TextAlign.center)),
+                          decoration: pw.BoxDecoration(border: pw.Border.all(),color: PdfColors.blue50),padding: pw.EdgeInsets.all(4),child: pw.Text("ANULACIONES", style: pw.TextStyle(fontSize: 7), textAlign: pw.TextAlign.center)),
                       pw.Container(
                           decoration: pw.BoxDecoration(border: pw.Border.all()),padding: pw.EdgeInsets.all(4), child: pw.Text(liquidacion.anulaciones??'', style: pw.TextStyle(fontSize: 7), textAlign: pw.TextAlign.center)),
                       pw.Container(
@@ -588,7 +598,7 @@ Future<Uint8List> pdfLiquidacion(List<Movimiento> movimientos) async {
                 ),
 
                 // Firmas
-                pw.SizedBox(height: 5),
+                pw.SizedBox(height: 10),
                 pw.Table(
                   columnWidths: {
                     1: pw.FlexColumnWidth(1), // La segunda columna ocupará la otra mitad
@@ -625,7 +635,209 @@ Future<Uint8List> pdfLiquidacion(List<Movimiento> movimientos) async {
                   children: [
                     pw.TableRow(children: [
                       pw.Container(
-                      decoration: pw.BoxDecoration(border: pw.Border.all()),padding: pw.EdgeInsets.all(3), child: pw.Text("Cajero", textAlign: pw.TextAlign.center,style: pw.TextStyle(fontSize: 9))),
+                          decoration: pw.BoxDecoration(border: pw.Border.all()),padding: pw.EdgeInsets.all(3), child: pw.Text("Cajero", textAlign: pw.TextAlign.center,style: pw.TextStyle(fontSize: 9))),
+                      pw.Container(
+                          decoration: pw.BoxDecoration(border: pw.Border.all()),padding: pw.EdgeInsets.all(3), child: pw.Text("Supervisor", textAlign: pw.TextAlign.center,style: pw.TextStyle(fontSize: 9))),
+                    ]),
+                    pw.TableRow(children: [
+                      pw.Padding(padding: pw.EdgeInsets.all(3), child: pw.Text("${movimientos.last.nombreCajero}", textAlign: pw.TextAlign.start,style: pw.TextStyle(fontSize: 7))),
+                      pw.Padding(padding: pw.EdgeInsets.all(3), child: pw.Text("${movimientos.last.nombreSupervisor}", textAlign: pw.TextAlign.start,style: pw.TextStyle(fontSize: 7))),
+                    ]),
+
+                  ],
+                ),
+
+              ],
+
+            );
+          }
+      )
+
+  );
+
+  pdf.addPage(
+      pw.Page(
+          pageFormat: PdfPageFormat.a4,
+          build: (context) {
+            return pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                // Header: Logo y nombre del peaje
+                pw.Row(
+                  children: [
+                    pw.Column(
+                      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                      children: [
+                        pw.Image(logo, width: 60, height: 40),
+                        pw.Text("Peaje ${liquidacion.idPeaje == null ? 'Desconocido' : (liquidacion.idPeaje == '1' ? 'Congoma' : 'Los Angeles')}", style: pw.TextStyle(fontSize: 10)),
+                      ],
+                    ),pw.SizedBox(width: 50),
+                    pw.Text('REPORTE DE CANJE Y APERTURA', style: pw.TextStyle(fontSize: 10), textAlign: pw.TextAlign.center),
+
+                  ],
+                ),
+                pw.SizedBox(height: 10),
+
+                // Tablas de la parte superior
+                // Tablas de la parte superior
+                pw.Table(
+                  border: pw.TableBorder.all(),
+                  columnWidths: {
+                    0: pw.FlexColumnWidth(1), // Primera columna
+                    1: pw.FlexColumnWidth(2), // Segunda columna
+                    2: pw.FlexColumnWidth(1), // Tercera columna
+                    3: pw.FlexColumnWidth(2), // Cuarta columna
+                  },
+                  children: [
+
+                    // Fila 1
+                    pw.TableRow(children: [
+
+                      pw.Container(color: PdfColors.blue50,padding: pw.EdgeInsets.all(3),child: pw.Text("Nombre", style: pw.TextStyle(fontSize: 8)),),
+                      pw.Padding(padding: pw.EdgeInsets.all(3), child: pw.Text(apertura.nombreCajero??'No registrado', style: pw.TextStyle(fontSize: 8))),
+                      pw.Container(color: PdfColors.blue50,padding: pw.EdgeInsets.all(3), child: pw.Text("Vía", style: pw.TextStyle(fontSize: 8))),
+                      pw.Padding(padding: pw.EdgeInsets.all(3), child: pw.Text(apertura.via??'Via no asignada', style: pw.TextStyle(fontSize: 8))),
+                    ]),
+                    // Fila 2
+
+                    // Fila 3
+                    pw.TableRow(children: [
+                      pw.Container(color: PdfColors.blue50,padding: pw.EdgeInsets.all(3),child: pw.Text("Fecha", style: pw.TextStyle(fontSize: 8)),),
+                      pw.Padding(padding: pw.EdgeInsets.all(3), child: pw.Text(formatDate(DateTime.parse(apertura.fecha??'0'), [dd, '/', mm, '/', yyyy,]), style: pw.TextStyle(fontSize: 8))),
+                      pw.Container(color: PdfColors.blue50,padding: pw.EdgeInsets.all(3), child: pw.Text("Turno", style: pw.TextStyle(fontSize: 8))),
+                      pw.Padding(padding: pw.EdgeInsets.all(3), child: pw.Text(apertura.turno??'Turno no asignado', style: pw.TextStyle(fontSize: 8))),
+                    ]),
+                  ],
+                ),
+                pw.Table(
+                  columnWidths: {
+                    0: pw.FlexColumnWidth(1), // Primera columna
+                    1: pw.FlexColumnWidth(2), // Segunda columna
+                    2: pw.FlexColumnWidth(1), // Tercera columna
+                    3: pw.FlexColumnWidth(2), // Cuarta columna
+                  },
+                  children: [
+
+                    // Fila 1
+                    pw.TableRow(children: [
+                      pw.Container(
+                        decoration: pw.BoxDecoration(color: PdfColors.blue50,border: pw.Border.all()),padding: pw.EdgeInsets.all(3),child: pw.Text("Apertura", style: pw.TextStyle(fontSize: 8)),),
+                      pw.Container(
+                          decoration: pw.BoxDecoration(border: pw.Border.all()),padding: pw.EdgeInsets.all(3), child: pw.Text('\$ ${totalApertura}', style: pw.TextStyle(fontSize: 8))),
+                      pw.Container(),
+                      pw.Container(),
+                    ]),
+
+                  ],
+                ),
+
+                pw.SizedBox(height: 15),
+
+                pw.Table(
+
+                  columnWidths: {
+                    0: pw.FlexColumnWidth(1),
+                    1: pw.FlexColumnWidth(1),
+                    2: pw.FlexColumnWidth(1),
+                    3: pw.FlexColumnWidth(1),
+                    4: pw.FlexColumnWidth(1),
+                  },
+                  children: [
+                    // Cabecera
+                    pw.TableRow(
+                      children: [
+                        pw.Container(decoration: pw.BoxDecoration(color: PdfColors.blue50,border: pw.Border.all()),padding: pw.EdgeInsets.all(5), child: pw.Text("Detalle como se entrega la apertura", style: pw.TextStyle(fontSize: 8), textAlign: pw.TextAlign.center)),
+                        pw.Container(decoration: pw.BoxDecoration(color: PdfColors.blue50,border: pw.Border.all()),padding: pw.EdgeInsets.all(5), child: pw.Text("Detalle como se recibe la apertura", style: pw.TextStyle(fontSize: 8), textAlign: pw.TextAlign.center)),
+                        pw.Container(),
+                        pw.Container(decoration: pw.BoxDecoration(color: PdfColors.blue50,border: pw.Border.all()),padding: pw.EdgeInsets.all(5), child: pw.Text("Entrega de monedas y billetes en cabinas", style: pw.TextStyle(fontSize: 8), textAlign: pw.TextAlign.center)),
+                        pw.Container(decoration: pw.BoxDecoration(color: PdfColors.blue50,border: pw.Border.all()),padding: pw.EdgeInsets.all(5), child: pw.Text("Recepción de monedas y billetes en cabinas", style: pw.TextStyle(fontSize: 8), textAlign: pw.TextAlign.center)),
+                      ],
+                    ),
+                    pw.TableRow(
+                      children: [
+                        pw.Container(decoration: pw.BoxDecoration(border: pw.Border.all()),padding: pw.EdgeInsets.all(3), child: pw.Text("\$20x  = ${apertura.entrega20D} ", style: pw.TextStyle(fontSize: 8), textAlign: pw.TextAlign.center)),
+                        pw.Container(decoration: pw.BoxDecoration(border: pw.Border.all()),padding: pw.EdgeInsets.all(3), child: pw.Text("\$20x  = ${apertura.recibe20D} ", style: pw.TextStyle(fontSize: 8), textAlign: pw.TextAlign.center)),
+                        pw.Container(),
+                        pw.Container(decoration: pw.BoxDecoration(border: pw.Border.all()),padding: pw.EdgeInsets.all(3), child: pw.Text(canjes.isNotEmpty ? "\$20x  = ${canjes.first.entrega20D}" : "\$20x  = 0",style: pw.TextStyle(fontSize: 8), textAlign: pw.TextAlign.center)),
+                        pw.Container(decoration: pw.BoxDecoration(border: pw.Border.all()),padding: pw.EdgeInsets.all(3), child: pw.Text(canjes.isNotEmpty ? "\$20x  = ${canjes.first.recibe20D}" : "\$20x  = 0",style: pw.TextStyle(fontSize: 8), textAlign: pw.TextAlign.center)),
+                      ],
+                    ),
+                    pw.TableRow(
+                      children: [
+                        pw.Container(decoration: pw.BoxDecoration(border: pw.Border.all()),padding: pw.EdgeInsets.all(3), child: pw.Text("\$10x  = ${apertura.entrega10D} " ,style: pw.TextStyle(fontSize: 8), textAlign: pw.TextAlign.center)),
+                        pw.Container(decoration: pw.BoxDecoration(border: pw.Border.all()),padding: pw.EdgeInsets.all(3), child: pw.Text("\$10x  = ${apertura.recibe10D} ", style: pw.TextStyle(fontSize: 8), textAlign: pw.TextAlign.center)),
+                        pw.Container(),
+                        pw.Container(decoration: pw.BoxDecoration(border: pw.Border.all()),padding: pw.EdgeInsets.all(3), child: pw.Text(canjes.isNotEmpty ? "\$10x  = ${canjes.first.entrega10D}" : "\$10x  = 0",style: pw.TextStyle(fontSize: 8), textAlign: pw.TextAlign.center)),
+                        pw.Container(decoration: pw.BoxDecoration(border: pw.Border.all()),padding: pw.EdgeInsets.all(3), child: pw.Text(canjes.isNotEmpty ? "\$10x  = ${canjes.first.entrega10D}" : "\$10x  = 0",style: pw.TextStyle(fontSize: 8), textAlign: pw.TextAlign.center)),
+                      ],
+                    ),
+                    pw.TableRow(
+                      children: [
+                        pw.Container(decoration: pw.BoxDecoration(border: pw.Border.all()),padding: pw.EdgeInsets.all(3), child: pw.Text("\$5x  = ${apertura.entrega5D} ", style: pw.TextStyle(fontSize: 8), textAlign: pw.TextAlign.center)),
+                        pw.Container(decoration: pw.BoxDecoration(border: pw.Border.all()),padding: pw.EdgeInsets.all(3), child: pw.Text("\$5x  = ${apertura.recibe5D} ", style: pw.TextStyle(fontSize: 8), textAlign: pw.TextAlign.center)),
+                        pw.Container(),
+                        pw.Container(decoration: pw.BoxDecoration(border: pw.Border.all()),padding: pw.EdgeInsets.all(3), child: pw.Text(canjes.isNotEmpty ? "\$5x  = ${canjes.first.entrega5D}" : "\$5x  = 0",style: pw.TextStyle(fontSize: 8), textAlign: pw.TextAlign.center)),
+                        pw.Container(decoration: pw.BoxDecoration(border: pw.Border.all()),padding: pw.EdgeInsets.all(3), child: pw.Text(canjes.isNotEmpty ? "\$5x  = ${canjes.first.recibe5D}" : "\$5x  = 0",style: pw.TextStyle(fontSize: 8), textAlign: pw.TextAlign.center)),
+                      ],
+                    ),
+                    pw.TableRow(
+                      children: [
+                        pw.Container(decoration: pw.BoxDecoration(border: pw.Border.all()),padding: pw.EdgeInsets.all(3), child: pw.Text("\$1x  = ${apertura.entrega1D} ", style: pw.TextStyle(fontSize: 8), textAlign: pw.TextAlign.center)),
+                        pw.Container(decoration: pw.BoxDecoration(border: pw.Border.all()),padding: pw.EdgeInsets.all(3), child: pw.Text("\$1x  = ${apertura.recibe1D} ", style: pw.TextStyle(fontSize: 8), textAlign: pw.TextAlign.center)),
+                        pw.Container(),
+                        pw.Container(decoration: pw.BoxDecoration(border: pw.Border.all()),padding: pw.EdgeInsets.all(3), child: pw.Text(canjes.isNotEmpty ? "\$1x  = ${canjes.first.entrega1D}" : "\$1x  = 0",style: pw.TextStyle(fontSize: 8), textAlign: pw.TextAlign.center)),
+                        pw.Container(decoration: pw.BoxDecoration(border: pw.Border.all()),padding: pw.EdgeInsets.all(3), child: pw.Text(canjes.isNotEmpty ? "\$1x  = ${canjes.first.recibe1D}" : "\$1x  = 0",style: pw.TextStyle(fontSize: 8), textAlign: pw.TextAlign.center)),
+                      ],
+                    ),
+                    pw.TableRow(
+                      children: [
+                        pw.Container(
+                          decoration: pw.BoxDecoration(border: pw.Border.all(), color: PdfColors.grey200),
+                          padding: pw.EdgeInsets.all(3),
+                          child: pw.Text("Total: \$${totalApertura}", style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold), textAlign: pw.TextAlign.center),
+                        ),
+                        pw.Container(
+                          decoration: pw.BoxDecoration(border: pw.Border.all(), color: PdfColors.grey200),
+                          padding: pw.EdgeInsets.all(3),
+                          child: pw.Text("Total: \$${totalApertura}", style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold), textAlign: pw.TextAlign.center),
+                        ),
+                        pw.Container(),
+                        pw.Container(
+                          decoration: pw.BoxDecoration(border: pw.Border.all(), color: PdfColors.grey200),
+                          padding: pw.EdgeInsets.all(3),
+                          child: pw.Text("Total: \$${totalPrimerCanje}", style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold), textAlign: pw.TextAlign.center),
+                        ),
+                        pw.Container(
+                          decoration: pw.BoxDecoration(border: pw.Border.all(), color: PdfColors.grey200),
+                          padding: pw.EdgeInsets.all(3),
+                          child: pw.Text("Total: \$${totalPrimerCanje}", style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold), textAlign: pw.TextAlign.center),
+                        ),
+                      ],
+                    ),
+
+                  ],
+                ),
+            pw.SizedBox(height: 10),
+
+            if (canjes.length > 1) ...generarCuadrosCanjes(canjes),
+
+
+
+
+                // Detalle de la última entrega de valores
+                pw.SizedBox(height: 5),
+
+
+                pw.Table(
+                  columnWidths: {
+                    0: pw.FlexColumnWidth(1),
+                    1: pw.FlexColumnWidth(1),
+                    2: pw.FlexColumnWidth(1),
+                  },
+                  children: [
+                    pw.TableRow(children: [
+                      pw.Container(
+                          decoration: pw.BoxDecoration(border: pw.Border.all()),padding: pw.EdgeInsets.all(3), child: pw.Text("Cajero", textAlign: pw.TextAlign.center,style: pw.TextStyle(fontSize: 9))),
                       pw.Container(
                           decoration: pw.BoxDecoration(border: pw.Border.all()),padding: pw.EdgeInsets.all(3), child: pw.Text("Supervisor", textAlign: pw.TextAlign.center,style: pw.TextStyle(fontSize: 9))),
                       pw.Container(
@@ -646,11 +858,120 @@ Future<Uint8List> pdfLiquidacion(List<Movimiento> movimientos) async {
           }
       )
   );
+
+
   return pdf.save();
-  
-  
 }
 
+List<pw.Widget> generarCuadrosCanjes(List<Movimiento> canjes) {
+  List<pw.Widget> filas = [];
+
+  // Itera de 1 en adelante (ya que el primero lo muestras manualmente)
+  for (int i = 1; i < canjes.length; i += 2) {
+  final canje1 = buildCuadroCanje(canjes[i]);
+
+  final canje2 = (i + 1 < canjes.length) ? buildCuadroCanje(canjes[i + 1]) : pw.Container();
+
+    filas.add(
+      pw.Row(
+        crossAxisAlignment: pw.CrossAxisAlignment.start,
+        children: [
+
+        pw.Expanded(child: canje1),
+          pw.SizedBox(width: 90),
+          pw.Text("", style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold)),
+
+  pw.Expanded(child: canje2),
+        ],
+      ),
+    );
+
+    filas.add(pw.SizedBox(height: 10)); // Espacio entre filas
+  }
+
+  return filas;
+}
+
+
+pw.Widget buildCuadroCanje(Movimiento canje) {
+  // Calcular totales
+  final totalEntrega = ((int.tryParse(canje.recibe20D ?? '0') ?? 0) * 20) +
+      (int.tryParse(canje.recibe10D ?? '0') ?? 0) * 10 +
+      (int.tryParse(canje.recibe5D ?? '0') ?? 0) * 5 +
+      (int.tryParse(canje.recibe1D ?? '0') ?? 0) * 1;
+
+  final totalRecibe = totalEntrega; // En este caso el total es el mismo
+
+  return pw.Table(
+    columnWidths: {
+      0: pw.FlexColumnWidth(1),
+      1: pw.FlexColumnWidth(1),
+
+
+    },
+    children: [
+      // Cabecera
+      pw.TableRow(
+        children: [
+          pw.Container(
+            decoration: pw.BoxDecoration(color: PdfColors.blue50, border: pw.Border.all()),
+            padding: pw.EdgeInsets.all(3),
+            child: pw.Text("Entrega de monedas y billetes en cabina", style: pw.TextStyle(fontSize: 8), textAlign: pw.TextAlign.center),
+          ),
+          pw.Container(
+            decoration: pw.BoxDecoration(color: PdfColors.blue50, border: pw.Border.all()),
+            padding: pw.EdgeInsets.all(3),
+            child: pw.Text("Recepción de monedas y billetes en cabina", style: pw.TextStyle(fontSize: 8), textAlign: pw.TextAlign.center),
+          ),
+
+        ],
+      ),
+
+      // Filas por denominación
+      ...[
+        [20, canje.recibe20D],
+        [10, canje.recibe10D],
+        [5, canje.recibe5D],
+        [1, canje.recibe1D],
+      ].map((fila) {
+        final valor = fila[0] as int;
+        final cantidad = fila[1] ?? 0;
+        return pw.TableRow(
+          children: [
+            pw.Container(
+              decoration: pw.BoxDecoration(border: pw.Border.all()),
+              padding: pw.EdgeInsets.all(3),
+              child: pw.Text("\$$valor x = $cantidad", style: pw.TextStyle(fontSize: 8), textAlign: pw.TextAlign.center),
+            ),
+            pw.Container(
+              decoration: pw.BoxDecoration(border: pw.Border.all()),
+              padding: pw.EdgeInsets.all(3),
+              child: pw.Text("\$$valor x = $cantidad", style: pw.TextStyle(fontSize: 8), textAlign: pw.TextAlign.center),
+            ),
+
+          ],
+        );
+      }),
+
+      // Fila de totales
+      pw.TableRow(
+        children: [
+          pw.Container(
+            decoration: pw.BoxDecoration(border: pw.Border.all(), color: PdfColors.grey200),
+            padding: pw.EdgeInsets.all(3),
+            child: pw.Text("Total: \$${totalEntrega}", style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold), textAlign: pw.TextAlign.center),
+          ),
+          pw.Container(
+            decoration: pw.BoxDecoration(border: pw.Border.all(), color: PdfColors.grey200),
+            padding: pw.EdgeInsets.all(3),
+            child: pw.Text("Total: \$${totalRecibe}", style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold), textAlign: pw.TextAlign.center),
+          ),
+
+        ],
+      ),
+    ],
+  );
+}
 
 
 

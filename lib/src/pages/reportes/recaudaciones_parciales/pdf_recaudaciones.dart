@@ -162,7 +162,7 @@ Future<Uint8List> pdfRecaudaciones(Usuario usuario, List<Movimiento> movimientos
                           decoration: pw.BoxDecoration(border: pw.Border.all()),padding: pw.EdgeInsets.all(3), child: pw.Text("Supervisor Turno 2", textAlign: pw.TextAlign.center,style: pw.TextStyle(fontSize: 7))),
                     ]),
                     pw.TableRow(children: [
-                      pw.Padding(padding: pw.EdgeInsets.all(3), child: pw.Text("${movimientos.last.nombreSupervisor}", textAlign: pw.TextAlign.start,style: pw.TextStyle(fontSize: 7))),
+                      pw.Padding(padding: pw.EdgeInsets.all(3), child: pw.Text("${movimientos.first.nombreSupervisor}", textAlign: pw.TextAlign.start,style: pw.TextStyle(fontSize: 7))),
                       pw.Padding(padding: pw.EdgeInsets.all(3), child: pw.Text("${movimientos.last.nombreSupervisor}", textAlign: pw.TextAlign.start,style: pw.TextStyle(fontSize: 7))),
                     ]),
 
