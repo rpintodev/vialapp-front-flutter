@@ -43,7 +43,7 @@ class DetalleTransaccion extends StatelessWidget {
               ],
             ),
             // Botón de menú en la esquina superior derecha
-          bandera==0?
+          bandera==0 && detalleTransaccionController.usuarioSession.roles?.first.id!='5'?
             Positioned(
               top: 0,
               right: 0,
@@ -214,11 +214,15 @@ class DetalleTransaccion extends StatelessWidget {
     final totalRecibido = (int.parse(movimientos?.first.recibe20D ?? '0') * 20) +
         (int.parse(movimientos?.first.recibe10D ?? '0') * 10) +
         (int.parse(movimientos?.first.recibe5D ?? '0') * 5) +
-        (int.parse(movimientos?.first.recibe1D ?? '0') * 1);
+        (int.parse(movimientos?.first.recibe1D ?? '0') * 1) +
+        (int.parse(movimientos?.first.recibe50C ?? '0') * 0.5).toDouble() +
+        (int.parse(movimientos?.first.recibe25C ?? '0') * 0.25).toDouble();
 
     final totalEntregado = (int.parse(movimientos?.first.entrega10D ?? '0') * 10) +
         (int.parse(movimientos?.first.entrega5D ?? '0') * 5) +
-        (int.parse(movimientos?.first.entrega1D ?? '0') * 1);
+        (int.parse(movimientos?.first.entrega1D ?? '0') * 1)+
+        (int.parse(movimientos?.first.entrega50C ?? '0') * 0.5).toDouble()+
+        (int.parse(movimientos?.first.entrega25C ?? '0') * 0.25).toDouble();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -413,7 +417,8 @@ class DetalleTransaccion extends StatelessWidget {
         SizedBox(height: 12),
         _confirmButton(movimientos?.first.idturno??'0'),
         SizedBox(height: 10),
-        _canjeBottom(movimientos?.first.idturno??''),
+        detalleTransaccionController.usuarioSession.roles?.first.id=='6'?
+        _canjeBottom(movimientos?.first.idturno??''):Text(''),
       ],
     );
   }

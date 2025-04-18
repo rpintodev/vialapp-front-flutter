@@ -43,7 +43,8 @@ Future<Uint8List> pdfRecaudaciones(Usuario usuario, List<Movimiento> movimientos
   final totalRecaudacionTurno3 = _calculateTotalRecaudacion(retirosParcialesTurno3, liquidacionesTurno3);
   final totalRecaudacionGeneral = totalRecaudacionTurno1 + totalRecaudacionTurno2 + totalRecaudacionTurno3;
 
-
+  final supervisor1=movimientos.first.nombreSupervisor??'Sin Supervisor';
+  final supervisor2=movimientos.last.nombreSupervisor??'Sin Supervisor';
 
   pdf.addPage(
       pw.Page(
@@ -162,8 +163,8 @@ Future<Uint8List> pdfRecaudaciones(Usuario usuario, List<Movimiento> movimientos
                           decoration: pw.BoxDecoration(border: pw.Border.all()),padding: pw.EdgeInsets.all(3), child: pw.Text("Supervisor Turno 2", textAlign: pw.TextAlign.center,style: pw.TextStyle(fontSize: 7))),
                     ]),
                     pw.TableRow(children: [
-                      pw.Padding(padding: pw.EdgeInsets.all(3), child: pw.Text("${movimientos.first.nombreSupervisor}", textAlign: pw.TextAlign.start,style: pw.TextStyle(fontSize: 7))),
-                      pw.Padding(padding: pw.EdgeInsets.all(3), child: pw.Text("${movimientos.last.nombreSupervisor}", textAlign: pw.TextAlign.start,style: pw.TextStyle(fontSize: 7))),
+                      pw.Padding(padding: pw.EdgeInsets.all(3), child: pw.Text("$supervisor1", textAlign: pw.TextAlign.start,style: pw.TextStyle(fontSize: 7))),
+                      pw.Padding(padding: pw.EdgeInsets.all(3), child: pw.Text("$supervisor2", textAlign: pw.TextAlign.start,style: pw.TextStyle(fontSize: 7))),
                     ]),
 
 
@@ -223,10 +224,12 @@ pw.Widget _buildTurnoTable(String titulo, List<Movimiento> movimientosTurno, Lis
         (sum, row) => sum + (row['recaudacionTotal'] as double),
 
   );
-
-  final jefeOperativo = movimientosTurno.isNotEmpty
-      ? movimientosTurno.first.nombreSupervisor ?? 'Sin supervisor'
+  final jefeOperativo = movimientosTurno.isNotEmpty && liquidacionesTurno.isNotEmpty
+      ? (liquidacionesTurno.last.turno == '1'
+      ? liquidacionesTurno.first.nombreSupervisor
+      : liquidacionesTurno.last.nombreSupervisor ?? 'Sin supervisor')
       : 'Sin supervisor';
+
 
 
   return pw.Column(

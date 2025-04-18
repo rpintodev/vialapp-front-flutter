@@ -98,17 +98,39 @@ class AsignacionPage extends StatelessWidget {
 
 
   Widget _cardUsuario(BuildContext context, Usuario usuario, int cardIndex) {
-    return FutureBuilder<Movimiento?>(
+    return FutureBuilder<List<Movimiento?>>(
       future: asignacionController.getMovimientoPorUsuario(usuario.idTurno ?? ''),
       builder: (context, snapshot) {
         String aperturaEstado = "Sin Apertura";
+        String estadoLiquidacion="Sin Liquidar";
 
         if (snapshot.connectionState == ConnectionState.waiting) {
           aperturaEstado = "Cargando...";
+          estadoLiquidacion="Cargando...";
+
         } else if (snapshot.hasData) {
-          Movimiento movimiento = snapshot.data!;
-          aperturaEstado = _validarApertura(movimiento);
+          List<Movimiento?> movimientosApertura = snapshot.data!.where((m) => m?.idTipoMovimiento == '1').toList();
+          if (movimientosApertura.isNotEmpty) {
+            // Si hay al menos uno, tomar el primero
+            aperturaEstado = _validarApertura(movimientosApertura.first!);
+          } else {
+            // No hay aperturas
+            aperturaEstado = "Sin Apertura";
+          }
+
+          List<Movimiento?> movimientosLiquidacion = snapshot.data!.where((m) => m?.idTipoMovimiento == '4').toList();
+          if (movimientosLiquidacion.isNotEmpty) {
+            // Si hay al menos uno, tomar el primero
+            estadoLiquidacion = _validarEstadoLiquidacion(movimientosLiquidacion.first!);
+          } else {
+            // No hay aperturas
+            estadoLiquidacion = "No hay apertura registrada";
+          }
+
+
         }
+
+
         return GestureDetector(
           onTap: () => cardIndex == 2
               ? asignacionController.openBottomSheetLiquidacion(context, usuario.idTurno ?? '0',0)
@@ -157,30 +179,42 @@ class AsignacionPage extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      cardIndex == 1
+                      cardIndex == 2
+                          ? estadoLiquidacion
+                          : cardIndex == 1
                           ? (aperturaEstado == "Apertura Completa" || aperturaEstado == "Apertura Incompleta"
                           ? "Apertura Entregada"
                           : "Sin Apertura")
                           : aperturaEstado,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        color: cardIndex == 1
+                        color: cardIndex == 2
+                            ? (estadoLiquidacion == "Liquidado"
+                            ? Colors.green
+                            : estadoLiquidacion == "Sin liquidar"
+                            ? Colors.redAccent
+                            : Colors.orangeAccent)
+                            : cardIndex == 1
                             ? (aperturaEstado == "Apertura Completa" || aperturaEstado == "Apertura Incompleta"
                             ? Colors.green
                             : Colors.redAccent)
-                            : (aperturaEstado == "Apertura Completa"
+                            : aperturaEstado == "Apertura Completa"
                             ? Colors.green
                             : aperturaEstado == "Cargando..."
                             ? Colors.blue
                             : aperturaEstado == "Sin Apertura"
                             ? Colors.redAccent
-                            : Colors.orangeAccent),
+                            : Colors.orangeAccent,
+
                       ),
                     ),
 
                   ],
                 ),
-                trailing: PopupMenuButton<String>(
+                trailing:
+                asignacionController.usuario.roles?.first.id !='5' ?
+
+                PopupMenuButton<String>(
                   icon: Icon(
                     Icons.menu,
                     color: Colors.grey[400],
@@ -189,7 +223,7 @@ class AsignacionPage extends StatelessWidget {
                   itemBuilder: (BuildContext context) {
                     return _getOptionsForCard(context, cardIndex, usuario, usuario.id ?? '1', usuario.idTurno ?? '1',aperturaEstado);
                   },
-                ),
+                ):Text(''),
               ),
             ),
           ),
@@ -250,6 +284,7 @@ class AsignacionPage extends StatelessWidget {
 
             },
           ),
+      if(asignacionController.usuario.roles?.first.id=='2')...[
 
           PopupMenuItem<String>(
             child: Row(
@@ -264,7 +299,7 @@ class AsignacionPage extends StatelessWidget {
                   () => _showViaSelectionDialog(context,idTurno),
             ),
           ),
-
+          ],
           PopupMenuItem<String>(
             child: Row(
               children: [
@@ -292,6 +327,7 @@ class AsignacionPage extends StatelessWidget {
             ),
 
           ),
+        if(asignacionController.usuario.roles?.first.id=='2')...[
 
           PopupMenuItem<String>(
             child: Row(
@@ -323,12 +359,14 @@ class AsignacionPage extends StatelessWidget {
                 ],
               ),
             ),
-
           ),
+          ],
         ];
       case 1:
         return [
-          PopupMenuItem<String>(
+        if(asignacionController.usuario.roles?.first.id=='2')...[
+
+        PopupMenuItem<String>(
             child: Row(
               children: [
                 Icon(Icons.arrow_circle_up
@@ -414,7 +452,7 @@ class AsignacionPage extends StatelessWidget {
               children: [
                 Icon(Icons.arrow_back_ios, color: Colors.blue),
                 SizedBox(width: 10),
-                Text("Enviar a Turno $aperturaEstado"),
+                Text("Enviar a Turno "),
               ],
             ),
             onTap: () {
@@ -436,14 +474,14 @@ class AsignacionPage extends StatelessWidget {
             ),
             onTap: () =>
 
-            aperturaEstado == "Sin Apertura"  ?
+            aperturaEstado == "Sin Apertura" ?
             // Mostrar el cuadro de diálogo de confirmación
             WidgetsBinding.instance.addPostFrameCallback((_) {
             _showDeleteConfirmationDialog(context, usuario);
             }):
             Get.dialog(
               AlertDialog(
-                title: Text("Apertura Incompleta!"),
+                title: Text("Apertura Incompleta! $aperturaEstado"),
                 content: Text("No se ha retirado la apertura de ${usuario.nombre} ${usuario.apellido}"),
                 actions: [
                   TextButton(
@@ -468,10 +506,13 @@ class AsignacionPage extends StatelessWidget {
 
 
           ),
+        ],
         ];
       case 2:
         return [
-          PopupMenuItem<String>(
+        if(asignacionController.usuario.roles?.first.id=='6')...[
+
+         PopupMenuItem<String>(
             value: "Faltante",
             child: Row(
               children: [
@@ -483,9 +524,8 @@ class AsignacionPage extends StatelessWidget {
             onTap: () {
               asignacionController.goToFaltantes(usuario,0);
             },
-
-
           ),
+        ],
           PopupMenuItem<String>(
             child: Row(
               children: [
@@ -508,17 +548,30 @@ class AsignacionPage extends StatelessWidget {
     final totalEntregado =
         (int.tryParse(movimiento.entrega10D ?? '0') ?? 0) * 10 +
             (int.tryParse(movimiento.entrega5D ?? '0') ?? 0) * 5 +
-            (int.tryParse(movimiento.entrega1D ?? '0') ?? 0) * 1;
+            (int.tryParse(movimiento.entrega1D ?? '0') ?? 0) * 1 +
+            ((int.tryParse(movimiento.entrega50C ?? '0') ?? 0) * 0.5).toDouble() +
+            ((int.tryParse(movimiento.entrega25C ?? '0') ?? 0) * 0.25).toDouble()
+    ;
 
     final totalRecibido =
         (int.tryParse(movimiento.recibe20D ?? '0') ?? 0) * 20+
             (int.tryParse(movimiento.recibe10D ?? '0') ?? 0) * 10+
             (int.tryParse(movimiento.recibe5D ?? '0') ?? 0) * 5+
-            (int.tryParse(movimiento.recibe1D ?? '0') ?? 0) * 1;
+            (int.tryParse(movimiento.recibe1D ?? '0') ?? 0) * 1+
+            ((int.tryParse(movimiento.recibe50C ?? '0') ?? 0) * 0.5).toDouble() +
+            ((int.tryParse(movimiento.recibe25C ?? '0') ?? 0) * 0.25).toDouble()
+    ;
 
     return ( totalEntregado-totalRecibido) == 0
         ? "Apertura Completa"
         : "Apertura Incompleta";
+    }
+
+  String _validarEstadoLiquidacion(Movimiento movimiento) {
+  print('Estado: ${movimiento.estado}');
+    return (movimiento.estado=='1')
+        ? "Liquidado"
+        : "Sin liquidar";
   }
 
 

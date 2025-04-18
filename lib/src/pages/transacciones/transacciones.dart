@@ -170,7 +170,7 @@ class Transacciones extends StatelessWidget {
     IconData icono=Icons.paid_outlined; // Ícono predeterminado
     switch (idTipoMovimiento) {
       case 1: // Apertura
-        valor = "\$${(int.parse(movimiento.entrega1D??'0') * 1) + (int.parse(movimiento.entrega5D??'0') * 5) + (int.parse(movimiento.entrega10D??'0') * 10)}";
+        valor = "\$${(int.parse(movimiento.entrega1D??'0') * 1) +(int.parse(movimiento.entrega50C??'0') * 0.5).toDouble() +(int.parse(movimiento.entrega25C??'0') * 0.25).toDouble() + (int.parse(movimiento.entrega5D??'0') * 5) + (int.parse(movimiento.entrega10D??'0') * 10)}";
         detalle = "${movimiento.nombreCajero}\n${formatDate(DateTime.parse(movimiento.fecha??'0'), [dd, '/', mm, '/', yyyy,])}\nTurno ${movimiento.turno}";
         icono= Icons.paid_outlined;
 

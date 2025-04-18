@@ -31,6 +31,7 @@ class RetiroAperturaController extends GetxController{
   TextEditingController Moneda5EntregaController = TextEditingController();
   TextEditingController Moneda1EntregaController = TextEditingController();
    late String idmovimiento;
+   late String via;
 
   Usuario? usuario;
   Movimiento? movimiento;
@@ -100,6 +101,8 @@ class RetiroAperturaController extends GetxController{
     movimiento.recibe1C=='0'?movimiento.recibe1C='':Moneda1RecibeController.text = movimiento.recibe1C??'';
 
     idmovimiento=movimiento.id?.toString()??'0';
+    via=movimiento.via?.toString()??'0';
+
 
   }
 
@@ -132,6 +135,7 @@ class RetiroAperturaController extends GetxController{
       // Crear el objeto Movimiento
       Movimiento movimiento = Movimiento(
           id: idmovimiento,
+          via: via,
           entrega20D: '0',
           entrega10D: entrega10D,
           entrega5D: entrega5D,

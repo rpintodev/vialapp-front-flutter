@@ -35,6 +35,9 @@ Future<Uint8List> pdfInformeBoveda(List<Boveda> bovedas, List<Movimiento> movimi
   final totalRetirosParciales = _calculateTotalRetirosParciales(movimientos);
   final totalLiquidaciones = _calculateTotalLiquidaciones(movimientos);
 
+  final registrosTurno1 = registrosFortius.where((m) => m.turno == '1').toList();
+  final registrosTurno3 = registrosFortius.where((m) => m.turno == '3').toList();
+
   final liquidacionesFiltradas = liquidaciones.where((m) {
     final fechaMovimiento = DateTime.parse(m.fecha ?? '');
     return fechaMovimiento.isAfter(inicioDiaAnterior) && fechaMovimiento.isBefore(finDiaAnterior);
@@ -46,23 +49,48 @@ Future<Uint8List> pdfInformeBoveda(List<Boveda> bovedas, List<Movimiento> movimi
   }).toList();
 
 
-
   final horaActual = ahora.hour;
 
   DateTime horaInicio;
   DateTime horaFin;
+  String supervisor1;
+  String supervisor2;
 
-  if (horaActual >= 5 && horaActual < 16) {
-    // Entre 5am y 4pm
+  if (horaActual >= 8 && horaActual <= 20) {
+    // Entre 5am y
+
+    supervisor1 = registrosTurno1.isNotEmpty
+        ? registrosTurno1.first.nombreSupervisor ?? 'Sin Supervisor'
+        : '${usuarioSessio.nombre} ${usuarioSessio.apellido}'??'';
+
+    supervisor2 = registrosTurno3.isNotEmpty
+        ? registrosTurno3.first.nombreSupervisor ?? 'Sin Supervisor'
+        : '${usuarioSessio.nombre} ${usuarioSessio.apellido}'??'';
+
     horaInicio = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day, 8, 0); // 08:00h
     horaFin = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day, 20, 0); // 20:00h
   } else {
     // Entre 4pm y 6am
-    if (horaActual >= 16) {
+    if (horaActual >= 20) {
+
+      supervisor1 = registrosTurno3.isNotEmpty
+          ? registrosTurno3.first.nombreSupervisor ?? 'Sin Supervisor'
+          : '${usuarioSessio.nombre} ${usuarioSessio.apellido}'??'';
+
+      supervisor2 = registrosTurno3.isNotEmpty
+          ? registrosTurno3.first.nombreSupervisor ?? 'Sin Supervisor'
+          : '${usuarioSessio.nombre} ${usuarioSessio.apellido}'??'';
+
       // Si está entre las 4pm y medianoche
       horaInicio = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day, 20, 0); // 20:00h
       horaFin = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day + 1, 8, 0); // 08:00h del día siguiente
     } else {
+
+      supervisor1 = registrosTurno3.isNotEmpty
+          ? registrosTurno3.first.nombreSupervisor ?? 'Sin Supervisor'
+          : '${usuarioSessio.nombre} ${usuarioSessio.apellido}'??'';
+
+      supervisor2 =  '${usuarioSessio.nombre} ${usuarioSessio.apellido}'??'';
       // Si está entre medianoche y las 6am
       horaInicio = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day - 1, 20, 0); // 20:00h del día anterior
       horaFin = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day, 8, 0); // 08:00h
@@ -107,9 +135,9 @@ Future<Uint8List> pdfInformeBoveda(List<Boveda> bovedas, List<Movimiento> movimi
                 pw.TableRow(children: [
 
                   pw.Container(color: PdfColors.blue50,padding: pw.EdgeInsets.all(2),child: pw.Text("Nombre Custodio Inicio:", style: pw.TextStyle(fontSize: 8)),),
-                  pw.Padding(padding: pw.EdgeInsets.all(2), child: pw.Text("${aperturas.last.nombreSupervisor}", style: pw.TextStyle(fontSize: 8))),
+                  pw.Padding(padding: pw.EdgeInsets.all(2), child: pw.Text("$supervisor1", style: pw.TextStyle(fontSize: 8))),
                   pw.Container(color: PdfColors.blue50,padding: pw.EdgeInsets.all(2), child: pw.Text("Nombre Custodio Recibe:", style: pw.TextStyle(fontSize:8))),
-                  pw.Padding(padding: pw.EdgeInsets.all(2), child: pw.Text("${usuarioSessio.nombre} ${usuarioSessio.apellido}", style: pw.TextStyle(fontSize: 8))),
+                  pw.Padding(padding: pw.EdgeInsets.all(2), child: pw.Text("$supervisor2", style: pw.TextStyle(fontSize: 8))),
                 ]),
                 pw.TableRow(children: [
 
@@ -421,10 +449,11 @@ double _calculateTotalRetirosParciales(List<Movimiento> movimientos) {
   );
 }
 
+
 /// **Calcular el total de liquidaciones anticipadas**
 double _calculateTotalLiquidaciones(List<Movimiento> movimientos) {
   return movimientos
-      .where((m) => m.idTipoMovimiento == '4') // Filtrar por liquidaciones
+      .where((m) => m.idTipoMovimiento == '4' || m.idTipoMovimiento=='6') // Filtrar por liquidaciones
       .fold<double>(
     0,
         (sum, m) => sum +
@@ -432,11 +461,19 @@ double _calculateTotalLiquidaciones(List<Movimiento> movimientos) {
         ((int.tryParse(m.recibe10D ?? '0') ?? 0) * 10) +
         ((int.tryParse(m.recibe5D ?? '0') ?? 0) * 5) +
         ((int.tryParse(m.recibe1D ?? '0') ?? 0) * 1) +
-            ((int.tryParse(m.recibe50C ?? '0') ?? 0) * 0.5).toDouble() +
-            ((int.tryParse(m.recibe25C ?? '0') ?? 0) * 0.25).toDouble() +
-            ((int.tryParse(m.recibe10C ?? '0') ?? 0) * 0.1).toDouble() +
-            ((int.tryParse(m.recibe5C ?? '0') ?? 0) * 0.05).toDouble()+
-            ((int.tryParse(m.recibe1C ?? '0') ?? 0) * 0.01).toDouble(),
+        ((int.tryParse(m.recibe50C ?? '0') ?? 0) * 0.5).toDouble() +
+        ((int.tryParse(m.recibe25C ?? '0') ?? 0) * 0.25).toDouble() +
+        ((int.tryParse(m.recibe10C ?? '0') ?? 0) * 0.1).toDouble() +
+        ((int.tryParse(m.recibe5C ?? '0') ?? 0) * 0.05).toDouble()+
+        ((int.tryParse(m.recibe1C ?? '0') ?? 0) * 0.01).toDouble()  -
+        (((int.tryParse(m.entrega10D ?? '0') ?? 0) * 10) +
+            ((int.tryParse(m.entrega5D ?? '0') ?? 0) * 5) +
+            ((int.tryParse(m.entrega1D ?? '0') ?? 0) * 1)+
+            ((int.tryParse(m.entrega50C ?? '0') ?? 0) * 0.5).toDouble()+
+            ((int.tryParse(m.entrega25C ?? '0') ?? 0) *0.25).toDouble()+
+            ((int.tryParse(m.entrega10C ?? '0') ?? 0) * 0.1).toDouble()+
+            ((int.tryParse(m.entrega5C ?? '0') ?? 0) * 0.05).toDouble()
+        ),
   );
 }
 

@@ -214,7 +214,7 @@ class FaltanteController extends GetxController{
           entrega5D: entrega5D,
           entrega10D: entrega10D,
           entrega20D: entrega20D,
-          sobrante: '',
+          sobrante: '0'
       );
 
       Movimiento movimiento4 = Movimiento(
@@ -247,7 +247,8 @@ class FaltanteController extends GetxController{
           entrega1D: entrega1D,
           entrega5D: entrega5D,
           entrega10D: entrega10D,
-          entrega20D: entrega20D
+          entrega20D: entrega20D,
+          sobrante: '0'
       );
 
 

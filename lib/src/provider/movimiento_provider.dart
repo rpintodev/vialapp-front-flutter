@@ -146,6 +146,32 @@ class MovimientoProvider extends GetConnect{
     return responseApi;
   }
 
+  Future<ResponseApi> updateEstadoMovimiento(Movimiento movimiento) async{
+
+    Response response = await post(
+        '$url/updateEstadoMovimiento',
+        movimiento.toJson(),
+        headers: {
+          'Content-type': 'application/json',
+          'Authorization': usuario.sessionToken??''
+        }
+
+    );
+
+    if(response.body==null){
+      Get.snackbar('Error', 'No se pudo realizar la peticion');
+      return ResponseApi();
+    }
+
+    if(response.statusCode==401){
+      Get.snackbar('Error', 'No se esta autorizado para realizar esta peticion');
+      return ResponseApi();
+    }
+
+    ResponseApi responseApi = ResponseApi.fromJson(response.body);
+    return responseApi;
+  }
+
   Future<ResponseApi> updateLiquidacionCompleta(Movimiento movimiento) async{
 
     Response response = await post(

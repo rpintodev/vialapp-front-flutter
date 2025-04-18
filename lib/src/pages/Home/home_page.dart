@@ -53,7 +53,7 @@ class HomePage extends StatelessWidget {
         UsuariosAdmin(),
       ];
     } else if (homeSupController.usuario.roles?.first.id != null &&
-        int.tryParse(homeSupController.usuario.roles!.first.id!)== 2)  { // Rol de supervisor
+        (int.tryParse(homeSupController.usuario.roles!.first.id!)== 2 || int.tryParse(homeSupController.usuario.roles!.first.id!)== 6))  { // Rol de supervisor
       return [
         BovedaPage(),
         Transacciones(),
@@ -72,6 +72,7 @@ class HomePage extends StatelessWidget {
       return [
         BovedaPage(),
         Transacciones(),
+        AsignacionPage(),
 
       ];
     } else {
@@ -112,7 +113,7 @@ class HomePage extends StatelessWidget {
 
       ];
     } else if (homeSupController.usuario.roles?.first.id != null &&
-        int.tryParse(homeSupController.usuario.roles!.first.id!)== 2) { // Rol de supervisor
+        (int.tryParse(homeSupController.usuario.roles!.first.id!)== 2 || int.tryParse(homeSupController.usuario.roles!.first.id!)==6) ) { // Rol de supervisor
       items = [
         BottomNavyBarItem(
           icon: Icon(Icons.monetization_on),
@@ -141,7 +142,7 @@ class HomePage extends StatelessWidget {
 
       ];
     }else if (homeSupController.usuario.roles?.first.id != null &&
-        int.tryParse(homeSupController.usuario.roles!.first.id!)== 4) { // Rol de supervisor
+        int.tryParse(homeSupController.usuario.roles!.first.id!)== 4) { // Rol de Secretaria
       items = [
         BottomNavyBarItem(
           icon: Icon(Icons.monetization_on),
@@ -176,6 +177,12 @@ class HomePage extends StatelessWidget {
         BottomNavyBarItem(
           icon: Icon(Icons.sync_alt_outlined),
           title: Text('Transacciones'),
+          activeColor: Colors.white,
+          inactiveColor: Colors.black,
+        ),
+        BottomNavyBarItem(
+          icon: Icon(Icons.engineering),
+          title: Text('Personal'),
           activeColor: Colors.white,
           inactiveColor: Colors.black,
         ),

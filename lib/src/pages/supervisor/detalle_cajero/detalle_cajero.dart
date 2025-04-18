@@ -72,7 +72,10 @@ class DetalleCajero extends StatelessWidget {
     final totalEntregado =
         (int.parse(movimiento.entrega10D ?? '0') * 10) +
         (int.parse(movimiento.entrega5D ?? '0') * 5) +
-        (int.parse(movimiento.entrega1D ?? '0') * 1);
+        (int.parse(movimiento.entrega1D ?? '0') * 1) +
+        (int.parse(movimiento.entrega50C ?? '0') * 0.5).toDouble() +
+        (int.parse(movimiento.entrega25C ?? '0') * 0.25).toDouble()
+    ;
 
 
     return Card(

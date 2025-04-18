@@ -111,7 +111,7 @@ class LiquidacionesController extends GetxController{
           valoranulaciones: '0',
           simulaciones: '0',
           valorsimulaciones: '0',
-        sobrante: ''
+          sobrante: '0'
       );
 
 

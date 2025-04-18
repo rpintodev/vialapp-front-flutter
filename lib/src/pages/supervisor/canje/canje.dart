@@ -135,7 +135,7 @@ class CanjePage extends StatelessWidget {
             ),
           ],
         ),
-        SizedBox(height: 8), // Espaciado vertical entre filas
+        SizedBox(height: 5), // Espaciado vertical entre filas
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -187,7 +187,7 @@ class CanjePage extends StatelessWidget {
             ),
           ],
         ),
-        SizedBox(height: 8), // Espaciado vertical entre filas
+        SizedBox(height: 5), // Espaciado vertical entre filas
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -200,7 +200,31 @@ class CanjePage extends StatelessWidget {
               ),
             ),
             SizedBox(width: 10), // Espaciado horizontal entre columnas
-
+            Expanded(
+              child: _inputField(
+                label: '\$ 50',
+                assetIcon: 'assets/img/moneda.png',
+                controller: canjeController.moneda50EntregaController,
+                maxLength: 3,
+              ),
+            ),
+          ],
+        ),        SizedBox(height: 5), // Espaciado vertical entre filas
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: _inputField(
+                label: '\$ 25',
+                assetIcon: 'assets/img/moneda.png',
+                controller: canjeController.moneda25EntregaController,
+                maxLength: 3,
+              ),
+            ),
+            SizedBox(width: 10), // Espaciado horizontal entre columnas
+            Expanded(
+              child: Container(),
+            ),
           ],
         ),
       ],
@@ -258,11 +282,20 @@ class CanjePage extends StatelessWidget {
     final billetes1Entrega = canjeController.billetes1EntregaController.text.isEmpty
         ? '0'
         : canjeController.billetes1EntregaController.text;
+final moneda50Entrega = canjeController.moneda50EntregaController.text.isEmpty
+        ? '0'
+        : canjeController.moneda50EntregaController.text;
+final moneda25Entrega = canjeController.moneda25EntregaController.text.isEmpty
+        ? '0'
+        : canjeController.moneda25EntregaController.text;
 
     // Cálculo del total entregado por el supervisor
     final totalEntrega = (int.parse(billetes10Entrega) * 10) +
         (int.parse(billetes5Entrega) * 5) +
-        (int.parse(billetes1Entrega) * 1);
+        (int.parse(billetes1Entrega) * 1) +
+        (int.parse(moneda50Entrega) * 0.5).toDouble() +
+        (int.parse(moneda25Entrega) * 0.25).toDouble()
+    ;
 
     // Cálculo del total recibido por el cajero
     final totalRecibe = (int.parse(billetes10Recibe) * 10) + (int.parse(billetes20) * 20) +
@@ -333,6 +366,8 @@ class CanjePage extends StatelessWidget {
               Text("- $billetes10Entrega billetes de \$10"),
               Text("- $billetes5Entrega billetes de \$5"),
               Text("- $billetes1Entrega monedas de \$1"),
+              Text("- $moneda50Entrega monedas de 50C"),
+              Text("- $moneda25Entrega monedas de 25C"),
               SizedBox(height: 5),
               Text("Total Entregado: \$${totalEntrega.toStringAsFixed(2)}",
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF368983))),

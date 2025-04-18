@@ -25,6 +25,8 @@ class CanjeController extends GetxController{
    TextEditingController billetes10EntregaController = TextEditingController();
    TextEditingController billetes5EntregaController = TextEditingController();
    TextEditingController billetes1EntregaController = TextEditingController();
+   TextEditingController moneda50EntregaController = TextEditingController();
+   TextEditingController moneda25EntregaController = TextEditingController();
 
    CanjeController(Usuario usuario,List<Movimiento> movimientos) {
       this.usuario=usuario;
@@ -46,6 +48,8 @@ class CanjeController extends GetxController{
          String recibe10D = billetes10RecibeController.text.isEmpty ? '0' : billetes10RecibeController.text;
          String recibe20D = billetes20Controller.text.isEmpty ? '0' : billetes20Controller.text;
 
+         String entrega25C = moneda25EntregaController.text.isEmpty ? '0' : moneda25EntregaController.text;
+         String entrega50C = moneda50EntregaController.text.isEmpty ? '0' : moneda50EntregaController.text;
          String entrega1D = billetes1EntregaController.text.isEmpty ? '0' : billetes1EntregaController.text;
          String entrega5D = billetes5EntregaController.text.isEmpty ? '0' : billetes5EntregaController.text;
          String entrega10D = billetes10EntregaController.text.isEmpty ? '0' : billetes10EntregaController.text;
@@ -73,8 +77,8 @@ class CanjeController extends GetxController{
             entrega1C: '0',
             entrega5C: '0',
             entrega10C: '0',
-            entrega25C: '0',
-            entrega50C: '0',
+            entrega25C: entrega25C,
+            entrega50C: entrega50C,
             entrega1D: entrega1D,
             entrega1DB: '0',
             entrega5D: entrega5D,

@@ -16,6 +16,8 @@ Future<Uint8List> pdfLiquidacion(List<Movimiento> movimientos) async {
 
   // Filtrar retiros parciales
   final retirosParciales = movimientos.where((m) => m.idTipoMovimiento == '2').toList();
+  retirosParciales.sort((a, b) => a.fecha!.compareTo(b.fecha!));
+
   final apertura = movimientos.firstWhere((m) => m.idTipoMovimiento == '1', orElse: () => Movimiento());
 
   final canjes = movimientos.where((m) => m.idTipoMovimiento == '3').toList();
@@ -173,7 +175,7 @@ Future<Uint8List> pdfLiquidacion(List<Movimiento> movimientos) async {
                           child: pw.Align(
                               alignment: pw.Alignment.center,
 
-                              child: pw.Text("RECUADACIONES PARCIALES", style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold))
+                              child: pw.Text("RECAUDACIONES PARCIALES", style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold))
                           ),
 
                         ),
@@ -201,7 +203,7 @@ Future<Uint8List> pdfLiquidacion(List<Movimiento> movimientos) async {
                         pw.Padding(padding: pw.EdgeInsets.all(5), child: pw.Text("Hora", style: pw.TextStyle(fontSize: 8), textAlign: pw.TextAlign.center)),
                         pw.Padding(padding: pw.EdgeInsets.all(5), child: pw.Text("USD", style: pw.TextStyle(fontSize: 8), textAlign: pw.TextAlign.center)),
                         pw.Padding(padding: pw.EdgeInsets.all(5), child: pw.Text("Supervisor", style: pw.TextStyle(fontSize: 8), textAlign: pw.TextAlign.center)),
-                        pw.Padding(padding: pw.EdgeInsets.all(5), child: pw.Text("Observación", style: pw.TextStyle(fontSize: 8), textAlign: pw.TextAlign.center)),
+                        pw.Padding(padding: pw.EdgeInsets.all(5), child: pw.Text("Denominación", style: pw.TextStyle(fontSize: 8), textAlign: pw.TextAlign.center)),
                       ],
                     ),
                     // Filas dinámicas
@@ -638,10 +640,14 @@ Future<Uint8List> pdfLiquidacion(List<Movimiento> movimientos) async {
                           decoration: pw.BoxDecoration(border: pw.Border.all()),padding: pw.EdgeInsets.all(3), child: pw.Text("Cajero", textAlign: pw.TextAlign.center,style: pw.TextStyle(fontSize: 9))),
                       pw.Container(
                           decoration: pw.BoxDecoration(border: pw.Border.all()),padding: pw.EdgeInsets.all(3), child: pw.Text("Supervisor", textAlign: pw.TextAlign.center,style: pw.TextStyle(fontSize: 9))),
+                    pw.Container(
+                          decoration: pw.BoxDecoration(border: pw.Border.all()),padding: pw.EdgeInsets.all(3), child: pw.Text("Jefe Operativo", textAlign: pw.TextAlign.center,style: pw.TextStyle(fontSize: 9))),
+
                     ]),
                     pw.TableRow(children: [
                       pw.Padding(padding: pw.EdgeInsets.all(3), child: pw.Text("${movimientos.last.nombreCajero}", textAlign: pw.TextAlign.start,style: pw.TextStyle(fontSize: 7))),
                       pw.Padding(padding: pw.EdgeInsets.all(3), child: pw.Text("${movimientos.last.nombreSupervisor}", textAlign: pw.TextAlign.start,style: pw.TextStyle(fontSize: 7))),
+                      pw.Padding(padding: pw.EdgeInsets.all(3), child: pw.Text("${liquidacion.nombreSupervisor}", textAlign: pw.TextAlign.start,style: pw.TextStyle(fontSize: 7))),
                     ]),
 
                   ],
@@ -768,7 +774,7 @@ Future<Uint8List> pdfLiquidacion(List<Movimiento> movimientos) async {
                         pw.Container(decoration: pw.BoxDecoration(border: pw.Border.all()),padding: pw.EdgeInsets.all(3), child: pw.Text("\$10x  = ${apertura.recibe10D} ", style: pw.TextStyle(fontSize: 8), textAlign: pw.TextAlign.center)),
                         pw.Container(),
                         pw.Container(decoration: pw.BoxDecoration(border: pw.Border.all()),padding: pw.EdgeInsets.all(3), child: pw.Text(canjes.isNotEmpty ? "\$10x  = ${canjes.first.entrega10D}" : "\$10x  = 0",style: pw.TextStyle(fontSize: 8), textAlign: pw.TextAlign.center)),
-                        pw.Container(decoration: pw.BoxDecoration(border: pw.Border.all()),padding: pw.EdgeInsets.all(3), child: pw.Text(canjes.isNotEmpty ? "\$10x  = ${canjes.first.entrega10D}" : "\$10x  = 0",style: pw.TextStyle(fontSize: 8), textAlign: pw.TextAlign.center)),
+                        pw.Container(decoration: pw.BoxDecoration(border: pw.Border.all()),padding: pw.EdgeInsets.all(3), child: pw.Text(canjes.isNotEmpty ? "\$10x  = ${canjes.first.recibe10D}" : "\$10x  = 0",style: pw.TextStyle(fontSize: 8), textAlign: pw.TextAlign.center)),
                       ],
                     ),
                     pw.TableRow(
@@ -822,8 +828,6 @@ Future<Uint8List> pdfLiquidacion(List<Movimiento> movimientos) async {
             if (canjes.length > 1) ...generarCuadrosCanjes(canjes),
 
 
-
-
                 // Detalle de la última entrega de valores
                 pw.SizedBox(height: 5),
 
@@ -840,13 +844,10 @@ Future<Uint8List> pdfLiquidacion(List<Movimiento> movimientos) async {
                           decoration: pw.BoxDecoration(border: pw.Border.all()),padding: pw.EdgeInsets.all(3), child: pw.Text("Cajero", textAlign: pw.TextAlign.center,style: pw.TextStyle(fontSize: 9))),
                       pw.Container(
                           decoration: pw.BoxDecoration(border: pw.Border.all()),padding: pw.EdgeInsets.all(3), child: pw.Text("Supervisor", textAlign: pw.TextAlign.center,style: pw.TextStyle(fontSize: 9))),
-                      pw.Container(
-                          decoration: pw.BoxDecoration(border: pw.Border.all()),padding: pw.EdgeInsets.all(3), child: pw.Text("Jefe Operativo", textAlign: pw.TextAlign.center,style: pw.TextStyle(fontSize: 9))),
                     ]),
                     pw.TableRow(children: [
                       pw.Padding(padding: pw.EdgeInsets.all(3), child: pw.Text("${movimientos.last.nombreCajero}", textAlign: pw.TextAlign.start,style: pw.TextStyle(fontSize: 7))),
                       pw.Padding(padding: pw.EdgeInsets.all(3), child: pw.Text("${movimientos.last.nombreSupervisor}", textAlign: pw.TextAlign.start,style: pw.TextStyle(fontSize: 7))),
-                      pw.Padding(padding: pw.EdgeInsets.all(3), child: pw.Text(liquidacion.nombreSupervisor??'', textAlign: pw.TextAlign.center,style: pw.TextStyle(fontSize: 7))),
                     ]),
 
                   ],
@@ -929,26 +930,26 @@ pw.Widget buildCuadroCanje(Movimiento canje) {
 
       // Filas por denominación
       ...[
-        [20, canje.recibe20D],
-        [10, canje.recibe10D],
-        [5, canje.recibe5D],
-        [1, canje.recibe1D],
+        [20, canje.entrega20D, canje.recibe20D],
+        [10, canje.entrega10D, canje.recibe10D],
+        [5, canje.entrega5D, canje.recibe5D],
+        [1, canje.entrega1D, canje.recibe1D],
       ].map((fila) {
         final valor = fila[0] as int;
-        final cantidad = fila[1] ?? 0;
+        final cantidadEntrega = fila[1] ?? '0';
+        final cantidadRecibe = fila[2] ?? '0';
         return pw.TableRow(
           children: [
             pw.Container(
               decoration: pw.BoxDecoration(border: pw.Border.all()),
               padding: pw.EdgeInsets.all(3),
-              child: pw.Text("\$$valor x = $cantidad", style: pw.TextStyle(fontSize: 8), textAlign: pw.TextAlign.center),
+              child: pw.Text("\$$valor x = $cantidadEntrega", style: pw.TextStyle(fontSize: 8), textAlign: pw.TextAlign.center),
             ),
             pw.Container(
               decoration: pw.BoxDecoration(border: pw.Border.all()),
               padding: pw.EdgeInsets.all(3),
-              child: pw.Text("\$$valor x = $cantidad", style: pw.TextStyle(fontSize: 8), textAlign: pw.TextAlign.center),
+              child: pw.Text("\$$valor x = $cantidadRecibe", style: pw.TextStyle(fontSize: 8), textAlign: pw.TextAlign.center),
             ),
-
           ],
         );
       }),

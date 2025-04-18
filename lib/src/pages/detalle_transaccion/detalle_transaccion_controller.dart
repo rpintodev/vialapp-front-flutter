@@ -1,3 +1,4 @@
+import 'package:asistencia_vial_app/src/models/response_api.dart';
 import 'package:asistencia_vial_app/src/pages/editar_transaccion/editar_transaccion.dart';
 import 'package:asistencia_vial_app/src/pages/reportes/reporte_canje/reporte_canje.dart';
 import 'package:asistencia_vial_app/src/provider/movimiento_provider.dart';
@@ -33,8 +34,12 @@ class DetalleTransaccionController extends GetxController{
   void goToFaltantes(String idturno,int bandera) async{
 
     List<Movimiento>? movimientos;
+    Movimiento liquidacion;
     var result = await movimientoProvider.getMovimientoByTurno(idturno??''); //cambiar getApertura
     movimientos = result;
+    liquidacion = movimientos.firstWhere((m)=> m.idTipoMovimiento =='4');
+    liquidacion.estado='1';
+    ResponseApi response2 = await movimientoProvider.updateEstadoMovimiento(liquidacion);
     Get.to(
           () => FaltantesPage(movimientos: movimientos, bandera: bandera), // Página a la que navegas
     );
@@ -43,9 +48,15 @@ class DetalleTransaccionController extends GetxController{
 
   void goToReportes(String idturno) async{
     List<Movimiento>? movimientos;
+    Movimiento liquidacion;
 
     var result = await movimientoProvider.getMovimientoByTurno(idturno); //cambiar getApertura
     movimientos = result;
+
+    liquidacion = movimientos.firstWhere((m)=> m.idTipoMovimiento =='4');
+    liquidacion.estado='1';
+    ResponseApi response2 = await movimientoProvider.updateEstadoMovimiento(liquidacion);
+
     Get.to(
           () => ReporteLiquidacion(movimientos: movimientos), // Página a la que navegas
       arguments: usuarioSession, // Envía el objeto Usuario como argumento

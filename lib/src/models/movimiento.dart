@@ -51,6 +51,7 @@ class Movimiento {
   String? simulaciones;
   String? valorsimulaciones;
   String? sobrante;
+  String? estado;
 
   Movimiento({
      this.id,
@@ -94,6 +95,7 @@ class Movimiento {
      this.simulaciones,
      this.valorsimulaciones,
      this.sobrante,
+    this.estado,
   });
 
   factory Movimiento.fromJson(Map<String, dynamic> json) => Movimiento(
@@ -138,6 +140,7 @@ class Movimiento {
     simulaciones: json["Simulaciones"],
     valorsimulaciones: json["ValorSimulaciones"],
     sobrante: json["Sobrante"],
+    estado: json["Estado"],
   );
 
   Map<String, dynamic> toJson() => {
@@ -182,6 +185,7 @@ class Movimiento {
     "Simulaciones": simulaciones,
     "ValorSimulaciones": valorsimulaciones,
     "Sobrante": sobrante,
+    "Estado": estado,
   };
 
   static List<Movimiento> fromJsonList(List<dynamic> jsonList){

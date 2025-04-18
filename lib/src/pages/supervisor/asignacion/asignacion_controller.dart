@@ -73,8 +73,8 @@ class AsignacionController extends GetxController{
     update();
   }
 
-  Future<Movimiento?> getMovimientoPorUsuario(String idTurno) async {
-    return await movimientoProvider.getApertura(idTurno);
+  Future<List<Movimiento?>> getMovimientoPorUsuario(String idTurno) async {
+    return await movimientoProvider.getMovimientoByTurno(idTurno);
   }
 
   void getFaltante(String idTurno) async{

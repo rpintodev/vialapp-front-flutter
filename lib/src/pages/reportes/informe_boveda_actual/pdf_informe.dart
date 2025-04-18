@@ -28,7 +28,7 @@ Future<Uint8List> pdfInformeBovedaActual(List<Boveda> bovedas, List<Movimiento> 
   final retirosParciales = movimientos.where((m) => m.idTipoMovimiento == '2').toList();
   final registrosFortius = movimientos.where((m) => m.idTipoMovimiento == '5').toList();
   final boveda=bovedas.where((b) => b.esactual=='1').first;
-  final bovedaSecretaria=bovedas.where((b) => b.esactual=='2').first;
+  final bovedaSecretaria=bovedas.where((b) => b.esactual=='3').first;
 
   // Calcular los totales solicitados
   final totalAperturas = _calculateTotalAperturas(movimientos);

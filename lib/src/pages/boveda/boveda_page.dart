@@ -227,7 +227,7 @@ class BovedaPage extends StatelessWidget {
                 ],
 
               )
-                  :usuario.roles?.first.id =='2' ?
+                  :(usuario.roles?.first.id =='2' ||usuario.roles?.first.id =='6')?
               Column(
                 children: [
                   PopupMenuButton<int>(
@@ -272,6 +272,19 @@ class BovedaPage extends StatelessWidget {
                         value: 1,
                         child: Row(
                           children: [
+                            Icon(Icons.request_page, color: Colors.green),
+                            SizedBox(width: 8),
+                            Text('Recaudacion por turno'),
+                          ],
+                        ),
+                        onTap: ()=>bovedaSupController.goToReporteRecaudaciones(usuario),
+
+                      ),
+
+                      PopupMenuItem<int>(
+                        value: 1,
+                        child: Row(
+                          children: [
                             Icon(Icons.local_atm, color: Colors.blue),
                             SizedBox(width: 8),
                             Text('Informe de Bóveda'),
@@ -279,6 +292,8 @@ class BovedaPage extends StatelessWidget {
                         ),
                         onTap: ()=> bovedaSupController.goToInformeBovedaActual(boveda!,1),
                       ),
+
+
                     ],
                   ),
                 ],
