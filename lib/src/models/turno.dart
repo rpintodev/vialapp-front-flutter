@@ -13,6 +13,7 @@ class Turno {
   String? idSupervisor;
   String? idCajero;
   String? estado;
+  String? via;
   String? sessionToken;
 
   Turno({
@@ -20,6 +21,7 @@ class Turno {
      this.idSupervisor,
      this.idCajero,
      this.estado,
+     this.via,
     this.sessionToken,
   });
 
@@ -28,6 +30,7 @@ class Turno {
     idSupervisor: json["IdSupervisor"],
     idCajero: json["IdCajero"],
     estado: json["Estado"],
+    via: json["Via"],
       sessionToken: json["session_token"],
   );
 
@@ -36,6 +39,7 @@ class Turno {
     "IdSupervisor": idSupervisor,
     "IdCajero": idCajero,
     "Estado": estado,
+    "Via": via,
     "session_token": sessionToken,
 
   };

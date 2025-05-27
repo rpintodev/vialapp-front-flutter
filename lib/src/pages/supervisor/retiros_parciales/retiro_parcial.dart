@@ -245,15 +245,20 @@ class RetiroParcialPage extends StatelessWidget {
               child: Text("Cancelar", style: TextStyle(color: Colors.grey)),
             ),
             ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Cierra el diálogo
-                print("Retiro Parcial confirmado");
+              onPressed: retiroParcialController.cargando.value
+                  ? null
+                  : () async {
                 retiroParcialController.registarRetiroParcial(context, usuario!);
               },
+              child: retiroParcialController.cargando.value
+                  ? CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+              )
+                  : Text('Confirmar'),
               style: ElevatedButton.styleFrom(
+                padding: EdgeInsets.symmetric(vertical: 16),
                 backgroundColor: Color(0xFF368983),
               ),
-              child: Text("Confirmar"),
             ),
           ],
         );

@@ -379,15 +379,21 @@ class LiquidacionesPage extends StatelessWidget {
               child: Text("Cancelar", style: TextStyle(color: Colors.grey)),
             ),
             ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Cierra el diálogo
-                print("Liquidación confirmada");
+
+              onPressed: liquidacionesController.cargando.value
+                  ? null
+                  : () async { // Cierra el diálogo
                 liquidacionesController.registarLiquidacion(context, usuario!,movimientos!);
               },
+              child: liquidacionesController.cargando.value
+                  ? CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+              )
+                  : Text('Confirmar'),
               style: ElevatedButton.styleFrom(
+                padding: EdgeInsets.symmetric(vertical: 16),
                 backgroundColor: Color(0xFF368983),
               ),
-              child: Text("Confirmar"),
             ),
           ],
         );
@@ -450,20 +456,41 @@ class LiquidacionesPage extends StatelessWidget {
                     Row(
                       children: [
                         Icon(Icons.calendar_today, color: Colors.grey, size: 20),
-                        SizedBox(width: 5),
+                        SizedBox(width: 8),
                         Text(
                           movimiento.fecha ?? 'Sin fecha',
                           style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                         ),
                       ],
-                    ),
-                    Text(
-                      '\$${totalRecibido}',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF368983),
-                      ),
+                    ),SizedBox(width: 7),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+
+                        Text(
+                          '\$${totalRecibido}',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF368983),
+                          ),
+                        ),
+                        PopupMenuButton<String>(
+                          icon: Icon(Icons.more_vert, color: Color(0xFF368983)),
+                          itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                            PopupMenuItem<String>(
+                              onTap: ()=>liquidacionesController.goToEditTransaccion(movimiento),
+                              child: Row(
+                                children: [
+                                  Icon(Icons.edit, color: Color(0xFF368983)),
+                                  SizedBox(width: 8),
+                                  Text('Editar transacción'),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                   ],
                 ),

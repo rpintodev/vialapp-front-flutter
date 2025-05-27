@@ -483,15 +483,6 @@ class RegisterPage extends StatelessWidget {
   }
 
 
-  void _saveSignature(BuildContext context) async {
-    if (signatureController.isNotEmpty) {
-      final signature = await signatureController.toPngBytes();
-      registerController.saveSignature(signature!); // Guardar firma en el controlador
-      Navigator.of(context).pop(); // Cierra el diálogo
-    } else {
-      Get.snackbar("Error", "La firma está vacía.", backgroundColor: Colors.red, colorText: Colors.white);
-    }
-  }
 
 
 }

@@ -39,13 +39,14 @@ class RetiroAperturaController extends GetxController{
   RxDouble Entregado = 0.0.obs;
   RxDouble Recibido = 0.0.obs;
 
+  RxBool cargando = false.obs;
 
-  RxBool enProgreso = false.obs;
+  RxBool enProgresoApertura = false.obs;
   RxBool aperturaCompleta = false.obs;
 
 
   void verificarApertura() {
-    enProgreso.value = true;
+    enProgresoApertura.value = true;
 
     final totalEntregado = (int.tryParse(billetes10EntregaController.text) ?? 0) * 10 +
         (int.tryParse(billetes5EntregaController.text) ?? 0) * 5 +
@@ -72,13 +73,15 @@ class RetiroAperturaController extends GetxController{
 
     // Si apertura está completa, deshabilitar los campos y ocultar el botón
     if (aperturaCompleta.value) {
-      enProgreso.value = false;
+      enProgresoApertura.value = false;
     }
   }
 
 
 
   RetiroAperturaController(Usuario usuario, Movimiento movimiento) {
+
+
     this.usuario=usuario;
     this.movimiento=movimiento;
 
@@ -109,6 +112,9 @@ class RetiroAperturaController extends GetxController{
 
   void registarRetiroApertura(BuildContext context, Usuario usuario,Movimiento movimientos) async {
 
+    if (cargando.value) return; // Protección extra
+    cargando.value = true;
+
     try {
 
       String entrega10D = billetes10EntregaController.text.isEmpty ? '0' : billetes10EntregaController.text;
@@ -136,6 +142,7 @@ class RetiroAperturaController extends GetxController{
       Movimiento movimiento = Movimiento(
           id: idmovimiento,
           via: via,
+          idSupervisor: usuarioSession.id,
           entrega20D: '0',
           entrega10D: entrega10D,
           entrega5D: entrega5D,
@@ -170,6 +177,8 @@ class RetiroAperturaController extends GetxController{
     } catch (e) {
       print('Error: $e'); // Depuración
       Get.snackbar('Error', 'Ocurrió un error inesperado');
+    } finally{
+      cargando.value = false;
     }
   }
 

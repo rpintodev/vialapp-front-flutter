@@ -32,6 +32,20 @@ class ReporteRecaudaciones extends StatelessWidget {
           color: Colors.black54,
         ),
         title: const Text('Reporte de Recaudaciones'),
+        actions: [
+          // Botón para guardar en el servidor
+          IconButton(
+            icon: Icon(Icons.cloud_upload),
+            onPressed: () async {
+              // Generar el PDF usando tu función existente
+              final pdfBytes = await pdfRecaudaciones(usuario!,movimientos!);
+
+              // Enviar los bytes al controlador
+              reporteRecaudacionesController.guardarPDFEnServidor(pdfBytes);
+            },
+            tooltip: 'Guardar en servidor',
+          ),
+        ],
       ),
       body: InteractiveViewer(
         panEnabled: false,

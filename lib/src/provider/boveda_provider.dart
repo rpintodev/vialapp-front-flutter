@@ -42,7 +42,7 @@ class BovedaProvider extends GetConnect{
       }
     }
 
-    Get.snackbar('Error', 'No se pudo obtener la información');
+    Get.snackbar('Error', 'No se pudo obtener la información ${response.body.toString()}');
     return null;
   }
 

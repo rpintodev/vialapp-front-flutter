@@ -42,7 +42,7 @@ class RetiroAperturaPage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _sectionTitle('Recibe de Cajero'),
-                  _recibeGrid(!retiroAperturaController.enProgreso.value &&
+                  _recibeGrid(!retiroAperturaController.enProgresoApertura.value &&
                       retiroAperturaController.aperturaCompleta.value),
                   SizedBox(height: 10),
                   Divider(thickness: 1, color: Colors.grey[300]),
@@ -416,6 +416,7 @@ class RetiroAperturaPage extends StatelessWidget {
   }
   /// **Método: Confirmar Retiro de Apertura**
   void _confirmRetiroApertura(BuildContext context) {
+
     bool mostrarTodasDenominaciones = usuario!.idRol == '4';
 
     // Validar valores vacíos y asignar 0 por defecto
@@ -568,12 +569,20 @@ class RetiroAperturaPage extends StatelessWidget {
                 child: Text("Cancelar", style: TextStyle(color: Colors.grey)),
               ),
               ElevatedButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
+                onPressed: retiroAperturaController.cargando.value
+                    ? null
+                    : () async {
                   retiroAperturaController.registarRetiroApertura(context, usuario!, movimiento!);
                 },
-                style: ElevatedButton.styleFrom(backgroundColor: Color(0xFF368983)),
-                child: Text("Confirmar"),
+                child: retiroAperturaController.cargando.value
+                    ? CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                )
+                    : Text('Confirmar'),
+                style: ElevatedButton.styleFrom(
+                  padding: EdgeInsets.symmetric(vertical: 16),
+                  backgroundColor: Color(0xFF368983),
+                ),
               ),
             ],
           ),

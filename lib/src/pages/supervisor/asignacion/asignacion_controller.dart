@@ -197,6 +197,18 @@ class AsignacionController extends GetxController{
     }
   }
 
+  Future<void> enviarBoveda(String idCajero,String idTurno) async {
+    try {
+      var response = await turnoProvider.enviarBoveda(idCajero,idTurno);
+      if (response.isOk) {
+        Get.snackbar('Enviado', 'El usuario ha sido enviado a Boveda');
+        getEstados();
+      }
+    } catch (e) {
+      Get.snackbar('Error', 'Ocurrió un problema al enviar a Boveda: $e');
+    }
+  }
+
 
   void openBottomSheet(BuildContext context, String idturno)async{
     List<Movimiento>? movimientos;

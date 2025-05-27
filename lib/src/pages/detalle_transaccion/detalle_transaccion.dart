@@ -14,7 +14,7 @@ class DetalleTransaccion extends StatelessWidget {
 
   DetalleTransaccion({@required this.movimientos,@required this.bandera}){
     detalleTransaccionController=Get.put(DetalleTransaccionController(movimientos!,bandera!));
-    print('bandera: $bandera');
+    print("IdRol: ${detalleTransaccionController.usuarioSession.roles?.first.id}");
   }
 
 
@@ -43,7 +43,7 @@ class DetalleTransaccion extends StatelessWidget {
               ],
             ),
             // Botón de menú en la esquina superior derecha
-          bandera==0 && detalleTransaccionController.usuarioSession.roles?.first.id!='5'?
+            (bandera==0 || bandera==2) && detalleTransaccionController.usuarioSession.roles?.first.id!='5'?
             Positioned(
               top: 0,
               right: 0,
@@ -105,7 +105,7 @@ class DetalleTransaccion extends StatelessWidget {
                       ),
                       SizedBox(width: 10),
                       Text(
-                        '${movimientos?.first.nombreMovimiento}' ?? '',
+                       bandera==2?'Liquidacion': '${movimientos?.first.nombreMovimiento}' ?? '',
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
@@ -195,7 +195,7 @@ class DetalleTransaccion extends StatelessWidget {
       case 1: // Apertura
         return _buildAperturaDetails();
       case 2: // Retiro Parcial
-        return _buildRetiroParcialDetails();
+        return bandera==2?_buildLiquidacionDetails(): _buildFaltanteDetails();
       case 3: // Canje
         return _buildCanjeDetails();
       case 4: // Liquidación
@@ -203,7 +203,7 @@ class DetalleTransaccion extends StatelessWidget {
       case 5: // Fortius
         return _buildFortiusDetails();
       case 6: // Fortius
-        return _buildLiquidacionDetails();
+        return bandera==2?_buildLiquidacionDetails(): _buildFaltanteDetails();
       case 7: // Fortius
         return _buildTagDetails();
       default:
@@ -357,6 +357,8 @@ class DetalleTransaccion extends StatelessWidget {
     );
   }
 
+
+
   Widget _buildLiquidacionDetails() {
     // Calcula el total de la liquidación actual
 
@@ -417,13 +419,54 @@ class DetalleTransaccion extends StatelessWidget {
         SizedBox(height: 12),
         _confirmButton(movimientos?.first.idturno??'0'),
         SizedBox(height: 10),
-        detalleTransaccionController.usuarioSession.roles?.first.id=='6'?
+        detalleTransaccionController.usuarioSession.roles?.first.id=='6' && (bandera==0 || bandera==2) ?
         _canjeBottom(movimientos?.first.idturno??''):Text(''),
       ],
     );
   }
 
 
+  Widget _buildFaltanteDetails() {
+
+    final totalEntregado = (int.parse(movimientos?.first.entrega10D ?? '0') * 10) +
+        (int.parse(movimientos?.first.entrega5D ?? '0') * 5) +
+        (int.parse(movimientos?.first.entrega1D ?? '0') * 1) +
+        (int.parse(movimientos?.first.entrega50C ?? '0') * 0.5).toDouble() +
+        (int.parse(movimientos?.first.entrega25C ?? '0') * 0.25).toDouble() +
+        (int.parse(movimientos?.first.entrega10C ?? '0') * 0.1).toDouble();
+
+    final totalRecibido = (int.parse(movimientos?.first.recibe20D ?? '0') * 20) +(int.parse(movimientos?.first.entrega10D ?? '0') * 10) +
+        (int.parse(movimientos?.first.recibe5D ?? '0') * 5) +
+        (int.parse(movimientos?.first.recibe1D ?? '0') * 1) +
+        (int.parse(movimientos?.first.recibe50C ?? '0') * 0.5).toDouble() +
+        (int.parse(movimientos?.first.recibe25C ?? '0') * 0.25).toDouble() +
+        (int.parse(movimientos?.first.recibe10C ?? '0') * 0.1).toDouble();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildDenominationList('Recibido:', {
+          '\$20': {'cantidad': int.parse(movimientos?.first.recibe20D ?? '0'), 'icon': 'assets/img/billete.png'},
+          '\$10': {'cantidad': int.parse(movimientos?.first.recibe10D ?? '0'), 'icon': 'assets/img/billete.png'},
+          '\$5': {'cantidad': int.parse(movimientos?.first.recibe5D ?? '0'), 'icon': 'assets/img/billete.png'},
+          '\$1': {'cantidad': int.parse(movimientos?.first.recibe1D ?? '0'), 'icon': 'assets/img/moneda.png'},
+          '50C': {'cantidad': int.parse(movimientos?.first.recibe50C ?? '0'), 'icon': 'assets/img/moneda.png'},
+          '25C': {'cantidad': int.parse(movimientos?.first.recibe25C ?? '0'), 'icon': 'assets/img/moneda.png'},
+          '10C': {'cantidad': int.parse(movimientos?.first.recibe10C ?? '0'), 'icon': 'assets/img/moneda.png'},
+        }),SizedBox(height: 8),SizedBox(width: 15),
+        _buildDenominationList('Entregado:', {
+          '\$10': {'cantidad': int.parse(movimientos?.first.entrega10D ?? '0'), 'icon': 'assets/img/billete.png'},
+          '\$5': {'cantidad': int.parse(movimientos?.first.entrega5D ?? '0'), 'icon': 'assets/img/billete.png'},
+          '\$1': {'cantidad': int.parse(movimientos?.first.entrega1D ?? '0'), 'icon': 'assets/img/moneda.png'},
+          '50C': {'cantidad': int.parse(movimientos?.first.entrega50C ?? '0'), 'icon': 'assets/img/moneda.png'},
+          '25C': {'cantidad': int.parse(movimientos?.first.entrega25C ?? '0'), 'icon': 'assets/img/moneda.png'},
+          '10C': {'cantidad': int.parse(movimientos?.first.entrega5C ?? '0'), 'icon': 'assets/img/moneda.png'},
+        }),
+        SizedBox(height: 8),
+        _detailRow('Total:', '\$${totalRecibido-totalEntregado}'),
+      ],
+    );
+  }
 
 
   Widget _buildFortiusDetails() {
@@ -541,7 +584,7 @@ class DetalleTransaccion extends StatelessWidget {
     return Center(
       child: ElevatedButton(
         onPressed: () {
-          detalleTransaccionController.goToFaltantes(idturno,0);
+          detalleTransaccionController.goToFaltantes(idturno);
         },
         style: ElevatedButton.styleFrom(
           backgroundColor: Color(0xFF368983),

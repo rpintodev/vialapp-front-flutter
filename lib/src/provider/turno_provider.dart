@@ -27,10 +27,13 @@ class TurnoProvider extends GetConnect{
     return response;
   }
 
-  Future<List<Turno>> getAll() async {
+  Future<List<Turno>> getAll(String idTurno) async {
 
-    Response response = await get(
-        '$url/getall',
+    Response response = await post(
+        '$url/getAll',
+        {
+          'IdTurno': idTurno
+        },
         headers: {
           'Content-type': 'application/json',
           'Authorization': usuario.sessionToken??''
@@ -62,7 +65,7 @@ class TurnoProvider extends GetConnect{
     if (response.statusCode == 401) {
       Get.snackbar('Petición Denegada', 'No tienes permiso para realizar esta acción');
     }
-    print(idCajero);
+
 
     return response;
   }
@@ -72,6 +75,27 @@ class TurnoProvider extends GetConnect{
       '$url/enviarTurno',
       {
         'IdCajero': idCajero
+      },
+      headers: {
+        'Content-type': 'application/json',
+        'Authorization': usuario.sessionToken ?? ''
+      },
+    );
+
+    if (response.statusCode == 401) {
+      Get.snackbar('Petición Denegada', 'No tienes permiso para realizar esta acción');
+    }
+
+    return response;
+  }
+
+  Future<Response> enviarBoveda(String idCajero,String idTurno) async {
+    Response response = await post(
+      '$url/enviarBoveda',
+      {
+        'IdCajero': idCajero,
+        'IdTurno': idTurno
+
       },
       headers: {
         'Content-type': 'application/json',

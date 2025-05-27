@@ -11,6 +11,7 @@ class RetiroParcialController extends GetxController{
   MovimientoProvider movimientoProvider=MovimientoProvider();
   Usuario usuarioSession = Usuario.fromJson(GetStorage().read('usuario')??{});
   Usuario? usuario;
+  RxBool cargando = false.obs;
 
 
   TextEditingController billetes20Controller = TextEditingController();
@@ -28,6 +29,8 @@ class RetiroParcialController extends GetxController{
 
   void registarRetiroParcial(BuildContext context, Usuario usuario) async {
 
+    if (cargando.value) return; // Protección extra
+    cargando.value = true;
     try {
 
 
@@ -84,6 +87,8 @@ class RetiroParcialController extends GetxController{
     } catch (e) {
       print('Error: $e'); // Depuración
       Get.snackbar('Error', 'Ocurrió un error inesperado');
+    }finally{
+      cargando.value = false;
     }
   }
 

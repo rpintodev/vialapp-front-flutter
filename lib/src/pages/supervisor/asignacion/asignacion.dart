@@ -133,7 +133,7 @@ class AsignacionPage extends StatelessWidget {
 
         return GestureDetector(
           onTap: () => cardIndex == 2
-              ? asignacionController.openBottomSheetLiquidacion(context, usuario.idTurno ?? '0',0)
+              ? asignacionController.openBottomSheetLiquidacion(context, usuario.idTurno ?? '0',2)
               : asignacionController.openBottomSheet(context, usuario.idTurno ?? '0'),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
@@ -280,6 +280,9 @@ class AsignacionPage extends StatelessWidget {
               ],
             ),
             onTap: () {
+              aperturaEstado == "Sin Apertura" ?
+              asignacionController.goToApertura(usuario)
+                :
               asignacionController.goToRetiroApertura(usuario, asignacionController.movimiento);
 
             },
@@ -359,8 +362,21 @@ class AsignacionPage extends StatelessWidget {
                 ],
               ),
             ),
+          ), ],
+        if(asignacionController.usuario.roles?.first.id=='1')...[
+          PopupMenuItem<String>(
+            child: Row(
+              children: [
+                Icon(Icons.arrow_forward_ios_sharp, color: Colors.orange),
+                SizedBox(width: 10),
+                Text("Enviar a Boveda"),
+              ],
+            ),
+            onTap:() =>
+            asignacionController.enviarBoveda(usuario.id??'',usuario.idTurno??''),
+
           ),
-          ],
+         ],
         ];
       case 1:
         return [
@@ -456,6 +472,28 @@ class AsignacionPage extends StatelessWidget {
               ],
             ),
             onTap: () {
+
+              aperturaEstado == "Sin Apertura" ?
+              Get.dialog(
+                AlertDialog(
+                  title: Text("Sin Apertura!"),
+                  content: Text("No se puede enviar a turno sin asignar una apertura al usuario: ${usuario.nombre} ${usuario.apellido}"),
+                  actions: [
+                    TextButton(
+                      onPressed: () {
+                        Get.back(); // Cierra el diálogo
+                      },
+                      child: Text("Regresar"),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        asignacionController.goToApertura(usuario); // Cierra el diálogo
+                      },
+                      child: Text("Asignar apertura"),
+                    ),
+                  ],
+                ),
+              ):
               // Mostrar el cuadro de diálogo de confirmación
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 _showTurnoConfirmationDialog(context, usuario);
@@ -481,7 +519,7 @@ class AsignacionPage extends StatelessWidget {
             }):
             Get.dialog(
               AlertDialog(
-                title: Text("Apertura Incompleta! $aperturaEstado"),
+                title: Text("Apertura Incompleta!"),
                 content: Text("No se ha retirado la apertura de ${usuario.nombre} ${usuario.apellido}"),
                 actions: [
                   TextButton(
@@ -550,7 +588,11 @@ class AsignacionPage extends StatelessWidget {
             (int.tryParse(movimiento.entrega5D ?? '0') ?? 0) * 5 +
             (int.tryParse(movimiento.entrega1D ?? '0') ?? 0) * 1 +
             ((int.tryParse(movimiento.entrega50C ?? '0') ?? 0) * 0.5).toDouble() +
-            ((int.tryParse(movimiento.entrega25C ?? '0') ?? 0) * 0.25).toDouble()
+            ((int.tryParse(movimiento.entrega25C ?? '0') ?? 0) * 0.25).toDouble() +
+            ((int.tryParse(movimiento.entrega5C ?? '0') ?? 0) * 0.05).toDouble() +
+            ((int.tryParse(movimiento.entrega10C ?? '0') ?? 0) * 0.1).toDouble() +
+            ((int.tryParse(movimiento.entrega1C ?? '0') ?? 0) * 0.01).toDouble()
+
     ;
 
     final totalRecibido =
@@ -559,7 +601,10 @@ class AsignacionPage extends StatelessWidget {
             (int.tryParse(movimiento.recibe5D ?? '0') ?? 0) * 5+
             (int.tryParse(movimiento.recibe1D ?? '0') ?? 0) * 1+
             ((int.tryParse(movimiento.recibe50C ?? '0') ?? 0) * 0.5).toDouble() +
-            ((int.tryParse(movimiento.recibe25C ?? '0') ?? 0) * 0.25).toDouble()
+            ((int.tryParse(movimiento.recibe25C ?? '0') ?? 0) * 0.25).toDouble() +
+            ((int.tryParse(movimiento.recibe5C ?? '0') ?? 0) * 0.05).toDouble() +
+            ((int.tryParse(movimiento.recibe10C ?? '0') ?? 0) * 0.1).toDouble() +
+            ((int.tryParse(movimiento.recibe1C ?? '0') ?? 0) * 0.1).toDouble()
     ;
 
     return ( totalEntregado-totalRecibido) == 0

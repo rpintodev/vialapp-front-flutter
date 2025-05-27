@@ -70,10 +70,13 @@ class UsuariosSupController extends GetxController{
     if (response.statusCode == 201) {
       Get.snackbar('Asignación Exitosa', 'Los usuarios han sido asignados al turno');
       Get.offNamedUntil('/home', (route) => false, arguments: {'index': 2});
-    } else {
-      Get.snackbar('ERROR AL ASIGNAR', response.statusText ?? 'Ocurrió un error');
+    } if(response.statusCode ==400){
+    Get.snackbar('ERROR AL ASIGNAR ', 'Es posible que uno de los cajeros del grupo ya este en turno');
+    }else{
+
     }
-  }
+
+}
 
 
 

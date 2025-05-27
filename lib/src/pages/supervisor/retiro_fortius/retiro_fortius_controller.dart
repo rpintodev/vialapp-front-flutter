@@ -11,6 +11,7 @@ class RetiroFortiusController extends GetxController{
   MovimientoProvider movimientoProvider=MovimientoProvider();
   Usuario usuarioSession = Usuario.fromJson(GetStorage().read('usuario')??{});
   Usuario? usuario;
+  final selectedTurno = 0.obs;
 
 
   TextEditingController billetes20Controller = TextEditingController();
@@ -27,6 +28,7 @@ class RetiroFortiusController extends GetxController{
 
   RetiroFortiusController(Usuario usuario) {
     this.usuario=usuario;
+
   }
 
 
@@ -35,18 +37,9 @@ class RetiroFortiusController extends GetxController{
     try {
 
       DateTime now = DateTime.now();
-      String turno;
+      String turno=selectedTurno.value.toString();
 
-      // Determinar el turno basado en la hora actual
-      if (now.hour >= 0 && now.hour < 8) {
-        turno = '3';
-      } else if (now.hour >= 8 && now.hour < 16) {
-        turno = '1';
-      } else if (now.hour >= 16 && now.hour < 23) {
-        turno = '2';
-      } else {
-        turno = '0'; // Turno desconocido
-      }
+
 
       String entrega1C = Moneda1EntregaController.text.isEmpty ? '0' : Moneda1EntregaController.text;
       String entrega5C = Moneda5EntregaController.text.isEmpty ? '0' : Moneda5EntregaController.text;

@@ -37,6 +37,8 @@ Future<Uint8List> pdfInformeBoveda(List<Boveda> bovedas, List<Movimiento> movimi
 
   final registrosTurno1 = registrosFortius.where((m) => m.turno == '1').toList();
   final registrosTurno3 = registrosFortius.where((m) => m.turno == '3').toList();
+  
+  final canjeFortius = registrosFortius.firstWhere((m)=>(int.tryParse(m.recibe5D??'')??0)>0||(int.tryParse(m.recibe1D??'')??0)>0, orElse: () => Movimiento());
 
   final liquidacionesFiltradas = liquidaciones.where((m) {
     final fechaMovimiento = DateTime.parse(m.fecha ?? '');
@@ -53,55 +55,58 @@ Future<Uint8List> pdfInformeBoveda(List<Boveda> bovedas, List<Movimiento> movimi
 
   DateTime horaInicio;
   DateTime horaFin;
-  String supervisor1;
-  String supervisor2;
-
+  DateTime fechaInicio;
   if (horaActual >= 8 && horaActual <= 20) {
     // Entre 5am y
 
-    supervisor1 = registrosTurno1.isNotEmpty
-        ? registrosTurno1.first.nombreSupervisor ?? 'Sin Supervisor'
-        : '${usuarioSessio.nombre} ${usuarioSessio.apellido}'??'';
-
-    supervisor2 = registrosTurno3.isNotEmpty
-        ? registrosTurno3.first.nombreSupervisor ?? 'Sin Supervisor'
-        : '${usuarioSessio.nombre} ${usuarioSessio.apellido}'??'';
 
     horaInicio = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day, 8, 0); // 08:00h
+    usuarioSessio.idPeaje=='2'?
+    horaFin = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day, 18, 0): // 20:00h
     horaFin = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day, 20, 0); // 20:00h
+    fechaInicio =DateTime.now();
   } else {
     // Entre 4pm y 6am
     if (horaActual >= 20) {
 
-      supervisor1 = registrosTurno3.isNotEmpty
-          ? registrosTurno3.first.nombreSupervisor ?? 'Sin Supervisor'
-          : '${usuarioSessio.nombre} ${usuarioSessio.apellido}'??'';
-
-      supervisor2 = registrosTurno3.isNotEmpty
-          ? registrosTurno3.first.nombreSupervisor ?? 'Sin Supervisor'
-          : '${usuarioSessio.nombre} ${usuarioSessio.apellido}'??'';
 
       // Si está entre las 4pm y medianoche
+      usuarioSessio.idPeaje=='2'?
+      horaInicio = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day, 18, 0): // 20:00h
       horaInicio = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day, 20, 0); // 20:00h
       horaFin = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day + 1, 8, 0); // 08:00h del día siguiente
+      fechaInicio =DateTime.now();
+
     } else {
 
-      supervisor1 = registrosTurno3.isNotEmpty
-          ? registrosTurno3.first.nombreSupervisor ?? 'Sin Supervisor'
-          : '${usuarioSessio.nombre} ${usuarioSessio.apellido}'??'';
 
-      supervisor2 =  '${usuarioSessio.nombre} ${usuarioSessio.apellido}'??'';
       // Si está entre medianoche y las 6am
+      usuarioSessio.idPeaje=='2'?
+      horaInicio = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day - 1, 18, 0):// 20:00h del día anterior
       horaInicio = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day - 1, 20, 0); // 20:00h del día anterior
       horaFin = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day, 8, 0); // 08:00h
+      fechaInicio=DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day - 1);
     }
   }
+
+  final totalCaje = (((int.tryParse(canjeFortius.entrega20D ?? '0') ?? 0) * 20) +
+  ((int.tryParse(canjeFortius.entrega10D ?? '0') ?? 0) * 10) +
+  ((int.tryParse(canjeFortius.entrega5D ?? '0') ?? 0) * 5) +
+  ((int.tryParse(canjeFortius.entrega1D ?? '0') ?? 0) * 1) +
+  ((int.tryParse(canjeFortius.entrega50C ?? '0') ?? 0) * 0.5) +
+  ((int.tryParse(canjeFortius.entrega25C ?? '0') ?? 0) * 0.25) +
+  ((int.tryParse(canjeFortius.entrega10C ?? '0') ?? 0) * 0.1) +
+  ((int.tryParse(canjeFortius.entrega5C ?? '0') ?? 0) * 0.05) +
+  ((int.tryParse(canjeFortius.entrega1C ?? '0') ?? 0) * 0.01));
 
   // Formatear las horas a "HH:mm"
   String formattedHoraInicio = DateFormat('HH:mm').format(horaInicio);
   String formattedHoraFin = DateFormat('HH:mm').format(horaFin);
-  String formattedFechaHoy=DateFormat('dd-MM-yyyy').format(DateTime.now());
+  String formattedFechaFin=DateFormat('dd-MM-yyyy').format(DateTime.now());
+  String formattedFechaInicio=DateFormat('dd-MM-yyyy').format(fechaInicio);
 
+  final signatureSupervisor1 = await fetchSignature(aperturas.first.firmasupervisor);
+  final signatureSupervisor2 = await fetchSignature(usuarioSessio.firma);
 
 
   final totalRecaudacion = _calculateTotalRecaudacion(retirosFiltrados, liquidacionesFiltradas);
@@ -117,8 +122,14 @@ Future<Uint8List> pdfInformeBoveda(List<Boveda> bovedas, List<Movimiento> movimi
             // Encabezado
             pw.Row(
               children: [
-                pw.Image(logo, width: 60, height: 40),
-                pw.SizedBox(width: 100),
+                pw.Column(
+                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                  children: [
+                    pw.Image(logo, width: 60, height: 40),
+                  ],
+                ),pw.SizedBox(width: 10),pw.Text("${usuarioSessio.nombrePeaje}", style: pw.TextStyle(fontSize: 10)),
+                pw.SizedBox(width: 75),
+
                 pw.Text('INFORME DE BÓVEDA', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
               ],
             ),
@@ -135,13 +146,14 @@ Future<Uint8List> pdfInformeBoveda(List<Boveda> bovedas, List<Movimiento> movimi
                 pw.TableRow(children: [
 
                   pw.Container(color: PdfColors.blue50,padding: pw.EdgeInsets.all(2),child: pw.Text("Nombre Custodio Inicio:", style: pw.TextStyle(fontSize: 8)),),
-                  pw.Padding(padding: pw.EdgeInsets.all(2), child: pw.Text("$supervisor1", style: pw.TextStyle(fontSize: 8))),
+                  pw.Padding(padding: pw.EdgeInsets.all(2), child: pw.Text("${aperturas.first.nombreSupervisor}", style: pw.TextStyle(fontSize: 8))),
                   pw.Container(color: PdfColors.blue50,padding: pw.EdgeInsets.all(2), child: pw.Text("Nombre Custodio Recibe:", style: pw.TextStyle(fontSize:8))),
-                  pw.Padding(padding: pw.EdgeInsets.all(2), child: pw.Text("$supervisor2", style: pw.TextStyle(fontSize: 8))),
+                  pw.Padding(padding: pw.EdgeInsets.all(2), child: pw.Text("${usuarioSessio.nombre} ${usuarioSessio.apellido}", style: pw.TextStyle(fontSize: 8))),
                 ]),
                 pw.TableRow(children: [
 
                   pw.Container(color: PdfColors.blue50,padding: pw.EdgeInsets.all(2),child: pw.Text("Hora inicio:", style: pw.TextStyle(fontSize: 8)),),
+
                   pw.Padding(padding: pw.EdgeInsets.all(2), child: pw.Text(formattedHoraInicio, style: pw.TextStyle(fontSize: 8))),
                   pw.Container(color: PdfColors.blue50,padding: pw.EdgeInsets.all(2), child: pw.Text("Hora final:", style: pw.TextStyle(fontSize: 8))),
                   pw.Padding(padding: pw.EdgeInsets.all(2), child: pw.Text(formattedHoraFin, style: pw.TextStyle(fontSize: 8))),
@@ -162,9 +174,12 @@ Future<Uint8List> pdfInformeBoveda(List<Boveda> bovedas, List<Movimiento> movimi
                   pw.Container(
                     decoration: pw.BoxDecoration(color: PdfColors.blue50,border: pw.Border.all()),padding: pw.EdgeInsets.all(3),child: pw.Text("Fecha Inicial", style: pw.TextStyle(fontSize: 8)),),
                   pw.Container(
-                      decoration: pw.BoxDecoration(border: pw.Border.all()),padding: pw.EdgeInsets.all(3), child: pw.Text(formattedFechaHoy, style: pw.TextStyle(fontSize: 8 ))),
-                  pw.Container(),
-                  pw.Container(),
+                      decoration: pw.BoxDecoration(border: pw.Border.all()),padding: pw.EdgeInsets.all(3), child: pw.Text(formattedFechaInicio, style: pw.TextStyle(fontSize: 8 ))),
+                   pw.Container(
+                    decoration: pw.BoxDecoration(color: PdfColors.blue50,border: pw.Border.all()),padding: pw.EdgeInsets.all(3),child: pw.Text("Fecha Fin", style: pw.TextStyle(fontSize: 8)),),
+                  pw.Container(
+                      decoration: pw.BoxDecoration(border: pw.Border.all()),padding: pw.EdgeInsets.all(3), child: pw.Text(formattedFechaFin, style: pw.TextStyle(fontSize: 8 ))),
+
                 ]),
 
               ],
@@ -311,6 +326,7 @@ Future<Uint8List> pdfInformeBoveda(List<Boveda> bovedas, List<Movimiento> movimi
               ],
             ),
             _buildDepositosDiaTable(registrosFortius),
+
             pw.Table(
               border: pw.TableBorder.all(),
               columnWidths: {
@@ -389,8 +405,29 @@ Future<Uint8List> pdfInformeBoveda(List<Boveda> bovedas, List<Movimiento> movimi
                 ]),
                 pw.TableRow(children: [
                   pw.Padding(padding: pw.EdgeInsets.all(3), child: pw.Text("${aperturas.first.nombreSupervisor}", textAlign: pw.TextAlign.start,style: pw.TextStyle(fontSize: 7))),
-                  pw.Padding(padding: pw.EdgeInsets.all(3), child: pw.Text("${usuarioSessio.nombre}", textAlign: pw.TextAlign.start,style: pw.TextStyle(fontSize: 7))),
+                  pw.Padding(padding: pw.EdgeInsets.all(3), child: pw.Text("${usuarioSessio.nombre} ${usuarioSessio.apellido}", textAlign: pw.TextAlign.start,style: pw.TextStyle(fontSize: 7))),
                 ]),
+                pw.TableRow(
+                  children: [
+                    pw.Padding(
+                      padding: pw.EdgeInsets.all(5),
+                      child: pw.Center(
+                        child: signatureSupervisor1 != null
+                            ? pw.Image(signatureSupervisor1, height: 40, width: 40)
+                            : pw.Text("Sin firma"),
+                      ),
+                    ),
+                    pw.Padding(
+                      padding: pw.EdgeInsets.all(5),
+                      child: pw.Center(
+                        child: signatureSupervisor2 != null
+                            ? pw.Image(signatureSupervisor2, height: 40, width: 40)
+                            : pw.Text("Sin firma"),
+                      ),
+                    ),
+
+                  ],
+                ),
 
 
               ],
@@ -401,6 +438,179 @@ Future<Uint8List> pdfInformeBoveda(List<Boveda> bovedas, List<Movimiento> movimi
       },
     ),
   );
+
+  canjeFortius!=Movimiento()?
+  pdf.addPage(
+      pw.Page(
+          pageFormat: PdfPageFormat.a4,
+          build: (context) {
+            return pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                // Header: Logo y nombre del peaje
+                pw.Row(
+                  children: [
+                    pw.Column(
+                      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                      children: [
+                        pw.Image(logo, width: 60, height: 40),
+                        pw.Text("Peaje ${usuarioSessio.idPeaje == null ? 'Desconocido' : (usuarioSessio.idPeaje == '1' ? 'Congoma' : 'Los Angeles')}", style: pw.TextStyle(fontSize: 10)),
+                      ],
+                    ),pw.SizedBox(width: 100),
+                    pw.Text('CANJE - FORTIUS', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+
+                  ],
+                ), pw.SizedBox(height: 10),
+                pw.Table(
+                  columnWidths: {
+                    0: pw.FlexColumnWidth(1.3), // Primera columna
+                    1: pw.FlexColumnWidth(1.7), // Segunda columna
+                    2: pw.FlexColumnWidth(1.3),// Tercera columna
+                    3: pw.FlexColumnWidth(1.7),// Cuarta columna
+                  },
+                  children: [
+
+                    // Fila 1
+                    pw.TableRow(children: [
+                      pw.Container(
+                        decoration: pw.BoxDecoration(color: PdfColors.blue50,border: pw.Border.all()),padding: pw.EdgeInsets.all(4),child: pw.Text("TOTAL", style: pw.TextStyle(fontSize: 10)),),
+                      pw.Container(
+                          decoration: pw.BoxDecoration(border: pw.Border.all()),padding: pw.EdgeInsets.all(4), child: pw.Text('\$$totalCaje', style: pw.TextStyle(fontSize: 10))),
+                      pw.Container(),
+                      pw.Container(),
+                    ]),
+
+                  ],
+                ),
+                pw.SizedBox(height: 10),
+                pw.Table(
+                  border: pw.TableBorder.all(),
+                  columnWidths: {
+
+                    1: pw.FlexColumnWidth(1),
+                  },
+                  children: [
+                    pw.TableRow(
+                      children: [
+                        pw.Container(
+                          color: PdfColors.blue100,
+                          padding: pw.EdgeInsets.all(4),
+                          child: pw.Align(
+                              alignment: pw.Alignment.center,
+
+                              child: pw.Text("DETALLE DE DENOMINACIONES DEL CANJE", style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold))
+                          ),
+
+                        ),
+
+                      ],
+                    ),
+                  ],
+                ),
+
+            pw.Table(
+              border: pw.TableBorder.all(),
+                columnWidths: {
+                0: pw.FlexColumnWidth(1),
+                1: pw.FlexColumnWidth(1),
+                2: pw.FlexColumnWidth(1),
+                3: pw.FlexColumnWidth(1),
+                4: pw.FlexColumnWidth(1),
+                5: pw.FlexColumnWidth(1),
+                },
+                children: [
+                // Cabecera de la tabla
+                pw.TableRow(
+                decoration: pw.BoxDecoration(color: PdfColors.blue50),
+                  children: [
+                  pw.Padding(padding: pw.EdgeInsets.all(4), child: pw.Text('Denominacion Recibida', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10), textAlign: pw.TextAlign.center)),
+                  pw.Padding(padding: pw.EdgeInsets.all(4), child: pw.Text('Cantidad', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10), textAlign: pw.TextAlign.center)),
+                  pw.Padding(padding: pw.EdgeInsets.all(4), child: pw.Text('Valor', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10), textAlign: pw.TextAlign.center)),
+                  pw.Padding(padding: pw.EdgeInsets.all(4), child: pw.Text('Denominacion Recibida', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10), textAlign: pw.TextAlign.center)),
+                  pw.Padding(padding: pw.EdgeInsets.all(4), child: pw.Text('Cantidad', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10), textAlign: pw.TextAlign.center)),
+                  pw.Padding(padding: pw.EdgeInsets.all(4), child: pw.Text('Valor', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10), textAlign: pw.TextAlign.center)),
+                  ],
+                ),
+                // Filas de billetes
+                 pw.TableRow(
+                  children: [
+                  pw.Padding(padding: pw.EdgeInsets.all(4), child: pw.Text('\$5', style: pw.TextStyle(fontSize: 10), textAlign: pw.TextAlign.center)),
+                  pw.Padding(padding: pw.EdgeInsets.all(4), child: pw.Text(canjeFortius.recibe5D??'', style: pw.TextStyle(fontSize: 10), textAlign: pw.TextAlign.center)),
+                  pw.Padding(padding: pw.EdgeInsets.all(4), child: pw.Text('\$${(int.tryParse(canjeFortius.recibe5D??'')??0)*5}', style: pw.TextStyle(fontSize: 10), textAlign: pw.TextAlign.center)),
+                  pw.Padding(padding: pw.EdgeInsets.all(4), child: pw.Text('\$20', style: pw.TextStyle(fontSize: 10), textAlign: pw.TextAlign.center)),
+                  pw.Padding(padding: pw.EdgeInsets.all(4), child: pw.Text(canjeFortius.entrega20D??'', style: pw.TextStyle(fontSize: 10), textAlign: pw.TextAlign.center)),
+                  pw.Padding(padding: pw.EdgeInsets.all(4), child: pw.Text('\$${(int.tryParse(canjeFortius.entrega20D??'')??0)*20}',style: pw.TextStyle(fontSize: 10), textAlign: pw.TextAlign.center)),
+                  ],
+                ),
+
+                  pw.TableRow(
+                    children: [
+                      pw.Padding(padding: pw.EdgeInsets.all(4), child: pw.Text('\$1', style: pw.TextStyle(fontSize: 10), textAlign: pw.TextAlign.center)),
+                      pw.Padding(padding: pw.EdgeInsets.all(4), child: pw.Text(canjeFortius.recibe1D??'', style: pw.TextStyle(fontSize: 10), textAlign: pw.TextAlign.center)),
+                      pw.Padding(padding: pw.EdgeInsets.all(4), child: pw.Text('\$${(int.tryParse(canjeFortius.recibe1D??'')??0)*1}',style: pw.TextStyle(fontSize: 10), textAlign: pw.TextAlign.center)),
+                      pw.Padding(padding: pw.EdgeInsets.all(4), child: pw.Text('\$10', style: pw.TextStyle(fontSize: 10), textAlign: pw.TextAlign.center)),
+                      pw.Padding(padding: pw.EdgeInsets.all(4), child: pw.Text(canjeFortius.entrega10D??'', style: pw.TextStyle(fontSize: 10), textAlign: pw.TextAlign.center)),
+                      pw.Padding(padding: pw.EdgeInsets.all(4), child: pw.Text('\$${(int.tryParse(canjeFortius.entrega10D??'')??0)*10}', style: pw.TextStyle(fontSize: 10), textAlign: pw.TextAlign.center)),
+                    ],
+                  ),
+
+              ],
+            ), pw.SizedBox(height: 10),
+
+
+
+
+
+                pw.Table(
+                  columnWidths: {
+                    0: pw.FlexColumnWidth(1),
+                    1: pw.FlexColumnWidth(1),
+                    2: pw.FlexColumnWidth(1),
+                  },
+                  children: [
+                    pw.TableRow(children: [
+                      pw.Container(
+                          decoration: pw.BoxDecoration(border: pw.Border.all()),padding: pw.EdgeInsets.all(3), child: pw.Text("Supervisor 1", textAlign: pw.TextAlign.center,style: pw.TextStyle(fontSize: 9))),
+                      pw.Container(
+                          decoration: pw.BoxDecoration(border: pw.Border.all()),padding: pw.EdgeInsets.all(3), child: pw.Text("Supervisor 2", textAlign: pw.TextAlign.center,style: pw.TextStyle(fontSize: 9))),
+                    ]),
+                    pw.TableRow(children: [
+                      pw.Padding(padding: pw.EdgeInsets.all(3), child: pw.Text("${aperturas.first.nombreSupervisor}", textAlign: pw.TextAlign.start,style: pw.TextStyle(fontSize: 7))),
+                      pw.Padding(padding: pw.EdgeInsets.all(3), child: pw.Text("${usuarioSessio.nombre} ${usuarioSessio.apellido}", textAlign: pw.TextAlign.start,style: pw.TextStyle(fontSize: 7))),
+                    ]),
+
+                    pw.TableRow(
+                      children: [
+                        pw.Padding(
+                          padding: pw.EdgeInsets.all(5),
+                          child: pw.Center(
+                            child: signatureSupervisor1 != null
+                                ? pw.Image(signatureSupervisor1, height: 40, width: 40)
+                                : pw.Text("Sin firma"),
+                          ),
+                        ),
+                        pw.Padding(
+                          padding: pw.EdgeInsets.all(5),
+                          child: pw.Center(
+                            child: signatureSupervisor2 != null
+                                ? pw.Image(signatureSupervisor2, height: 40, width: 40)
+                                : pw.Text("Sin firma"),
+                          ),
+                        ),
+
+                      ],
+                    ),
+
+                  ],
+                ),
+
+              ],
+
+            );
+          }
+      )
+  ):'';
+
 
   return pdf.save();
 }
@@ -457,7 +667,7 @@ double _calculateTotalLiquidaciones(List<Movimiento> movimientos) {
       .fold<double>(
     0,
         (sum, m) => sum +
-        ((int.tryParse(m.recibe20D ?? '0') ?? 0) * 20) +
+            (((int.tryParse(m.recibe20D ?? '0') ?? 0) *20) +
         ((int.tryParse(m.recibe10D ?? '0') ?? 0) * 10) +
         ((int.tryParse(m.recibe5D ?? '0') ?? 0) * 5) +
         ((int.tryParse(m.recibe1D ?? '0') ?? 0) * 1) +
@@ -465,7 +675,7 @@ double _calculateTotalLiquidaciones(List<Movimiento> movimientos) {
         ((int.tryParse(m.recibe25C ?? '0') ?? 0) * 0.25).toDouble() +
         ((int.tryParse(m.recibe10C ?? '0') ?? 0) * 0.1).toDouble() +
         ((int.tryParse(m.recibe5C ?? '0') ?? 0) * 0.05).toDouble()+
-        ((int.tryParse(m.recibe1C ?? '0') ?? 0) * 0.01).toDouble()  -
+        ((int.tryParse(m.recibe1C ?? '0') ?? 0) * 0.01).toDouble())  -
         (((int.tryParse(m.entrega10D ?? '0') ?? 0) * 10) +
             ((int.tryParse(m.entrega5D ?? '0') ?? 0) * 5) +
             ((int.tryParse(m.entrega1D ?? '0') ?? 0) * 1)+
@@ -477,6 +687,7 @@ double _calculateTotalLiquidaciones(List<Movimiento> movimientos) {
   );
 }
 
+
 /// **Construir tabla de depósitos del día con total general**
 pw.Widget _buildDepositosDiaTable(List<Movimiento> movimientos) {
   // Agrupar por turno
@@ -484,34 +695,56 @@ pw.Widget _buildDepositosDiaTable(List<Movimiento> movimientos) {
   double totalGeneral = 0;
 
   final rows = turnos.map((turno) {
-    final registrosTurno = movimientos.where((m) => int.tryParse(m.turno ?? '0') == turno && m.idTipoMovimiento == '5').toList();
+    final movimientosTurno = movimientos.where((m) =>
+    int.tryParse(m.turno ?? '0') == turno &&
+        m.idTipoMovimiento == '5'
+    ).toList();
 
-    final totalTurno = registrosTurno.fold<double>(
-      0,
-          (sum, m) => sum +
-              (((int.tryParse(m.entrega20D ?? '0') ?? 0) * 20) +
-          ((int.tryParse(m.entrega10D ?? '0') ?? 0) * 10) +
-          ((int.tryParse(m.entrega5D ?? '0') ?? 0) * 5) +
-          ((int.tryParse(m.entrega1D ?? '0') ?? 0) * 1) +
-          ((int.tryParse(m.entrega50C ?? '0') ?? 0) * 0.5) +
-          ((int.tryParse(m.entrega25C ?? '0') ?? 0) * 0.25) +
-          ((int.tryParse(m.entrega10C ?? '0') ?? 0) * 0.1) +
-          ((int.tryParse(m.entrega5C ?? '0') ?? 0) * 0.05) +
-          ((int.tryParse(m.entrega1C ?? '0') ?? 0) * 0.01)) -
-              (((int.tryParse(m.recibe20D ?? '0') ?? 0) * 20) +
-                  ((int.tryParse(m.recibe10D ?? '0') ?? 0) * 10) +
-                  ((int.tryParse(m.recibe5D ?? '0') ?? 0) * 5) +
-                  ((int.tryParse(m.recibe1D ?? '0') ?? 0) * 1) +
-                  ((int.tryParse(m.recibe50C ?? '0') ?? 0) * 0.5) +
-                  ((int.tryParse(m.recibe25C ?? '0') ?? 0) * 0.25) +
-                  ((int.tryParse(m.recibe10C ?? '0') ?? 0) * 0.1) +
-                  ((int.tryParse(m.recibe5C ?? '0') ?? 0) * 0.05) +
-                  ((int.tryParse(m.recibe1C ?? '0') ?? 0) * 0.01)),
-    );
+    // Si no hay registros para este turno, maneja el caso vacío
+    if (movimientosTurno.isEmpty) {
+      return pw.TableRow(
+        children: [
+          pw.Padding(
+            padding: pw.EdgeInsets.all(2),
+            child: pw.Text('Turno $turno', style: pw.TextStyle(fontSize: 8), textAlign: pw.TextAlign.center),
+          ),
+          pw.Padding(
+            padding: pw.EdgeInsets.all(2),
+            child: pw.Text('N/A', style: pw.TextStyle(fontSize: 8), textAlign: pw.TextAlign.center),
+          ),
+          pw.Padding(
+            padding: pw.EdgeInsets.all(2),
+            child: pw.Text('\$0.00', style: pw.TextStyle(fontSize: 8), textAlign: pw.TextAlign.center),
+          ),
+        ],
+      );
+    }
+
+    // Obtener el último registro del turno
+    final registrosTurno = movimientosTurno.last;
+    final totalTurno =
+          (((int.tryParse(registrosTurno.entrega20D ?? '0') ?? 0) * 20) +
+              ((int.tryParse(registrosTurno.entrega10D ?? '0') ?? 0) * 10) +
+              ((int.tryParse(registrosTurno.entrega5D ?? '0') ?? 0) * 5) +
+              ((int.tryParse(registrosTurno.entrega1D ?? '0') ?? 0) * 1) +
+              ((int.tryParse(registrosTurno.entrega50C ?? '0') ?? 0) * 0.5) +
+              ((int.tryParse(registrosTurno.entrega25C ?? '0') ?? 0) * 0.25) +
+              ((int.tryParse(registrosTurno.entrega10C ?? '0') ?? 0) * 0.1) +
+              ((int.tryParse(registrosTurno.entrega5C ?? '0') ?? 0) * 0.05) +
+              ((int.tryParse(registrosTurno.entrega1C ?? '0') ?? 0) * 0.01)) -
+          (((int.tryParse(registrosTurno.recibe20D ?? '0') ?? 0) * 20) +
+              ((int.tryParse(registrosTurno.recibe10D ?? '0') ?? 0) * 10) +
+              ((int.tryParse(registrosTurno.recibe5D ?? '0') ?? 0) * 5) +
+              ((int.tryParse(registrosTurno.recibe1D ?? '0') ?? 0) * 1) +
+              ((int.tryParse(registrosTurno.recibe50C ?? '0') ?? 0) * 0.5) +
+              ((int.tryParse(registrosTurno.recibe25C ?? '0') ?? 0) * 0.25) +
+              ((int.tryParse(registrosTurno.recibe10C ?? '0') ?? 0) * 0.1) +
+              ((int.tryParse(registrosTurno.recibe5C ?? '0') ?? 0) * 0.05) +
+              ((int.tryParse(registrosTurno.recibe1C ?? '0') ?? 0) * 0.01));
 
     totalGeneral += totalTurno; // Sumar al total general
 
-    final responsable = registrosTurno.isNotEmpty ? registrosTurno.first.nombreSupervisor ?? '' : 'N/A';
+    final responsable = registrosTurno.nombreSupervisor!.isNotEmpty ? registrosTurno.nombreSupervisor ?? '' : 'N/A';
 
     return pw.TableRow(
       children: [
@@ -764,7 +997,8 @@ double _calculateTotalRecaudacion(List<Movimiento> movimientos, List<Movimiento>
     sum +
         ((int.tryParse(m.recibe20D ?? '0') ?? 0) * 20) +
         ((int.tryParse(m.recibe10D ?? '0') ?? 0) * 10) +
-        ((int.tryParse(m.recibe5D ?? '0') ?? 0) * 5),
+        ((int.tryParse(m.recibe5D ?? '0') ?? 0) * 5)+
+        ((int.tryParse(m.recibe1D ?? '0') ?? 0) * 1),
   );
 
   final totalLiquidaciones = liquidaciones.fold<double>(

@@ -1,5 +1,6 @@
 import 'package:asistencia_vial_app/src/pages/supervisor/faltante/faltante_controller.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
 import '../../../models/movimiento.dart';
@@ -13,12 +14,13 @@ class FaltantesPage extends StatelessWidget {
   int? bandera;
 
   FaltantesPage({@required this.movimientos,@required this.bandera}){
-    faltanteController=Get.put(FaltanteController(movimientos!,bandera!));
-    print('bandera $bandera');
+    final Usuario usuario = Get.arguments;
+    faltanteController=Get.put(FaltanteController(usuario, movimientos!,bandera!));
   }
 
   @override
   Widget build(BuildContext context) {
+    final Usuario usuario = Get.arguments;
     return Scaffold(
       appBar: AppBar(
         title: const Text("Faltantes y Ajustes"),
@@ -32,7 +34,7 @@ class FaltantesPage extends StatelessWidget {
             _buildSectionTitle("Parte de Trabajo"),
             _buildNumberInputField("Parte de Trabajo", faltanteController.parteTrabajoController),
             const SizedBox(height: 20),
-            if (bandera==0) ...[
+            if (bandera==2) ...[
             ElevatedButton(
               onPressed: () {
                 faltanteController.isFaltanteVisible.value =
@@ -88,7 +90,7 @@ class FaltantesPage extends StatelessWidget {
             _buildNumberInputField("Sobrantes", faltanteController.sobrantesController),
             ],
             SizedBox(height: 30),
-            bandera==1?_confirmParteTrabajo(context):
+            bandera==1?_confirmParteTrabajo(usuario, context):
             _confirmButton(context),
             ],
 
@@ -114,7 +116,34 @@ class FaltantesPage extends StatelessWidget {
   Widget _buildNumberInputField(String label, TextEditingController controller) {
     return TextField(
       controller: controller,
-      keyboardType: TextInputType.number,
+      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+      // Agregamos input formatters para controlar lo que se puede escribir
+      inputFormatters: [
+        // Permitir solo dígitos y punto decimal
+        FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+        // Asegurar que solo haya un punto decimal
+        TextInputFormatter.withFunction((oldValue, newValue) {
+          final text = newValue.text;
+          if (text.isEmpty) {
+            return newValue;
+          }
+          // Contar cuántos puntos decimales hay
+          final decimalPoints = '.'.allMatches(text).length;
+          // Si hay más de un punto decimal, rechazar el cambio
+          if (decimalPoints > 1) {
+            return oldValue;
+          }
+          // Si la entrada es una coma, convertirla a punto
+          if (text.contains(',')) {
+            final newText = text.replaceAll(',', '.');
+            return TextEditingValue(
+              text: newText,
+              selection: TextSelection.collapsed(offset: newText.length),
+            );
+          }
+          return newValue;
+        }),
+      ],
       decoration: InputDecoration(
         labelText: label,
         border: OutlineInputBorder(
@@ -123,6 +152,8 @@ class FaltantesPage extends StatelessWidget {
         focusedBorder: const OutlineInputBorder(
           borderSide: BorderSide(color: Color(0xFF368983)),
         ),
+        // Agregar un texto de ayuda para informar al usuario
+        hintText: 'Usa punto para decimales',
       ),
     );
   }
@@ -422,7 +453,7 @@ class FaltantesPage extends StatelessWidget {
 
 
   /// **Widget: Botón de Confirmación**
-  Widget _confirmParteTrabajo(BuildContext context) {
+  Widget _confirmParteTrabajo(Usuario usuario, BuildContext context) {
     return Center(
       child: ElevatedButton(
         onPressed: () {

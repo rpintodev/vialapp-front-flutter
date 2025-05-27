@@ -1,3 +1,5 @@
+import 'package:asistencia_vial_app/src/models/turno.dart';
+import 'package:asistencia_vial_app/src/provider/turno_provider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
@@ -7,11 +9,12 @@ import '../../../models/usuario.dart';
 import '../../../provider/movimiento_provider.dart';
 
 class AperturaController extends GetxController{
-
   MovimientoProvider movimientoProvider=MovimientoProvider();
+  TurnoProvider turnoProvider=TurnoProvider();
   Usuario usuarioSession = Usuario.fromJson(GetStorage().read('usuario')??{});
   Usuario? usuario;
-
+  final asignacion='null'.obs;
+  String via1='';
 
   TextEditingController billetes10Controller = TextEditingController();
   TextEditingController billetes5Controller = TextEditingController();
@@ -28,6 +31,26 @@ class AperturaController extends GetxController{
     this.usuario=usuario;
   }
 
+  Future<void> updateVia(String via,String idTurno) async{
+    try {
+      List<Turno> turno;
+      var response = await turnoProvider.updateVia(via,idTurno);
+      if (response.isOk) {
+
+        asignacion.value=via;
+        turno=await turnoProvider.getAll(idTurno);
+        via1=turno.first.via!;
+        Get.snackbar('Asignado', 'La via ha sido asignada correctamente');
+        update();
+
+      } else {
+        Get.snackbar('Error', 'No se pudo asignar la via: ${via}');
+      }
+    } catch (e) {
+      Get.snackbar('Error', 'Ocurrió un problema al asignar la via: $e');
+    }
+  }
+
 
   void registarApertura(BuildContext context, Usuario usuario) async {
 
@@ -42,7 +65,7 @@ class AperturaController extends GetxController{
       String recibe10C = Moneda10Controller.text.isEmpty ? '0' : Moneda10Controller.text;
       String recibe5C = Moneda5Controller.text.isEmpty ? '0' : Moneda5Controller.text;
       String recibe1C = Moneda1Controller.text.isEmpty ? '0' : Moneda1Controller.text;
-
+      String via=usuario.idRol=='4'?'0':via1;
 
 
       // Crear el objeto Movimiento
@@ -52,7 +75,7 @@ class AperturaController extends GetxController{
           idCajero: usuario.id,
           idTipoMovimiento: '1',
           idPeaje: usuarioSession.idPeaje,
-          via: usuario.via,
+          via: via,
           idturno: usuario.idTurno,
           recibe1C: '0',
           recibe5C: '0',
@@ -95,6 +118,7 @@ class AperturaController extends GetxController{
       Get.snackbar('Error', 'Ocurrió un error inesperado');
     }
   }
+
 
 
 

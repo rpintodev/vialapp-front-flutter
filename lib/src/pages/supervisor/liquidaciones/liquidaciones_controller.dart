@@ -7,9 +7,13 @@ import 'package:get_storage/get_storage.dart';
 import '../../../models/movimiento.dart';
 import '../../../models/usuario.dart';
 import '../../../provider/movimiento_provider.dart';
+import '../../editar_transaccion/editar_transaccion.dart';
 import '../retiros_parciales/retiro_parcial.dart';
 
 class LiquidacionesController extends GetxController{
+
+  RxBool cargando = false.obs;
+
 
   TextEditingController billetes20Controller = TextEditingController();
   TextEditingController billetes10Controller = TextEditingController();
@@ -39,6 +43,14 @@ class LiquidacionesController extends GetxController{
 
   }
 
+
+  void goToEditTransaccion(Movimiento movimiento) {
+    Get.off(
+          () => EditarTransaccionPage(movimiento: movimiento), // Página a la que navegas
+    );
+
+  }
+
   void goToRetiroParcial(Usuario usuario) {
 
     Get.to(
@@ -52,6 +64,8 @@ class LiquidacionesController extends GetxController{
 
   void registarLiquidacion(BuildContext context, Usuario usuario, List<Movimiento> movimientos) async {
 
+    if (cargando.value) return; // Protección extra
+    cargando.value = true;
     try {
 
       //final liquidacion = movimientos.firstWhere((m) => m.idTipoMovimiento == '4', orElse: () => Movimiento());
@@ -120,7 +134,7 @@ class LiquidacionesController extends GetxController{
         Response response2 = await turnoProvider.updateEstado(usuario.idTurno??'');
 
         if(response.statusCode == 201){
-          Get.snackbar('Liquidación Existosa: ${liquidacion.id}', 'La apertura ha sido retirada');
+          Get.snackbar('Liquidación Existosa', 'La apertura ha sido retirada');
           Get.offNamedUntil('/home', (route) => false, arguments: {'index': 2});
         }
 
@@ -140,6 +154,8 @@ class LiquidacionesController extends GetxController{
 
     } catch (e) {
       Get.snackbar('Error', 'Ocurrió un error inesperado');
+    }finally{
+      cargando.value = false;
     }
   }
 }

@@ -202,8 +202,9 @@ class Transacciones extends StatelessWidget {
 
         break;
       case 6: // Liquidaciones
-        valor = "\$${((int.parse(movimiento.recibe1C??'0') * 0.01) + (int.parse(movimiento.recibe5C??'0') * 0.05) + (int.parse(movimiento.recibe10C??'0') * 0.1) + (int.parse(movimiento.recibe25C??'0') * 0.25) + (int.parse(movimiento.recibe50C??'0') * 0.5)+ (int.parse(movimiento.recibe2D??'0') * 2)+
-            (int.parse(movimiento.recibe1D??'0') * 1) + (int.parse(movimiento.recibe1DB??'0') * 1) + (int.parse(movimiento.recibe5D??'0') * 5) + (int.parse(movimiento.recibe10D??'0') * 10)+ (int.parse(movimiento.recibe20D??'0') * 20)).toStringAsFixed(2)}";
+        valor = "\$${(((int.parse(movimiento.recibe1C??'0') * 0.01) + (int.parse(movimiento.recibe5C??'0') * 0.05) + (int.parse(movimiento.recibe10C??'0') * 0.1) + (int.parse(movimiento.recibe25C??'0') * 0.25) + (int.parse(movimiento.recibe50C??'0') * 0.5)+ (int.parse(movimiento.recibe2D??'0') * 2)+
+            (int.parse(movimiento.recibe1D??'0') * 1) + (int.parse(movimiento.recibe1DB??'0') * 1) + (int.parse(movimiento.recibe5D??'0') * 5) + (int.parse(movimiento.recibe10D??'0') * 10)+ (int.parse(movimiento.recibe20D??'0') * 20))-((int.parse(movimiento.entrega1C??'0') * 0.01) + (int.parse(movimiento.entrega5C??'0') * 0.05) + (int.parse(movimiento.entrega10C??'0') * 0.1) + (int.parse(movimiento.entrega25C??'0') * 0.25) + (int.parse(movimiento.entrega50C??'0') * 0.5)+
+            (int.parse(movimiento.entrega1D??'0') * 1) + (int.parse(movimiento.entrega1DB??'0') * 1) + (int.parse(movimiento.entrega5D??'0') * 5) + (int.parse(movimiento.entrega10D??'0') * 10)+ (int.parse(movimiento.entrega20D??'0') * 20))).toStringAsFixed(2)}";
         detalle = "${movimiento.nombreCajero}\n${formatDate(DateTime.parse(movimiento.fecha??'0'), [dd, '/', mm, '/', yyyy,])}\nTurno ${movimiento.turno}";
         icono= Icons.error_outline;
         break;

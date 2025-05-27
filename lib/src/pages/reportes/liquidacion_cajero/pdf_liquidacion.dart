@@ -14,6 +14,7 @@ Future<Uint8List> pdfLiquidacion(List<Movimiento> movimientos) async {
     (await rootBundle.load('assets/img/vial25color.png')).buffer.asUint8List(),
   );
 
+
   // Filtrar retiros parciales
   final retirosParciales = movimientos.where((m) => m.idTipoMovimiento == '2').toList();
   retirosParciales.sort((a, b) => a.fecha!.compareTo(b.fecha!));
@@ -33,6 +34,19 @@ Future<Uint8List> pdfLiquidacion(List<Movimiento> movimientos) async {
 
 
   final faltantes = movimientos.firstWhere((m) => m.idTipoMovimiento == '6', orElse: () => Movimiento());
+
+
+
+  final signatureCajero = await fetchSignature(liquidacion.firmacajero);
+
+  final signatureSupervisor;
+  if (apertura.firmasupervisor != null) {
+    signatureSupervisor = await fetchSignature(apertura.firmasupervisor);
+  } else {
+    signatureSupervisor = await fetchSignature(liquidacion.firmasupervisor); // O un Uint8List predeterminado si es necesario
+  }
+  final signatureOperativo = await fetchSignature(liquidacion.firmasupervisor);
+
 
   final totalParciales = retirosParciales.fold<double>(0, (sum, mov) => sum + ((int.tryParse(mov.recibe20D ?? '0') ?? 0) * 20) +
       ((int.tryParse(mov.recibe10D ?? '0') ?? 0) * 10) +
@@ -128,7 +142,7 @@ Future<Uint8List> pdfLiquidacion(List<Movimiento> movimientos) async {
                     // Fila 3
                     pw.TableRow(children: [
                       pw.Container(color: PdfColors.blue50,padding: pw.EdgeInsets.all(3), child: pw.Text("Vía", style: pw.TextStyle(fontSize: 8))),
-                      pw.Padding(padding: pw.EdgeInsets.all(3), child: pw.Text(apertura.via??'Via no asignada', style: pw.TextStyle(fontSize: 8))),
+                      pw.Padding(padding: pw.EdgeInsets.all(3), child: pw.Text(liquidacion.via??'Via no asignada', style: pw.TextStyle(fontSize: 8))),
                       pw.Container(color: PdfColors.blue50,padding: pw.EdgeInsets.all(3), child: pw.Text("Nombre del Cajero", style: pw.TextStyle(fontSize: 8))),
                       pw.Padding(padding: pw.EdgeInsets.all(3), child: pw.Text(movimientos.first.nombreCajero ?? "No registrado", style: pw.TextStyle(fontSize: 8))),
                     ]),
@@ -373,7 +387,7 @@ Future<Uint8List> pdfLiquidacion(List<Movimiento> movimientos) async {
                       pw.Container(
                           decoration: pw.BoxDecoration(border: pw.Border.all()),padding: pw.EdgeInsets.all(5), child: pw.Text(liquidacion.recibe10C ?? "0", style: pw.TextStyle(fontSize: 8), textAlign: pw.TextAlign.center)),
                       pw.Container(
-                          decoration: pw.BoxDecoration(border: pw.Border.all()),padding: pw.EdgeInsets.all(5), child: pw.Text("\$ ${int.parse(liquidacion.recibe10C ?? "0") * 0.1}", style: pw.TextStyle(fontSize: 8), textAlign: pw.TextAlign.center)),
+                          decoration: pw.BoxDecoration(border: pw.Border.all()),padding: pw.EdgeInsets.all(5), child: pw.Text("\$ ${(int.parse(liquidacion.recibe10C ?? "0") * 0.1).toStringAsFixed(2)}", style: pw.TextStyle(fontSize: 8), textAlign: pw.TextAlign.center)),
                       pw.Container(),
                       pw.Container(),
                     ]),
@@ -650,6 +664,36 @@ Future<Uint8List> pdfLiquidacion(List<Movimiento> movimientos) async {
                       pw.Padding(padding: pw.EdgeInsets.all(3), child: pw.Text("${liquidacion.nombreSupervisor}", textAlign: pw.TextAlign.start,style: pw.TextStyle(fontSize: 7))),
                     ]),
 
+                    // Firmas
+                    pw.TableRow(
+                      children: [
+                        pw.Padding(
+                          padding: pw.EdgeInsets.all(5),
+                          child: pw.Center(
+                            child: signatureCajero != null
+                                ? pw.Image(signatureCajero, height: 40, width: 40)
+                                : pw.Text("Sin firma"),
+                          ),
+                        ),
+                        pw.Padding(
+                          padding: pw.EdgeInsets.all(5),
+                          child: pw.Center(
+                            child: signatureSupervisor != null
+                                ? pw.Image(signatureSupervisor, height: 40, width: 40)
+                                : pw.Text("Sin firma"),
+                          ),
+                        ),
+                        pw.Padding(
+                          padding: pw.EdgeInsets.all(5),
+                          child: pw.Center(
+                            child: signatureOperativo != null
+                                ? pw.Image(signatureOperativo, height: 40, width: 40)
+                                : pw.Text("Sin firma"),
+                          ),
+                        ),
+                      ],
+                    ),
+
                   ],
                 ),
 
@@ -847,8 +891,31 @@ Future<Uint8List> pdfLiquidacion(List<Movimiento> movimientos) async {
                     ]),
                     pw.TableRow(children: [
                       pw.Padding(padding: pw.EdgeInsets.all(3), child: pw.Text("${movimientos.last.nombreCajero}", textAlign: pw.TextAlign.start,style: pw.TextStyle(fontSize: 7))),
-                      pw.Padding(padding: pw.EdgeInsets.all(3), child: pw.Text("${movimientos.last.nombreSupervisor}", textAlign: pw.TextAlign.start,style: pw.TextStyle(fontSize: 7))),
+                      pw.Padding(padding: pw.EdgeInsets.all(3), child: pw.Text("${apertura.nombreSupervisor}", textAlign: pw.TextAlign.start,style: pw.TextStyle(fontSize: 7))),
                     ]),
+
+                    // Firmas
+                    pw.TableRow(
+                      children: [
+                        pw.Padding(
+                          padding: pw.EdgeInsets.all(5),
+                          child: pw.Center(
+                            child: signatureCajero != null
+                                ? pw.Image(signatureCajero, height: 40, width: 40)
+                                : pw.Text("Sin firma"),
+                          ),
+                        ),
+                        pw.Padding(
+                          padding: pw.EdgeInsets.all(5),
+                          child: pw.Center(
+                            child: signatureSupervisor != null
+                                ? pw.Image(signatureSupervisor, height: 40, width: 40)
+                                : pw.Text("Sin firma"),
+                          ),
+                        ),
+
+                      ],
+                    ),
 
                   ],
                 ),

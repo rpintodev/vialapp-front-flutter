@@ -94,7 +94,6 @@ class MovimientoProvider extends GetConnect{
 
 
   Future<ResponseApi> update(Movimiento movimiento) async{
-
     Response response = await post(
         '$url/updateApertura',
         movimiento.toJson(),
@@ -102,19 +101,15 @@ class MovimientoProvider extends GetConnect{
           'Content-type': 'application/json',
           'Authorization': usuario.sessionToken??''
         }
-
     );
-
     if(response.body==null){
       Get.snackbar('Error', 'No se pudo realizar la peticion');
       return ResponseApi();
     }
-
     if(response.statusCode==401){
       Get.snackbar('Error', 'No se esta autorizado para realizar esta peticion');
       return ResponseApi();
     }
-
     ResponseApi responseApi = ResponseApi.fromJson(response.body);
     return responseApi;
   }

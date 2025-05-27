@@ -49,7 +49,7 @@ class HomePage extends StatelessWidget {
       return [
         BovedaPage(),
         Transacciones(),
-        EstadisticasPage(),
+        AsignacionPage(),
         UsuariosAdmin(),
       ];
     } else if (homeSupController.usuario.roles?.first.id != null &&
@@ -99,8 +99,8 @@ class HomePage extends StatelessWidget {
           inactiveColor: Colors.black,
         ),
         BottomNavyBarItem(
-          icon: Icon(Icons.stacked_bar_chart),
-          title: Text('Estadisticas'),
+          icon: Icon(Icons.engineering),
+          title: Text('Personal'),
           activeColor: Colors.white,
           inactiveColor: Colors.black,
         ),

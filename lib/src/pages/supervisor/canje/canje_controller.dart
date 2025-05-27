@@ -13,6 +13,7 @@ class CanjeController extends GetxController{
    Usuario? usuario;
    Movimiento? movimiento;
    MovimientoProvider movimientoProvider=MovimientoProvider();
+   RxBool cargando = false.obs;
 
    late List<Movimiento>? movimientos;
 
@@ -39,6 +40,8 @@ class CanjeController extends GetxController{
 
    void registarCanje(BuildContext context, Usuario usuario) async {
 
+      if (cargando.value) return; // Protección extra
+      cargando.value = true;
       try {
          // Mostrar el ProgressDialog
 
@@ -102,6 +105,8 @@ class CanjeController extends GetxController{
       } catch (e) {
          print('Error: $e'); // Depuración
          Get.snackbar('Error', 'Ocurrió un error inesperado');
+      }finally{
+         cargando.value = false;
       }
    }
 

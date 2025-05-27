@@ -33,6 +33,20 @@ class InformeBoveda extends StatelessWidget {
           color: Colors.black54,
         ),
         title: const Text('Informe de Bóveda'),
+        actions: [
+          // Botón para guardar en el servidor
+          IconButton(
+            icon: Icon(Icons.cloud_upload),
+            onPressed: () async {
+              // Generar el PDF usando tu función existente
+              final pdfBytes = await pdfInformeBoveda(bovedas!,movimientos!);
+
+              // Enviar los bytes al controlador
+              informeBovedaController.guardarPDFEnServidor(pdfBytes);
+            },
+            tooltip: 'Guardar en servidor',
+          ),
+        ],
       ),
       body: InteractiveViewer(
         panEnabled: false,

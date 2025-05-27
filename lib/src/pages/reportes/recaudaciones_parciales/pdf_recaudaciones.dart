@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:date_format/date_format.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:pdf/pdf.dart';
@@ -38,13 +40,24 @@ Future<Uint8List> pdfRecaudaciones(Usuario usuario, List<Movimiento> movimientos
       ? formatDate(DateTime.parse(retirosParcialesTurno2.first.fecha ?? '0000-00-00'), [dd, ' / ', mm, ' / ', yyyy])
       : formatDate(DateTime.now(),[dd, ' / ', mm, ' / ', yyyy]);
 
+  final totalFaltantesTurno1 = _calculateTotalFaltantes(faltantesTurno1);
+  final totalFaltantesTurno2 = _calculateTotalFaltantes(faltantesTurno2);
+  final totalFaltantesTurno3 = _calculateTotalFaltantes(faltantesTurno3);
+  final totalFaltantesGeneral = totalFaltantesTurno1 + totalFaltantesTurno2 + totalFaltantesTurno3;
+
   final totalRecaudacionTurno1 = _calculateTotalRecaudacion(retirosParcialesTurno1, liquidacionesTurno1);
   final totalRecaudacionTurno2 = _calculateTotalRecaudacion(retirosParcialesTurno2, liquidacionesTurno2);
   final totalRecaudacionTurno3 = _calculateTotalRecaudacion(retirosParcialesTurno3, liquidacionesTurno3);
-  final totalRecaudacionGeneral = totalRecaudacionTurno1 + totalRecaudacionTurno2 + totalRecaudacionTurno3;
-
+  final totalRecaudacionGeneral = totalRecaudacionTurno1 +
+      totalRecaudacionTurno2 +
+      totalRecaudacionTurno3 +
+      totalFaltantesGeneral;
   final supervisor1=movimientos.first.nombreSupervisor??'Sin Supervisor';
   final supervisor2=movimientos.last.nombreSupervisor??'Sin Supervisor';
+
+  final signatureSupervisor1 = await fetchSignature(movimientos.first.firmasupervisor);
+  final signatureSupervisor2 = await fetchSignature(movimientos.last.firmasupervisor);
+
 
   pdf.addPage(
       pw.Page(
@@ -166,6 +179,27 @@ Future<Uint8List> pdfRecaudaciones(Usuario usuario, List<Movimiento> movimientos
                       pw.Padding(padding: pw.EdgeInsets.all(3), child: pw.Text("$supervisor1", textAlign: pw.TextAlign.start,style: pw.TextStyle(fontSize: 7))),
                       pw.Padding(padding: pw.EdgeInsets.all(3), child: pw.Text("$supervisor2", textAlign: pw.TextAlign.start,style: pw.TextStyle(fontSize: 7))),
                     ]),
+                    pw.TableRow(
+                      children: [
+                        pw.Padding(
+                          padding: pw.EdgeInsets.all(5),
+                          child: pw.Center(
+                            child: signatureSupervisor1 != null
+                                ? pw.Image(signatureSupervisor1, height: 40, width: 40)
+                                : pw.Text("Sin firma"),
+                          ),
+                        ),
+                        pw.Padding(
+                          padding: pw.EdgeInsets.all(5),
+                          child: pw.Center(
+                            child: signatureSupervisor2 != null
+                                ? pw.Image(signatureSupervisor2, height: 40, width: 40)
+                                : pw.Text("Sin firma"),
+                          ),
+                        ),
+
+                      ],
+                    ),
 
 
 
@@ -215,7 +249,7 @@ pw.Widget buildTurnoTables({
   );
 }
 
-pw.Widget _buildTurnoTable(String titulo, List<Movimiento> movimientosTurno, List<Movimiento> liquidacionesTurno, int totalFaltantesTurno) {
+pw.Widget _buildTurnoTable(String titulo, List<Movimiento> movimientosTurno, List<Movimiento> liquidacionesTurno, double totalFaltantesTurno) {
   final cajerosRows = _buildCajerosRows(movimientosTurno, liquidacionesTurno);
 
   // Suma totales del turno directamente
@@ -369,18 +403,31 @@ List<Map<String, dynamic>> _buildCajerosRows(List<Movimiento> movimientosTurno, 
   }).toList();
 }
 
-int _calculateTotalFaltantes(List<Movimiento> faltantes) {
-  return faltantes.fold<int>(
+double _calculateTotalFaltantes(List<Movimiento> faltantes) {
+  return faltantes.fold<double>(
     0,
         (sum, m) =>
     sum +
-        (((int.tryParse(m.recibe20D ?? '0') ?? 0) * 20) +
-            ((int.tryParse(m.recibe10D ?? '0') ?? 0) * 10) +
-            ((int.tryParse(m.recibe5D ?? '0') ?? 0) * 5) +
-            ((int.tryParse(m.recibe1D ?? '0') ?? 0) * 1)) -
-            (((int.tryParse(m.entrega10D ?? '0') ?? 0) * 10) +
-            ((int.tryParse(m.entrega5D ?? '0') ?? 0) * 5) +
-            ((int.tryParse(m.entrega1D ?? '0') ?? 0) * 1)),
+        (
+            // Recibido
+            ((int.tryParse(m.recibe20D ?? '0') ?? 0) * 20) +
+                ((int.tryParse(m.recibe10D ?? '0') ?? 0) * 10) +
+                ((int.tryParse(m.recibe5D ?? '0') ?? 0) * 5) +
+                ((int.tryParse(m.recibe1D ?? '0') ?? 0) * 1) +
+                ((int.tryParse(m.recibe50C ?? '0') ?? 0) * 0.5)+
+                ((int.tryParse(m.recibe25C ?? '0') ?? 0) * 0.25)+
+                ((int.tryParse(m.recibe10C ?? '0') ?? 0) * 0.1)
+        ).toDouble() -
+
+        (
+            // Entregado
+            ((int.tryParse(m.entrega10D ?? '0') ?? 0) * 10) +
+                ((int.tryParse(m.entrega5D ?? '0') ?? 0) * 5) +
+                ((int.tryParse(m.entrega1D ?? '0') ?? 0) * 1) +
+                ((int.tryParse(m.entrega50C ?? '0') ?? 0) * 0.5)+
+                ((int.tryParse(m.entrega25C ?? '0') ?? 0) * 0.25)+
+                ((int.tryParse(m.entrega10C ?? '0') ?? 0) * 0.1)
+        ).toDouble(),
   );
 }
 

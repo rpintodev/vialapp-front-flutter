@@ -1,7 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
-import 'package:asistencia_vial_app/main.dart';
+import 'package:path_provider/path_provider.dart';
+
 import 'package:asistencia_vial_app/src/models/rol.dart';
 import 'package:asistencia_vial_app/src/pages/profile/info/admin_profile_controller.dart';
 import 'package:asistencia_vial_app/src/provider/usuario_provider.dart';
@@ -23,6 +25,7 @@ class AdminUpdateController extends GetxController{
   TextEditingController nombreController = TextEditingController();
   TextEditingController apellidoController = TextEditingController();
   TextEditingController telefonoController = TextEditingController();
+  Uint8List? signature;
 
   var grupoSeleccionado=''.obs;
   var idRol=''.obs;
@@ -126,7 +129,7 @@ class AdminUpdateController extends GetxController{
 
       );
 
-      if(imageFile==null) {
+      if(imageFile==null && signature == null) {
         ResponseApi responseApi = await usuarioProvider.update(myUser);
         print('Response Api Data: ${responseApi.data}');
         progressDialog.close();
@@ -136,13 +139,12 @@ class AdminUpdateController extends GetxController{
           Get.offNamedUntil('/home', (route)=>false, arguments: {'index': 3});
 
         }
-      }else{
+      }else if(imageFile != null && signature == null){
         Stream stream = await usuarioProvider.updateWithImage(myUser, imageFile!);
 
          progressDialog.close();
           stream.listen((res){
           ResponseApi responseApi = ResponseApi.fromJson(json.decode(res));
-          print('Response Api Data: ${responseApi.data}');
           Get.snackbar('Actualizacion Existoso', 'El usuario ha sido actualizado');
           Get.offNamedUntil('/home', (route)=>false);
 
@@ -150,17 +152,42 @@ class AdminUpdateController extends GetxController{
 
             Get.snackbar('Actualizacion Existoso', 'El usuario ha sido actualizado');
             Get.offNamedUntil('/home', (route)=>false);
-
             Get.back();
-
 
           }else{
             Get.snackbar('ERROR ', responseApi.message??'');
-
           }
-
         });
 
+      }else if (imageFile == null && signature != null){
+        File signatureFile = await convertUint8ListToFile(signature!);
+        Stream stream = await usuarioProvider.updateWithSignature(myUser, signatureFile);
+        progressDialog.close();
+
+        stream.listen((res){
+          ResponseApi responseApi = ResponseApi.fromJson(json.decode(res));
+
+          if(responseApi.success==true){
+            Get.snackbar('Registro Existoso', 'El usuario ha sido registrado');
+            Get.offNamedUntil(
+                '/home', (route) => false, arguments: {'index': 3});
+          }
+        });
+
+      }else{
+        File signatureFile = await convertUint8ListToFile(signature!);
+        Stream stream = await usuarioProvider.updateWithSignatureAndImage(myUser,imageFile! ,signatureFile);
+        progressDialog.close();
+
+        stream.listen((res){
+          ResponseApi responseApi = ResponseApi.fromJson(json.decode(res));
+
+          if(responseApi.success==true){
+            Get.snackbar('Registro Existoso', 'El usuario ha sido registrado');
+            Get.offNamedUntil(
+                '/home', (route) => false, arguments: {'index': 3});
+          }
+        });
       }
 
 
@@ -256,6 +283,19 @@ class AdminUpdateController extends GetxController{
       },
     );
   }
+
+  void saveSignature(Uint8List newSignature) {
+    signature = newSignature;
+    update(); // Actualiza la interfaz si es necesario
+  }
+
+  Future<File> convertUint8ListToFile(Uint8List signature) async {
+    final tempDir = await getTemporaryDirectory(); // Obtén un directorio temporal
+    final tempFile = File('${tempDir.path}/signature.png'); // Crea un archivo temporal con extensión .png
+    await tempFile.writeAsBytes(signature); // Escribe el contenido del Uint8List en el archivo
+    return tempFile; // Devuelve el archivo
+  }
+
 
 
 

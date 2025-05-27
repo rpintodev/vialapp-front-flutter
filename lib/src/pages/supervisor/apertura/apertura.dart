@@ -16,7 +16,7 @@ class AperturaPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return Obx(() => Scaffold(
       appBar: AppBar(
         title: Text(
           'Apertura - ${usuario!.nombre} ${usuario!.apellido}',
@@ -33,15 +33,28 @@ class AperturaPage extends StatelessWidget {
             _sectionTitle('Recibe de Cajero'),
             _recibeGrid(),
             SizedBox(height: 10),
+            if(usuario!.idRol != '4')...[
+              _confirmVia(context, usuario!.idTurno ?? ''),
+              SizedBox(height: 10),
+            ],
+              Center(child:
+              Text(aperturaController.asignacion.value == 'null'
+                  ? ''
+                  : 'Via Asignada ${aperturaController.asignacion.value}',
+                  style: TextStyle(
+                      color: aperturaController.asignacion.value == 'null'
+                          ? Colors.redAccent
+                          : Colors.green, fontSize: 16),
+                  textAlign: TextAlign.center),
+              ),
 
             Divider(thickness: 1, color: Colors.grey[300]),
             SizedBox(height: 20),
-            SizedBox(height: 30),
             _confirmButton(context),
           ],
         ),
       ),
-    );
+    ));
   }
 
   /// **Widget: Título de Sección**
@@ -210,11 +223,40 @@ class AperturaPage extends StatelessWidget {
 
 
   /// **Widget: Botón de Confirmación**
+  Widget _confirmVia(BuildContext context,String idTurno) {
+    return Center(
+      child: ElevatedButton(
+        onPressed: () {
+          _showViaSelectionDialog(context,idTurno);
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.green,
+          padding: EdgeInsets.symmetric(vertical: 15, horizontal: 30),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
+        child: Text(
+          'Asignar Via',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// **Widget: Botón de Confirmación**
   Widget _confirmButton(BuildContext context) {
     return Center(
       child: ElevatedButton(
         onPressed: () {
-          _confirmCanje(context);
+          (aperturaController.asignacion.value=='null' && usuario!.idRol!='4')?
+            _showViaConfirmationDialog(context,usuario!.idTurno??''):
+            _confirmCanje(context);
+
         },
         style: ElevatedButton.styleFrom(
           backgroundColor: Color(0xFF368983),
@@ -232,6 +274,39 @@ class AperturaPage extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+
+  void _showViaConfirmationDialog(BuildContext context, String idTurno) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Error!"),
+          content: Text(
+            "No se ha asignado la via",
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Cierra el cuadro de diálogo
+              },
+              child: Text("Regresar", style: TextStyle(color: Colors.grey)),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green,
+              ),
+              onPressed: () {
+                Navigator.of(context).pop(); // Cierra el cuadro de diálogo
+
+                _showViaSelectionDialog(context,idTurno);
+              },
+              child: Text("Asignar via"),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -318,6 +393,59 @@ class AperturaPage extends StatelessWidget {
               child: Text("Confirmar"),
             ),
           ],
+        );
+      },
+    );
+  }
+
+
+  void _showViaSelectionDialog(BuildContext context, String idTurno) {
+    // Lista de números de las vías
+    List<int> vias = [1, 2, 3, 4, 5, 6, 7, 8, 104, 105];
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(
+            "Selecciona una vía",
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: GridView.builder(
+              shrinkWrap: true,
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 4, // 4 botones por fila
+                crossAxisSpacing: 10,
+                mainAxisSpacing: 10,
+              ),
+              itemCount: vias.length, // Número de vías basado en la lista
+              itemBuilder: (BuildContext context, int index) {
+                return ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context); // Cierra el diálogo
+                    print("Vía ${vias[index]} seleccionada");
+                    aperturaController.updateVia(vias[index].toString(),idTurno);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Color(0xFF368983),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: Text(
+                    "${vias[index]}", // Muestra el número exacto de la vía
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: (vias[index] == 104 || vias[index] == 105) ? 7 : 16,
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
         );
       },
     );

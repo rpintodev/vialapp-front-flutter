@@ -74,7 +74,10 @@ class DetalleCajero extends StatelessWidget {
         (int.parse(movimiento.entrega5D ?? '0') * 5) +
         (int.parse(movimiento.entrega1D ?? '0') * 1) +
         (int.parse(movimiento.entrega50C ?? '0') * 0.5).toDouble() +
-        (int.parse(movimiento.entrega25C ?? '0') * 0.25).toDouble()
+        (int.parse(movimiento.entrega25C ?? '0') * 0.25).toDouble() +
+        (int.parse(movimiento.entrega5C ?? '0') * 0.05).toDouble() +
+        (int.parse(movimiento.entrega10C ?? '0') * 0.1).toDouble() +
+        (int.parse(movimiento.entrega1C ?? '0') * 0.01).toDouble()
     ;
 
 
@@ -104,14 +107,35 @@ class DetalleCajero extends StatelessWidget {
           movimiento.fecha ?? 'Sin Fecha',
           style: TextStyle(fontSize: 14, color: Colors.grey[600]),
         ),
-        trailing: Text(
-          movimiento.idTipoMovimiento=='1'?
-          '\$${totalEntregado}':'\$${totalRecibido}',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFF368983),
-          ),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              movimiento.idTipoMovimiento == '1'
+                  ? '\$${totalEntregado}'
+                  : '\$${totalRecibido}',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF368983),
+              ),
+            ),
+            PopupMenuButton<String>(
+              icon: Icon(Icons.more_vert, color: Color(0xFF368983)),
+              itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                PopupMenuItem<String>(
+                  onTap: ()=>detalleCajeroController.goToEditTransaccion(movimiento),
+                  child: Row(
+                    children: [
+                      Icon(Icons.edit, color: Color(0xFF368983)),
+                      SizedBox(width: 8),
+                      Text('Editar transacción'),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );

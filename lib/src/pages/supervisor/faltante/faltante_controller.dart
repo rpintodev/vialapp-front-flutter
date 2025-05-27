@@ -52,7 +52,7 @@ class FaltanteController extends GetxController{
   late String idmovimiento;
 
 
-  FaltanteController(List<Movimiento> movimientos,int bandera) {
+  FaltanteController(Usuario usuario, List<Movimiento> movimientos,int bandera) {
     this.usuario=usuario;
     this.movimientos=movimientos;
     this.bandera=bandera;
@@ -60,8 +60,16 @@ class FaltanteController extends GetxController{
     final liquidacion1 = movimientos.firstWhere((m) => m.idTipoMovimiento == '4', orElse: () => Movimiento());
     final faltante =  movimientos.firstWhere((m) => m.idTipoMovimiento == '6', orElse: () => Movimiento());
     final apertura= movimientos.firstWhere((m)=> m.idTipoMovimiento=='1', orElse: () => Movimiento());
-    String formattedFechaHoy=DateFormat('ddMMyyyy').format(DateTime.parse(apertura.fecha??''));
-    pdt='${apertura.via??'0'}$formattedFechaHoy';
+
+    DateTime fechaApertura = DateTime.parse(apertura.fecha??'');
+    if(fechaApertura.hour == 23 ){
+       fechaApertura=fechaApertura.add(Duration(days: 1));
+    }
+
+    String formattedFechaHoy = DateFormat('ddMMyyyy').format(fechaApertura);
+    pdt='${usuario.via??'0'}$formattedFechaHoy';
+    
+    print('parte de trabajo: $pdt');
 
 
 
@@ -127,7 +135,7 @@ class FaltanteController extends GetxController{
       String simulaciones = simulacionesCantidadController.text.isEmpty?'':simulacionesCantidadController.text;
       String valorsimulaciones = simulacionesValorController.text.isEmpty?'':simulacionesValorController.text;
       String sobrante = sobrantesController.text.isEmpty?'':sobrantesController.text;
-      String partetrabajo = parteTrabajoController.text.isEmpty?'':parteTrabajoController.text;
+      String partetrabajo = parteTrabajoController.text.isEmpty?'$pdt':parteTrabajoController.text;
 
       // Calcular la suma total de "Recibido"
       double totalRecibido = (double.parse(recibe5C) * 0.05) +
@@ -141,12 +149,12 @@ class FaltanteController extends GetxController{
 
       // Crear el objeto Movimiento
       Movimiento movimiento = Movimiento(
-          turno: primerMovimiento.turno,
-          idturno: primerMovimiento.idturno,
+          turno: usuario?.turno,
+          idturno: usuario?.idTurno,
           idSupervisor: usuarioSession.id,
-          idCajero: primerMovimiento.idCajero,
+          idCajero: usuario?.id,
           idTipoMovimiento: '6',
-          via: primerMovimiento.via,
+          via: usuario?.via,
           idPeaje: usuarioSession.idPeaje,
           recibe1C: '0',
           partetrabajo: '0',
@@ -185,12 +193,12 @@ class FaltanteController extends GetxController{
       );
 
       Movimiento movimiento3 = Movimiento(
-          turno: primerMovimiento.turno,
-          idturno: primerMovimiento.idturno,
+          turno: usuario?.turno,
+          idturno: usuario?.idTurno,
           idSupervisor: usuarioSession.id,
-          idCajero: primerMovimiento.idCajero,
+          idCajero: usuario?.id,
           idTipoMovimiento: '4',
-          via: primerMovimiento.via,
+          via: usuario?.via,
           idPeaje: usuarioSession.idPeaje,
           partetrabajo: partetrabajo,
           recibe1C: '0',
@@ -219,12 +227,12 @@ class FaltanteController extends GetxController{
 
       Movimiento movimiento4 = Movimiento(
           id:idmovimiento,
-          turno: primerMovimiento.turno,
-          idturno: primerMovimiento.idturno,
+          turno: usuario?.turno,
+          idturno: usuario?.idTurno,
           idSupervisor: usuarioSession.id,
-          idCajero: primerMovimiento.idCajero,
+          idCajero: usuario?.id,
           idTipoMovimiento: '6',
-          via: primerMovimiento.via,
+          via: usuario?.via,
           idPeaje: usuarioSession.idPeaje,
           recibe1C: '0',
           partetrabajo: '0',
@@ -268,26 +276,10 @@ class FaltanteController extends GetxController{
       }else{ //
       if (totalRecibido > 0) {
 
-        if(idmovimiento=='0'){//SI SE CREA UN NUEVO FALTANTE
+        final yaExisteFaltante = movimientos.any((m) => m.idTipoMovimiento == '6');
+        print("Faltante: ${!yaExisteFaltante}");
+        if(yaExisteFaltante){//SI SE MODIFICA EL FALTANTE
 
-          Response response = await movimientoProvider.create(movimiento);
-
-          ResponseApi responseApi = await movimientoProvider.updateLiquidacion(movimiento2);
-
-          if(responseApi.success==true && response.statusCode == 201){
-
-            Get.snackbar('Liquidacion existosa', 'La liquidacion ha sido actualizada se añadio el faltante');
-            var result = await movimientoProvider.getMovimientoByTurno(primerMovimiento.idturno??''); //cambiar getApertura
-            movimientos = result;
-            Get.off(
-                  () => ReporteLiquidacion(movimientos: movimientos), // Página a la que navegas
-              arguments: usuario,
-            );
-          }else{
-            Get.snackbar('ERROR', responseApi.message??'');
-          }
-
-        }else{ //SI SE MODIFICA EL FALTANTE
           ResponseApi responseApi = await movimientoProvider.updateLiquidacion(movimiento2);
           ResponseApi responseapi2 = await movimientoProvider.update(movimiento4);
 
@@ -299,7 +291,23 @@ class FaltanteController extends GetxController{
             Get.offNamedUntil('/home', (route) => false, arguments: {'index': 2});
           }else{
             Get.snackbar('ERROR ', responseApi.message??'');
+          }
+        }else{ //SI SE CREA UN NUEVO FALTANTE
 
+          Response response = await movimientoProvider.create(movimiento);
+          ResponseApi responseApi = await movimientoProvider.updateLiquidacion(movimiento2);
+
+          if(responseApi.success==true && response.statusCode == 201){
+
+            Get.snackbar('Liquidacion existosa', 'La liquidacion ha sido actualizada se añadio el faltante');
+            var result = await movimientoProvider.getMovimientoByTurno(primerMovimiento.idturno??''); //cambiar getApertura
+            movimientos = result;
+            Get.offAll(
+                  () => ReporteLiquidacion(movimientos: movimientos), // Página a la que navegas
+              arguments: usuario,
+            );
+          }else{
+            Get.snackbar('ERROR', responseApi.message??'');
           }
 
         }
@@ -307,12 +315,14 @@ class FaltanteController extends GetxController{
 
       }else{ //SI EL PARTE DE TRABAJO SE HA GUARDADO Y SE VA AGREGAR ANULACIONES Y SIMULACIONES...
 
+
+
         ResponseApi responseApi = await movimientoProvider.updateLiquidacion(movimiento2);
 
         if(responseApi.success==true){
 
 
-          Get.snackbar('Liquidacion existosa', 'La liquidacion ha sido actualizada ${movimiento2.sobrante}');
+          Get.snackbar('Liquidacion existosa', 'La liquidacion ha sido actualizada');
           var result = await movimientoProvider.getMovimientoByTurno(primerMovimiento.idturno??''); //cambiar getApertura
           movimientos = result;
           Get.off(

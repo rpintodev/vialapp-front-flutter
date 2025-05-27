@@ -3,6 +3,7 @@ import 'package:get_storage/get_storage.dart';
 
 import '../../../models/movimiento.dart';
 import '../../../models/usuario.dart';
+import '../../editar_transaccion/editar_transaccion.dart';
 
 class DetalleCajeroController extends GetxController{
 
@@ -11,6 +12,13 @@ class DetalleCajeroController extends GetxController{
 
   DetalleCajeroController(List<Movimiento> movimientos) {
     this.movimientos=movimientos;
+  }
+
+  void goToEditTransaccion(Movimiento movimiento) {
+    Get.off(
+          () => EditarTransaccionPage(movimiento: movimiento), // Página a la que navegas
+    );
+
   }
 
 }

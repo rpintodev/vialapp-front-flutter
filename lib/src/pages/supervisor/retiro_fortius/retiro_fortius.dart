@@ -19,7 +19,7 @@ class RetiroFortiusPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return Obx(() =>  Scaffold(
       appBar: AppBar(
         title: Text(
           'Depósito Fortius',
@@ -38,13 +38,16 @@ class RetiroFortiusPage extends StatelessWidget {
             SizedBox(height: 10),
 
             Divider(thickness: 1, color: Colors.grey[300]),
+            SizedBox(height: 10),
+
+            _radioButtonTurno(context),
             SizedBox(height: 20),
             SizedBox(height: 30),
             _confirmButton(context),
           ],
         ),
       ),
-    );
+    ));
   }
 
   /// **Widget: Título de Sección**
@@ -200,6 +203,68 @@ class RetiroFortiusPage extends StatelessWidget {
     );
   }
 
+  Widget _radioButtonTurno(BuildContext context) {
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: List.generate(3, (index) {
+            int turno = index + 1;
+            bool isSelected = retiroFortiusController.selectedTurno.value == turno;
+
+            return GestureDetector(
+              onTap: () {
+
+                  retiroFortiusController.selectedTurno.value = turno;
+
+              },
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                decoration: BoxDecoration(
+                  color: isSelected ? Colors.blue : Colors.grey[300],
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.black12),
+                ),
+                child: Text(
+                  'Turno $turno',
+                  style: TextStyle(
+                    color: isSelected ? Colors.white : Colors.black,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            );
+          }),
+        ),
+      ],
+    );
+  }
+
+
+  void _showTurnoConfirmationDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Error!"),
+          content: Text(
+            "No se ha seleccionado el turno a depositar",
+          ),
+          actions: [
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green,
+              ),
+              onPressed: () {
+                Navigator.of(context).pop(); // Cierra el cuadro de diálogo
+              },
+              child: Text("Regresar"),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
 
   /// **Widget: Botón de Confirmación**
@@ -207,7 +272,9 @@ class RetiroFortiusPage extends StatelessWidget {
     return Center(
       child: ElevatedButton(
         onPressed: () {
-          _confirmRetiroParcial(context);
+          retiroFortiusController.selectedTurno.value!=0?
+          _confirmRetiroParcial(context):
+          _showTurnoConfirmationDialog(context);
         },
         style: ElevatedButton.styleFrom(
           backgroundColor: Color(0xFF368983),
@@ -290,11 +357,11 @@ class RetiroFortiusPage extends StatelessWidget {
               Text("- $billetes10 billetes de \$10"),
               Text("- $billetes5 billetes de \$5"),
               Text("- $billetes1 billetes de \$1"),
-              Text("- $billetes5 Moneda de 50C"),
-              Text("- $billetes5 Moneda de 25C"),
-              Text("- $billetes5 Moneda de 10C"),
-              Text("- $billetes5 Moneda de 5C"),
-              Text("- $billetes5 Moneda de 1C"),
+              Text("- $Moneda50 Moneda de 50C"),
+              Text("- $Moneda25 Moneda de 25C"),
+              Text("- $Moneda10 Moneda de 10C"),
+              Text("- $Moneda5 Moneda de 5C"),
+              Text("- $Moneda1 Moneda de 1C"),
               SizedBox(height: 5),
               Text("Total Recibido: \$${totalRecibe.toStringAsFixed(2)}",
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF368983))),

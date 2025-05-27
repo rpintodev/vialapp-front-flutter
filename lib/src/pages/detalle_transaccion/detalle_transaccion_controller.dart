@@ -3,10 +3,12 @@ import 'package:asistencia_vial_app/src/pages/editar_transaccion/editar_transacc
 import 'package:asistencia_vial_app/src/pages/reportes/reporte_canje/reporte_canje.dart';
 import 'package:asistencia_vial_app/src/provider/movimiento_provider.dart';
 import 'package:get/get.dart';
+import 'package:get_ip_address/get_ip_address.dart';
 import 'package:get_storage/get_storage.dart';
 
 import '../../models/movimiento.dart';
 import '../../models/usuario.dart';
+import '../../provider/usuario_provider.dart';
 import '../reportes/liquidacion_cajero/reporte_liquidacion.dart';
 import '../supervisor/faltante/faltante.dart';
 
@@ -14,6 +16,8 @@ class DetalleTransaccionController extends GetxController{
 
   Usuario usuarioSession = Usuario.fromJson(GetStorage().read('usuario')??{});
   List<Movimiento>? movimientos;
+  UsuarioProvider usuarioProvider=UsuarioProvider();
+
   MovimientoProvider movimientoProvider=MovimientoProvider();
   int? bandera;
 
@@ -21,6 +25,8 @@ class DetalleTransaccionController extends GetxController{
   DetalleTransaccionController(List<Movimiento> movimientos,int bandera) {
     this.movimientos=movimientos;
     this.bandera=bandera;
+    print('Bandera $bandera');
+
   }
 
 
@@ -31,18 +37,24 @@ class DetalleTransaccionController extends GetxController{
 
   }
 
-  void goToFaltantes(String idturno,int bandera) async{
-
+  void goToFaltantes(String idturno) async{
+    List<Usuario> usuarios = await usuarioProvider.findByTurno(idturno);
     List<Movimiento>? movimientos;
     Movimiento liquidacion;
     var result = await movimientoProvider.getMovimientoByTurno(idturno??''); //cambiar getApertura
     movimientos = result;
     liquidacion = movimientos.firstWhere((m)=> m.idTipoMovimiento =='4');
-    liquidacion.estado='1';
-    ResponseApi response2 = await movimientoProvider.updateEstadoMovimiento(liquidacion);
+    if(usuarioSession.roles?.first.id=='6'&& liquidacion.estado=='0'){
+      liquidacion.idSupervisor=usuarioSession.id;
+      liquidacion.estado='1';
+      ResponseApi response2 = await movimientoProvider.updateEstadoMovimiento(liquidacion);
+    }
+    Usuario usuario = usuarios.firstWhere((m)=> m.id=='${liquidacion.idCajero}');
     Get.to(
-          () => FaltantesPage(movimientos: movimientos, bandera: bandera), // Página a la que navegas
+          () => FaltantesPage(movimientos: movimientos, bandera: bandera),
+      arguments: usuario,// Página a la que navegas
     );
+
 
   }
 
@@ -54,8 +66,11 @@ class DetalleTransaccionController extends GetxController{
     movimientos = result;
 
     liquidacion = movimientos.firstWhere((m)=> m.idTipoMovimiento =='4');
-    liquidacion.estado='1';
-    ResponseApi response2 = await movimientoProvider.updateEstadoMovimiento(liquidacion);
+    if(usuarioSession.roles?.first.id=='6'&& liquidacion.estado=='0'){
+      liquidacion.idSupervisor=usuarioSession.id;
+      liquidacion.estado='1';
+      ResponseApi response2 = await movimientoProvider.updateEstadoMovimiento(liquidacion);
+    }
 
     Get.to(
           () => ReporteLiquidacion(movimientos: movimientos), // Página a la que navegas

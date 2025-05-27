@@ -114,20 +114,66 @@ class UsuarioProvider extends GetConnect{
 
 
   Future<Stream> updateWithImage(Usuario usuario, File image)async{
+
     Uri uri = Uri.http(Environment.API_URL_OLD,'/api/usuarios/update');
     final request = http.MultipartRequest('POST', uri);
     request.headers['Authorization']=usuario.sessionToken??'';
+
     request.files.add(http.MultipartFile(
         'image',
         http.ByteStream(image.openRead().cast()),
         await image.length(),
         filename: basename(image.path)
     ));
+
     request.fields['usuario']=json.encode(usuario);
     final response = await request.send();
     return response.stream.transform(utf8.decoder);
   }
 
+  Future<Stream> updateWithSignatureAndImage(Usuario usuario, File image,File signature)async{
+
+    Uri uri = Uri.http(Environment.API_URL_OLD,'/api/usuarios/updateWithSignatureAndImage');
+    final request = http.MultipartRequest('POST', uri);
+    request.headers['Authorization']=usuario.sessionToken??'';
+
+    request.files.add(http.MultipartFile(
+        'signature',
+        http.ByteStream(signature.openRead().cast()),
+        await signature.length(),
+        filename: basename(signature.path)
+    ));
+
+    request.files.add(http.MultipartFile(
+      'image',
+      http.ByteStream(image.openRead().cast()),
+      await image.length(),
+      filename: basename(image.path),
+    ));
+
+
+    request.fields['usuario']=json.encode(usuario);
+    final response = await request.send();
+    return response.stream.transform(utf8.decoder);
+  }
+
+  Future<Stream> updateWithSignature(Usuario usuario, File image)async{
+
+    Uri uri = Uri.http(Environment.API_URL_OLD,'/api/usuarios/updateWithSignature');
+    final request = http.MultipartRequest('POST', uri);
+    request.headers['Authorization']=usuario.sessionToken??'';
+
+    request.files.add(http.MultipartFile(
+        'signature',
+        http.ByteStream(image.openRead().cast()),
+        await image.length(),
+        filename: basename(image.path)
+    ));
+
+    request.fields['usuario']=json.encode(usuario);
+    final response = await request.send();
+    return response.stream.transform(utf8.decoder);
+  }
 
   /*METODO GETX CON IMAGEN*/
 
@@ -265,6 +311,30 @@ class UsuarioProvider extends GetConnect{
         {
           'id_estado': idEstado,
           'id_peaje': idPeaje
+
+        },
+        headers: {
+          'Content-type': 'application/json',
+          'Authorization': usuario.sessionToken??''
+        }
+    );
+
+    if (response.statusCode == 401) {
+      Get.snackbar('Peticion Denegada', 'No tienes acceso a esta información');
+      return [];
+    }
+
+    List<Usuario> usuarios= Usuario.fromJsonList(response.body);
+    return usuarios;
+
+  }
+
+  Future<List<Usuario>> findByTurno(String idTurno) async {
+
+    Response response = await post(
+        '$url/findByTurno',
+        {
+          'id_turno': idTurno
 
         },
         headers: {

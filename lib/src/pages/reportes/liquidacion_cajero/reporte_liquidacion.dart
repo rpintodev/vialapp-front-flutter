@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:asistencia_vial_app/src/pages/reportes/liquidacion_cajero/pdf_liquidacion.dart';
 import 'package:asistencia_vial_app/src/pages/reportes/liquidacion_cajero/reporte_liquidacion_controller.dart';
 import 'package:flutter/cupertino.dart';
@@ -19,17 +21,33 @@ class ReporteLiquidacion extends StatelessWidget {
     reporteLiquidacionController=Get.put(ReporteLiquidacionController(movimientos!));
   }
 
+
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          onPressed: () => Get.offNamedUntil('/home', (route) => false, arguments: {'index': 2}),
+          icon: const Icon(Icons.arrow_back_ios),
+          color: Colors.black54,
+        ),
+        title: const Text('Reporte de Liquidaciones'),
+        actions: [
+          // Botón para guardar en el servidor
+          IconButton(
+            icon: Icon(Icons.cloud_upload),
+            onPressed: () async {
+              // Generar el PDF usando tu función existente
+              final pdfBytes = await pdfLiquidacion(movimientos!);
 
-          leading: IconButton(
-            onPressed: () => Get.offNamedUntil('/home', (route) => false, arguments: {'index': 2}),
-            icon: const Icon(Icons.arrow_back_ios),
-            color: Colors.black54,
+              // Enviar los bytes al controlador
+              reporteLiquidacionController.guardarPDFEnServidor(pdfBytes);
+            },
+            tooltip: 'Guardar en servidor',
           ),
-          title: const Text('Reporte de Liquidaciones'),
+        ],
       ),
       body: InteractiveViewer(
         panEnabled: false,
@@ -41,19 +59,19 @@ class ReporteLiquidacion extends StatelessWidget {
           build: (context) => pdfLiquidacion(movimientos!),
         ),
       ),
-
     );
   }
 
-
-  Widget _buttonBack(){
+  Widget buttonBack(){
     return SafeArea(
       child: Container(
         margin: EdgeInsets.only(left: 20),
         child: IconButton(
             onPressed: () => Get.back(),
-            icon: Icon(Icons.arrow_back_ios), color: Colors.white),
+            icon: Icon(Icons.arrow_back_ios),
+            color: Colors.white),
       ),
     );
   }
 }
+
