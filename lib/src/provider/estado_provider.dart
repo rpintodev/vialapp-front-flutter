@@ -13,7 +13,6 @@ class EstadoProvider extends GetConnect{
   Usuario usuario = Usuario.fromJson(GetStorage().read('usuario')??{});
 
 
-
   Future<List<Estado>> getAll() async {
 
     Response response = await get(

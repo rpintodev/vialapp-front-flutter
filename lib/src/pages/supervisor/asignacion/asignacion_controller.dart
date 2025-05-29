@@ -16,18 +16,25 @@ import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
+import 'package:socket_io_client/socket_io_client.dart';
 
+import '../../../environment/environment.dart';
 import '../../../models/usuario.dart';
 import '../../detalle_transaccion/detalle_transaccion.dart';
 
 class AsignacionController extends GetxController{
+
+  Socket socket = io('${Environment.API_URL}',<String,dynamic>{
+    'transports':['websocket'],
+    'autoConnect':false
+  });
 
   Usuario usuario = Usuario.fromJson(GetStorage().read('usuario')??{});
   EstadoProvider estadoProvider=EstadoProvider();
   MovimientoProvider movimientoProvider=MovimientoProvider();
   UsuarioProvider usuarioProvider=UsuarioProvider();
   TurnoProvider turnoProvider=TurnoProvider();
-  List<Estado> estados= <Estado>[].obs;
+  var estados = <Estado>[].obs;
 
 
 
@@ -38,13 +45,26 @@ class AsignacionController extends GetxController{
   AsignacionController(){
 
     getEstados();
-
+    connectAndListenSocket();
   }
 
-/*
-  void refresh() {
-    getEstados();
-  }*/
+
+  void connectAndListenSocket() {
+    socket.connect();
+    socket.onConnect((_) {
+      print('Asignacion conectado al socket');
+    });
+    listenEstadoCajero();
+  }
+
+  void listenEstadoCajero (){
+    socket.on('actualizar_turno', (data) {
+      print('Se recibió actualización de estado por socket: $data');
+
+      getEstados(); // O getUsuarios si ya tienes el estado seleccionado
+
+    });
+  }
 
   void clearMovimiento() {
     movimiento = Movimiento();
@@ -148,8 +168,7 @@ class AsignacionController extends GetxController{
   void getEstados() async{
     var result = await estadoProvider.getAll();
     estados.clear();
-    estados.addAll(result);
-    update();
+    estados.assignAll(result);
   }
 
   Future<List<Usuario>> getUsuarios(String idEstado,String idPeaje) async{

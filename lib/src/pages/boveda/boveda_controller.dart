@@ -1,5 +1,8 @@
 
+import 'dart:io';
+
 import 'package:asistencia_vial_app/src/models/boveda.dart';
+import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:asistencia_vial_app/src/pages/admin/modificar_boveda/modificar_boveda.dart';
 import 'package:asistencia_vial_app/src/pages/reportes/informe_boveda/informe_boveda.dart';
 import 'package:asistencia_vial_app/src/pages/reportes/informe_boveda_actual/informe_boveda_actual.dart';
@@ -8,18 +11,24 @@ import 'package:asistencia_vial_app/src/provider/boveda_provider.dart';
 import 'package:asistencia_vial_app/src/provider/movimiento_provider.dart';
 import 'package:asistencia_vial_app/src/provider/peaje_provider.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sn_progress_dialog/progress_dialog.dart';
+import 'package:socket_io_client/socket_io_client.dart';
 
+import '../../environment/environment.dart';
 import '../../models/movimiento.dart';
 import '../../models/response_api.dart';
 import '../../models/usuario.dart';
+import 'package:path_provider/path_provider.dart';
 import '../../provider/usuario_provider.dart';
 import '../supervisor/canje_fortius/canje_fortius.dart';
 import '../supervisor/retiro_fortius/retiro_fortius.dart';
 
 class BovedaController extends GetxController{
+
   Usuario usuarioSessio = Usuario.fromJson(GetStorage().read('usuario')??{});
   PeajeProvider peajeProvider=PeajeProvider();
   MovimientoProvider movimientoProvider=MovimientoProvider();
@@ -30,10 +39,73 @@ class BovedaController extends GetxController{
   var boveda = Rx<Boveda?>(null);
   int? retiro;
 
+  void signOut() async {
 
-  void signOut(){
-    GetStorage().remove('usuario');
-    Get.offNamedUntil('/',(route)=>false);
+    try {
+      // 1. Borrar GetStorage
+      await GetStorage().erase();
+
+      // 2. Borrar SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.clear();
+
+      // 3. Borrar archivos de caché
+      final appDir = await getApplicationDocumentsDirectory();
+      final cacheDir = await getTemporaryDirectory();
+
+      if (await appDir.exists()) {
+        appDir.listSync().forEach((entity) {
+          if (entity is File) {
+            try {
+              entity.deleteSync();
+            } catch (e) {
+              print('Error al borrar archivo: $e');
+            }
+          }
+        });
+      }
+
+      if (await cacheDir.exists()) {
+        cacheDir.listSync().forEach((entity) {
+          if (entity is File) {
+            try {
+              entity.deleteSync();
+            } catch (e) {
+              print('Error al borrar caché: $e');
+            }
+          }
+        });
+      }
+
+      // 4. Si usas Hive, borrar todas las cajas
+      // await Hive.deleteFromDisk();
+
+      // 5. Si usas sqflite, borrar la base de datos
+      // await deleteDatabase('mi_base_de_datos.db');
+
+      Get.snackbar(
+        'Salida Existosa',
+        'Se ha cerrado sesión correctamente',
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+      );
+
+      // Forzar la pantalla de login
+      GetStorage().remove('usuario');
+      // Limpiar completamente GetStorage, no solo el usuario
+      Get.offNamedUntil('/',(route)=>false);
+    } catch (e) {
+      print('Error en borrado de emergencia: $e');
+      Get.snackbar(
+        'Error',
+        'No se pudieron borrar todos los datos: $e',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    }
+
+
+
 
   }
 
@@ -82,16 +154,15 @@ class BovedaController extends GetxController{
     );
   }
 
-  void goToInformeBoveda(Boveda boveda, int retiro) async {
-    List<Boveda> bovedas=[];
-    var result4= await bovedaProvider.getSecreBoveda(usuarioSessio.idPeaje ?? '');
-
+  void _navegarAInforme(bool esActual, Boveda boveda, int retiro) async {
+    List<Boveda> bovedas = [];
+    var result4 = await bovedaProvider.getSecreBoveda(usuarioSessio.idPeaje ?? '');
     bovedas.add(result4!);
     bovedas.add(boveda);
 
     List<Movimiento>? movimientos = await movimientoProvider.getRetirosParcialesByDateActual(usuarioSessio.idPeaje ?? '');
 
-    var result = await movimientoProvider.getAperturasByDate(usuarioSessio.idPeaje ?? '' );
+    var result = await movimientoProvider.getAperturasByDate(usuarioSessio.idPeaje ?? '');
     movimientos.addAll(result);
 
     var result2 = await movimientoProvider.getLiquidacionesByDate(usuarioSessio.idPeaje ?? '');
@@ -100,36 +171,15 @@ class BovedaController extends GetxController{
     var result3 = await movimientoProvider.getFortiusByDateActual(usuarioSessio.idPeaje ?? '');
     movimientos.addAll(result3);
 
-    Get.to(
-          () => InformeBoveda(bovedas: bovedas, movimientos: movimientos),
-      arguments: boveda,
-    );
+    if (esActual) {
+      Get.to(() => InformeBovedaActual(bovedas: bovedas, movimientos: movimientos), arguments: boveda);
+    } else {
+      Get.to(() => InformeBoveda(bovedas: bovedas, movimientos: movimientos), arguments: boveda);
+    }
   }
 
-
-  void goToInformeBovedaActual(Boveda boveda, int retiro) async {
-    List<Boveda> bovedas=[];
-    var result4= await bovedaProvider.getSecreBoveda(usuarioSessio.idPeaje ?? '');
-
-    bovedas.add(result4!);
-    bovedas.add(boveda);
-
-    List<Movimiento>? movimientos = await movimientoProvider.getRetirosParcialesByDateActual(usuarioSessio.idPeaje ?? '');
-
-    var result = await movimientoProvider.getAperturasByDate(usuarioSessio.idPeaje ?? '' );
-    movimientos.addAll(result);
-
-    var result2 = await movimientoProvider.getLiquidacionesByDate(usuarioSessio.idPeaje ?? '');
-    movimientos.addAll(result2);
-
-    var result3 = await movimientoProvider.getFortiusByDateActual(usuarioSessio.idPeaje ?? '');
-    movimientos.addAll(result3);
-
-    Get.to(
-          () => InformeBovedaActual(bovedas: bovedas, movimientos: movimientos),
-      arguments: boveda,
-    );
-  }
+  void goToInformeBoveda(Boveda boveda, int retiro) => _navegarAInforme(false, boveda, retiro);
+  void goToInformeBovedaActual(Boveda boveda, int retiro) => _navegarAInforme(true, boveda, retiro);
 
 
   void goToModificarBoveda(Boveda boveda) {
@@ -194,6 +244,8 @@ class BovedaController extends GetxController{
 
 
   }
+
+
 
 
 }

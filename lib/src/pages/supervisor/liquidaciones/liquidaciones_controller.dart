@@ -1,8 +1,10 @@
+import 'package:asistencia_vial_app/src/environment/environment.dart';
 import 'package:asistencia_vial_app/src/models/response_api.dart';
 import 'package:asistencia_vial_app/src/provider/turno_provider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:socket_io_client/socket_io_client.dart';
 
 import '../../../models/movimiento.dart';
 import '../../../models/usuario.dart';
@@ -11,6 +13,10 @@ import '../../editar_transaccion/editar_transaccion.dart';
 import '../retiros_parciales/retiro_parcial.dart';
 
 class LiquidacionesController extends GetxController{
+  Socket socket = io('${Environment.API_URL}',<String,dynamic>{
+    'transports':['websocket'],
+    'autoConnect':false
+  });
 
   RxBool cargando = false.obs;
 
@@ -40,7 +46,14 @@ class LiquidacionesController extends GetxController{
   LiquidacionesController(Usuario usuario,List<Movimiento> movimientos) {
     this.usuario=usuario;
     this.movimientos=movimientos;
+    connectAndListen();
+  }
 
+  void connectAndListen(){
+    socket.connect();
+    socket.onConnect((data)=>{
+      print('Este dispositivo se conecto a SOCKET')
+    });
   }
 
 
@@ -134,6 +147,9 @@ class LiquidacionesController extends GetxController{
         Response response2 = await turnoProvider.updateEstado(usuario.idTurno??'');
 
         if(response.statusCode == 201){
+          socket.emit('actualizar_turno', {
+            'id_turno': usuario.idTurno
+          });
           Get.snackbar('Liquidación Existosa', 'La apertura ha sido retirada');
           Get.offNamedUntil('/home', (route) => false, arguments: {'index': 2});
         }
@@ -144,6 +160,9 @@ class LiquidacionesController extends GetxController{
         Response response2 = await turnoProvider.updateEstado(usuario.idTurno??'');
 
         if(responseApi.success==true){
+          socket.emit('actualizar_turno', {
+            'id_turno': usuario.idTurno
+          });
           Get.snackbar('Liquidación Existosa: ${liquidacion.id}', 'La apertura ha sido retirada');
           Get.offNamedUntil('/home', (route) => false, arguments: {'index': 2});
         }else{
@@ -157,5 +176,11 @@ class LiquidacionesController extends GetxController{
     }finally{
       cargando.value = false;
     }
+  }
+
+  @override
+  void onClose(){
+    print('SE CERRO LA LIQUIDACION');
+    socket.disconnect();
   }
 }

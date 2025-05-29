@@ -25,6 +25,7 @@ class LiquidacionesPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+
         title: Text(
           'Liquidación - ${usuario!.nombre} ${usuario!.apellido}',
           style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold,color: Colors.white),

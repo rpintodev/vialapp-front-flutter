@@ -14,8 +14,8 @@ class Estado {
   });
 
   factory Estado.fromJson(Map<String, dynamic> json) => Estado(
-    id: json["Id"],
-    nombre: json["Nombre"],
+    id: json["Id"]?.toString() ?? '',
+    nombre: json["Nombre"]?.toString() ?? '',
   );
 
   static List<Estado> fromJsonList(List<dynamic> jsonList){

@@ -613,7 +613,6 @@ class AsignacionPage extends StatelessWidget {
     }
 
   String _validarEstadoLiquidacion(Movimiento movimiento) {
-  print('Estado: ${movimiento.estado}');
     return (movimiento.estado=='1')
         ? "Liquidado"
         : "Sin liquidar";
