@@ -69,7 +69,7 @@ class DetalleTransaccionController extends GetxController{
     if(usuarioSession.roles?.first.id=='6'&& liquidacion.estado=='0'){
       liquidacion.idSupervisor=usuarioSession.id;
       liquidacion.estado='1';
-      ResponseApi response2 = await movimientoProvider.updateEstadoMovimiento(liquidacion);
+      await movimientoProvider.updateEstadoMovimiento(liquidacion);
     }
 
     Get.to(

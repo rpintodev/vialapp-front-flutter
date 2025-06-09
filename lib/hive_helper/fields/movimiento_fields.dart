@@ -1,0 +1,45 @@
+class MovimientoFields {
+	static const int id = 0;
+	static const int turno = 1;
+	static const int idturno = 2;
+	static const int idSupervisor = 3;
+	static const int nombreSupervisor = 4;
+	static const int idCajero = 5;
+	static const int nombreCajero = 6;
+	static const int idTipoMovimiento = 7;
+	static const int nombreMovimiento = 8;
+	static const int idPeaje = 9;
+	static const int via = 10;
+	static const int fecha = 11;
+	static const int firmacajero = 12;
+	static const int firmasupervisor = 13;
+	static const int recibe1C = 14;
+	static const int recibe5C = 15;
+	static const int recibe10C = 16;
+	static const int recibe25C = 17;
+	static const int recibe50C = 18;
+	static const int recibe1D = 19;
+	static const int recibe1DB = 20;
+	static const int recibe2D = 21;
+	static const int recibe5D = 22;
+	static const int recibe10D = 23;
+	static const int recibe20D = 24;
+	static const int entrega1C = 25;
+	static const int entrega5C = 26;
+	static const int entrega10C = 27;
+	static const int entrega25C = 28;
+	static const int entrega50C = 29;
+	static const int entrega1D = 30;
+	static const int entrega1DB = 31;
+	static const int entrega5D = 32;
+	static const int entrega10D = 33;
+	static const int entrega20D = 34;
+	static const int partetrabajo = 35;
+	static const int anulaciones = 36;
+	static const int valoranulaciones = 37;
+	static const int simulaciones = 38;
+	static const int valorsimulaciones = 39;
+	static const int sobrante = 40;
+	static const int estado = 41;
+
+}

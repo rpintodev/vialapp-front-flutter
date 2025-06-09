@@ -1,19 +1,25 @@
-// To parse this JSON data, do
-//
-//     final turno = turnoFromJson(jsonString);
+import 'package:hive/hive.dart';
+import 'package:asistencia_vial_app/hive_helper/hive_types.dart';
+import 'package:asistencia_vial_app/hive_helper/hive_adapters.dart';
+import 'package:asistencia_vial_app/hive_helper/fields/turno_fields.dart';
 
-import 'dart:convert';
 
-Turno turnoFromJson(String str) => Turno.fromJson(json.decode(str));
+part 'turno.g.dart';
 
-String turnoToJson(Turno data) => json.encode(data.toJson());
 
-class Turno {
+@HiveType(typeId: HiveTypes.turno, adapterName: HiveAdapters.turno)
+class Turno extends HiveObject{
+	@HiveField(TurnoFields.id)
   String? id;
+	@HiveField(TurnoFields.idSupervisor)
   String? idSupervisor;
+	@HiveField(TurnoFields.idCajero)
   String? idCajero;
+	@HiveField(TurnoFields.estado)
   String? estado;
+	@HiveField(TurnoFields.via)
   String? via;
+	@HiveField(TurnoFields.sessionToken)
   String? sessionToken;
 
   Turno({

@@ -1,56 +1,97 @@
-// To parse this JSON data, do
-//
-//     final movimiento = movimientoFromJson(jsonString);
+import 'package:hive/hive.dart';
+import 'package:asistencia_vial_app/hive_helper/hive_types.dart';
+import 'package:asistencia_vial_app/hive_helper/hive_adapters.dart';
+import 'package:asistencia_vial_app/hive_helper/fields/movimiento_fields.dart';
 
-import 'dart:convert';
-import 'dart:ffi';
 
-Movimiento movimientoFromJson(String str) => Movimiento.fromJson(json.decode(str));
+part 'movimiento.g.dart';
 
-String movimientoToJson(Movimiento data) => json.encode(data.toJson());
 
-class Movimiento {
+@HiveType(typeId: HiveTypes.movimiento, adapterName: HiveAdapters.movimiento)
+class Movimiento extends HiveObject{
+	@HiveField(MovimientoFields.id)
   String? id;
+	@HiveField(MovimientoFields.turno)
   String? turno;
+	@HiveField(MovimientoFields.idturno)
   String? idturno;
+	@HiveField(MovimientoFields.idSupervisor)
   String? idSupervisor;
+	@HiveField(MovimientoFields.nombreSupervisor)
   String? nombreSupervisor;
+	@HiveField(MovimientoFields.idCajero)
   String? idCajero;
+	@HiveField(MovimientoFields.nombreCajero)
   String? nombreCajero;
+	@HiveField(MovimientoFields.idTipoMovimiento)
   String? idTipoMovimiento;
+	@HiveField(MovimientoFields.nombreMovimiento)
   String? nombreMovimiento;
+	@HiveField(MovimientoFields.idPeaje)
   String? idPeaje;
+	@HiveField(MovimientoFields.via)
   String? via;
+	@HiveField(MovimientoFields.fecha)
   String? fecha;
+	@HiveField(MovimientoFields.firmacajero)
   String? firmacajero;
+	@HiveField(MovimientoFields.firmasupervisor)
   String? firmasupervisor;
+	@HiveField(MovimientoFields.recibe1C)
   String? recibe1C;
+	@HiveField(MovimientoFields.recibe5C)
   String? recibe5C;
+	@HiveField(MovimientoFields.recibe10C)
   String? recibe10C;
+	@HiveField(MovimientoFields.recibe25C)
   String? recibe25C;
+	@HiveField(MovimientoFields.recibe50C)
   String? recibe50C;
+	@HiveField(MovimientoFields.recibe1D)
   String? recibe1D;
+	@HiveField(MovimientoFields.recibe1DB)
   String? recibe1DB;
+	@HiveField(MovimientoFields.recibe2D)
   String? recibe2D;
+	@HiveField(MovimientoFields.recibe5D)
   String? recibe5D;
+	@HiveField(MovimientoFields.recibe10D)
   String? recibe10D;
+	@HiveField(MovimientoFields.recibe20D)
   String? recibe20D;
+	@HiveField(MovimientoFields.entrega1C)
   String? entrega1C;
+	@HiveField(MovimientoFields.entrega5C)
   String? entrega5C;
+	@HiveField(MovimientoFields.entrega10C)
   String? entrega10C;
+	@HiveField(MovimientoFields.entrega25C)
   String? entrega25C;
+	@HiveField(MovimientoFields.entrega50C)
   String? entrega50C;
+	@HiveField(MovimientoFields.entrega1D)
   String? entrega1D;
+	@HiveField(MovimientoFields.entrega1DB)
   String? entrega1DB;
+	@HiveField(MovimientoFields.entrega5D)
   String? entrega5D;
+	@HiveField(MovimientoFields.entrega10D)
   String? entrega10D;
+	@HiveField(MovimientoFields.entrega20D)
   String? entrega20D;
+	@HiveField(MovimientoFields.partetrabajo)
   String? partetrabajo;
+	@HiveField(MovimientoFields.anulaciones)
   String? anulaciones;
+	@HiveField(MovimientoFields.valoranulaciones)
   String? valoranulaciones;
+	@HiveField(MovimientoFields.simulaciones)
   String? simulaciones;
+	@HiveField(MovimientoFields.valorsimulaciones)
   String? valorsimulaciones;
+	@HiveField(MovimientoFields.sobrante)
   String? sobrante;
+	@HiveField(MovimientoFields.estado)
   String? estado;
 
   Movimiento({
@@ -196,6 +237,12 @@ class Movimiento {
       toList.add(movimiento);
     });
     return toList;
+  }
+
+  Map<String, dynamic> toJsonSinId() {
+    final data = toJson();
+    data.remove('id');
+    return data;
   }
 
 }

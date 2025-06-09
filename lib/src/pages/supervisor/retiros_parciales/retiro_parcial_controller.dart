@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 
@@ -67,7 +68,6 @@ class RetiroParcialController extends GetxController{
           entrega50C: '0',
           entrega1D: '0',
           entrega1DB: '0',
-
           entrega5D: '0',
           entrega10D: '0',
           entrega20D: '0'
@@ -81,9 +81,19 @@ class RetiroParcialController extends GetxController{
 
           Get.offNamedUntil('/home', (route) => false, arguments: {'index': 2});
 
-      } else if (response.statusCode == 400) {
-        Get.snackbar('Error', 'Es posible que el cajero esté asignado');
       }
+
+      if (response.statusCode == 202) {
+        Get.snackbar(
+            'Transacción Offline',
+            'El retiro parcial ha sido registrado exitosamente sin conexión',
+            icon: Icon(Icons.cloud_off_outlined,color: Colors.white,),
+            backgroundColor: Colors.orange[800],
+            colorText: Colors.white
+        );
+        Get.offNamedUntil('/home', (route) => false, arguments: {'index': 2});
+      }
+
     } catch (e) {
       print('Error: $e'); // Depuración
       Get.snackbar('Error', 'Ocurrió un error inesperado');
@@ -91,9 +101,5 @@ class RetiroParcialController extends GetxController{
       cargando.value = false;
     }
   }
-
-
-
-
 
 }

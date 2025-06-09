@@ -2,6 +2,7 @@ import 'package:asistencia_vial_app/src/models/response_api.dart';
 import 'package:asistencia_vial_app/src/models/rol.dart';
 import 'package:asistencia_vial_app/src/provider/usuario_provider.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 
@@ -40,16 +41,17 @@ class LoginController extends GetxController{
         Usuario usuario = Usuario.fromJson(GetStorage().read('usuario')??{});
 
         Rol? rol = usuario.roles?.isNotEmpty == true ? usuario.roles!.first : null;
-
-        Get.snackbar('Bienvenido', responseApi.message??'');
+        Get.snackbar(
+            'Bienvenido/a ${usuario.nombre}',
+            'Inicio de sesion exitoso',
+            backgroundColor: Colors.green,
+            colorText: Colors.white
+        );
 
         Get.offNamedUntil(rol?.ruta ??'', (route)=>false);
         }else{
           Get.snackbar('Error', 'Este usuario se encuentra inactivo');
         }
-
-      }else{
-        Get.snackbar('Error', responseApi.message??'');
       }
     }
   }

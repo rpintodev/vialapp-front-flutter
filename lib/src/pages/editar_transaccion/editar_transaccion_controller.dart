@@ -116,16 +116,14 @@ class EditarTransaccionController extends GetxController{
       );
 
       // Enviar la petición
-      ResponseApi responseApi = await movimientoProvider.update(movimiento);
+      Response responseApi = await movimientoProvider.update(movimiento);
 
-      if(responseApi.success==true){
+      if(responseApi.statusCode== 201){
 
         Get.snackbar('Actualiación existosa', 'La trasnsacción ha sido editada');
         Get.offNamedUntil('/home', (route) => false, arguments: {'index': 1});
-      }else{
-        Get.snackbar('ERROR ', responseApi.message??'');
-
       }
+
     } catch (e) {
       print('Error: $e'); // Depuración
       Get.snackbar('Error', 'Ocurrió un error inesperado');

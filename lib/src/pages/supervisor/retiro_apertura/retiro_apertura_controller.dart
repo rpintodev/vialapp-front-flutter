@@ -1,5 +1,6 @@
 import 'package:asistencia_vial_app/src/models/response_api.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 
@@ -44,38 +45,6 @@ class RetiroAperturaController extends GetxController{
   RxBool enProgresoApertura = false.obs;
   RxBool aperturaCompleta = false.obs;
 
-
-  void verificarApertura() {
-    enProgresoApertura.value = true;
-
-    final totalEntregado = (int.tryParse(billetes10EntregaController.text) ?? 0) * 10 +
-        (int.tryParse(billetes5EntregaController.text) ?? 0) * 5 +
-        (int.tryParse(billetes1EntregaController.text) ?? 0) * 1+
-    ((int.tryParse(Moneda50EntregaController.text) ?? 0) * 0.5).toDouble()+
-    ((int.tryParse(Moneda25EntregaController.text) ?? 0) * 0.25).toDouble()+
-    ((int.tryParse(Moneda10EntregaController.text) ?? 0) * 0.5).toDouble()+
-    ((int.tryParse(Moneda5EntregaController.text) ?? 0) * 0.05).toDouble()+
-    ((int.tryParse(Moneda5EntregaController.text) ?? 0) * 0.01).toDouble();
-
-    final totalRecibido = (int.tryParse(billetes20Controller.text) ?? 0) * 20 +
-        (int.tryParse(billetes10RecibeController.text) ?? 0) * 10 +
-        (int.tryParse(billetes5RecibeController.text) ?? 0) * 5 +
-        (int.tryParse(billetes1RecibeController.text) ?? 0) * 1+
-        ((int.tryParse(Moneda50RecibeController.text) ?? 0) * 0.5).toDouble()+
-        ((int.tryParse(Moneda25RecibeController.text) ?? 0) * 0.25).toDouble()+
-        ((int.tryParse(Moneda10RecibeController.text) ?? 0) * 0.5).toDouble()+
-        ((int.tryParse(Moneda5RecibeController.text) ?? 0) * 0.05).toDouble()+
-        ((int.tryParse(Moneda5RecibeController.text) ?? 0) * 0.01).toDouble();
-
-    aperturaCompleta.value = (totalEntregado - totalRecibido) == 0;
-    Entregado.value = totalEntregado;
-    Recibido.value = totalRecibido;
-
-    // Si apertura está completa, deshabilitar los campos y ocultar el botón
-    if (aperturaCompleta.value) {
-      enProgresoApertura.value = false;
-    }
-  }
 
 
 
@@ -164,16 +133,31 @@ class RetiroAperturaController extends GetxController{
 
       );
 
-      // Enviar la petición
-      ResponseApi responseApi = await movimientoProvider.update(movimiento);
+      Response response = await movimientoProvider.update(movimiento);
 
-      if(responseApi.success==true){
-        Get.snackbar('Retiro de apertura existosa', 'La apertura ha sido retirada');
+      if(response.statusCode== 201){
+        Get.snackbar(
+            'Transacción Exitosa',
+            'El canje ha sido registrado',
+            backgroundColor: Colors.green,
+            colorText: Colors.white
+        );
         Get.offNamedUntil('/home', (route) => false, arguments: {'index': 2});
-      }else{
-        Get.snackbar('ERROR ', responseApi.message??'');
-
       }
+
+      if (response.statusCode == 202) {
+        Get.snackbar(
+            'Transacción Offline',
+            'La apertura ha sido retirada exitosamente sin conexión',
+            icon: Icon(Icons.cloud_off_outlined,color: Colors.white,),
+            backgroundColor: Colors.orange[800],
+            colorText: Colors.white
+        );
+        Get.offNamedUntil('/home', (route) => false, arguments: {'index': 2});
+      }
+
+
+
     } catch (e) {
       print('Error: $e'); // Depuración
       Get.snackbar('Error', 'Ocurrió un error inesperado');
@@ -182,6 +166,38 @@ class RetiroAperturaController extends GetxController{
     }
   }
 
+
+  void verificarApertura() {
+    enProgresoApertura.value = true;
+
+    final totalEntregado = (int.tryParse(billetes10EntregaController.text) ?? 0) * 10 +
+        (int.tryParse(billetes5EntregaController.text) ?? 0) * 5 +
+        (int.tryParse(billetes1EntregaController.text) ?? 0) * 1+
+        ((int.tryParse(Moneda50EntregaController.text) ?? 0) * 0.5).toDouble()+
+        ((int.tryParse(Moneda25EntregaController.text) ?? 0) * 0.25).toDouble()+
+        ((int.tryParse(Moneda10EntregaController.text) ?? 0) * 0.5).toDouble()+
+        ((int.tryParse(Moneda5EntregaController.text) ?? 0) * 0.05).toDouble()+
+        ((int.tryParse(Moneda5EntregaController.text) ?? 0) * 0.01).toDouble();
+
+    final totalRecibido = (int.tryParse(billetes20Controller.text) ?? 0) * 20 +
+        (int.tryParse(billetes10RecibeController.text) ?? 0) * 10 +
+        (int.tryParse(billetes5RecibeController.text) ?? 0) * 5 +
+        (int.tryParse(billetes1RecibeController.text) ?? 0) * 1+
+        ((int.tryParse(Moneda50RecibeController.text) ?? 0) * 0.5).toDouble()+
+        ((int.tryParse(Moneda25RecibeController.text) ?? 0) * 0.25).toDouble()+
+        ((int.tryParse(Moneda10RecibeController.text) ?? 0) * 0.5).toDouble()+
+        ((int.tryParse(Moneda5RecibeController.text) ?? 0) * 0.05).toDouble()+
+        ((int.tryParse(Moneda5RecibeController.text) ?? 0) * 0.01).toDouble();
+
+    aperturaCompleta.value = (totalEntregado - totalRecibido) == 0;
+    Entregado.value = totalEntregado;
+    Recibido.value = totalRecibido;
+
+    // Si apertura está completa, deshabilitar los campos y ocultar el botón
+    if (aperturaCompleta.value) {
+      enProgresoApertura.value = false;
+    }
+  }
 
 
 

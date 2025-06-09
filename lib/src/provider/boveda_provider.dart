@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 
@@ -42,7 +43,6 @@ class BovedaProvider extends GetConnect{
       }
     }
 
-    Get.snackbar('Error', 'No se pudo obtener la información ${response.body.toString()}');
     return null;
   }
 
@@ -74,7 +74,14 @@ class BovedaProvider extends GetConnect{
       }
     }
 
-    Get.snackbar('Error', 'No se pudo obtener la información');
+    Get.snackbar(
+        'Modo Offline',
+        'No se ha podido conectar con el servidor',
+        backgroundColor: Colors.orange,
+        colorText: Colors.white,
+        isDismissible: true,
+        duration: const Duration(seconds: 60)
+    );
     return null;
   }
 
@@ -93,7 +100,14 @@ class BovedaProvider extends GetConnect{
     );
 
     if(response.body==null){
-      Get.snackbar('Error', 'No se pudo realizar la peticion');
+      Get.snackbar(
+          'Modo Offline',
+          'No se ha podido conectar con el servidor',
+          backgroundColor: Colors.orange,
+          colorText: Colors.white,
+          isDismissible: true,
+          duration: const Duration(seconds: 60)
+      );
       return ResponseApi();
     }
 
@@ -122,7 +136,14 @@ class BovedaProvider extends GetConnect{
     );
 
     if(response.body==null){
-      Get.snackbar('Error', 'No se pudo realizar la peticion');
+      Get.snackbar(
+          'Modo Offline',
+          'No se ha podido conectar con el servidor',
+          backgroundColor: Colors.orange,
+          colorText: Colors.white,
+          isDismissible: true,
+          duration: const Duration(seconds: 60)
+      );
       return ResponseApi();
     }
 

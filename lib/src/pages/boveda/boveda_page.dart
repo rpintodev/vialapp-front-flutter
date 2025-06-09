@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:intl/intl.dart';
+import '../../helper/connection_controller.dart';
+import '../../helper/offline_banner.dart';
 import '../../models/usuario.dart';
 import 'boveda_controller.dart';
 
@@ -16,19 +18,36 @@ class BovedaPage extends StatelessWidget {
     // Llamar a la función para cargar la bóveda
     bovedaSupController.getBoveda(usuario.idPeaje ?? '0');
 
-    return Scaffold(
-      backgroundColor: Color(0xFFF5F5F5),
-      body: RefreshIndicator(
-        onRefresh: _pullToRefresh, // 🛠 Pull-to-Refresh
-        child: Column(
-          children: [
-            Obx(() => _headerSection(context)), // Encabezado dinámico
-            Expanded(
-              child: Obx(() => _denominacionesList(context)), // Lista dinámica
+    return Stack(
+        children: [
+        Scaffold(
+          backgroundColor: Color(0xFFF5F5F5),
+            body: RefreshIndicator(
+              onRefresh: _pullToRefresh, // 🛠 Pull-to-Refresh
+              child: Column(
+                children: [
+                  Obx(() => _headerSection(context)), // Encabezado dinámico
+                  Expanded(
+                    child: Obx(() => _denominacionesList(context)), // Lista dinámica
+                  ),
+                ],
+              ),
             ),
-          ],
         ),
-      ),
+          // ✅ Banner flotante fijo en la parte superior de la app
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: Obx(() {
+              if (Get.find<ConnectionController>().isOffline.value) {
+                return const OfflineBanner();
+              } else {
+                return const SizedBox.shrink();
+              }
+            }),
+          ),
+      ],
     );
   }
 

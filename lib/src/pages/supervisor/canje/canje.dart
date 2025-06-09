@@ -2,6 +2,8 @@ import 'package:asistencia_vial_app/src/pages/supervisor/canje/canje_controller.
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../helper/connection_controller.dart';
+import '../../../helper/offline_banner.dart';
 import '../../../models/movimiento.dart';
 import '../../../models/usuario.dart';
 
@@ -15,41 +17,60 @@ class CanjePage extends StatelessWidget {
 
 
 
-  CanjePage({@required this.usuario,@required this.movimientos}){
-    canjeController=Get.put(CanjeController(usuario!,movimientos!));
+  CanjePage({@required this.usuario}){
+    canjeController=Get.put(CanjeController(usuario!));
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'Canje - ${usuario!.nombre} ${usuario!.apellido}',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold,color: Colors.white),
-        ),
-        backgroundColor: Color(0xFF368983),
-        elevation: 0,
-      ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _sectionTitle('Recibe'),
-            _recibeGrid(),
+    return Stack(
+        children: [
+          Scaffold(
+            appBar: AppBar(
+                title: Text(
+                'Retiro de Apertura - ${usuario!.nombre} ${usuario!.apellido}',
+                style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+                  ),
+                 ),
+            backgroundColor: Color(0xFF368983),
+            elevation: 0,
+          ),
+            body: SingleChildScrollView(
+              padding: EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _sectionTitle('Recibe'),
+                  _recibeGrid(),
 
-            Divider(thickness: 1, color: Colors.grey[300]),
+                  Divider(thickness: 1, color: Colors.grey[300]),
 
-            _sectionTitle('Entrega'),
-            SizedBox(height: 5),
-            _entregaGrid(),
-            SizedBox(height: 10),
-            _confirmButton(context),
-           // SizedBox(height: 10),
-            //_buildAnalisisTable(), // Tabla de Análisis
-          ],
+                  _sectionTitle('Entrega'),
+                  SizedBox(height: 5),
+                  _entregaGrid(),
+                  SizedBox(height: 10),
+                  _confirmButton(context),
+                ],
+              ),
+            ),
         ),
-      ),
+    // ✅ Banner flotante fijo en la parte superior de la app
+        Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+            child: Obx(() {
+            if (Get.find<ConnectionController>().isOffline.value) {
+              return const OfflineBanner();
+            } else {
+              return const SizedBox.shrink();
+            }
+          }),
+        ),
+     ],
     );
   }
 

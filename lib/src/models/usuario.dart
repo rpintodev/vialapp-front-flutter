@@ -1,29 +1,52 @@
-import 'dart:convert';
 import 'package:asistencia_vial_app/src/models/rol.dart';
+import 'package:hive/hive.dart';
+import 'package:asistencia_vial_app/hive_helper/hive_types.dart';
+import 'package:asistencia_vial_app/hive_helper/hive_adapters.dart';
+import 'package:asistencia_vial_app/hive_helper/fields/usuario_fields.dart';
 
-Usuario usuarioFromJson(String str) => Usuario.fromJson(json.decode(str));
 
-String usuarioToJson(Usuario data) => json.encode(data.toJson());
+part 'usuario.g.dart';
 
-class Usuario {
+
+@HiveType(typeId: HiveTypes.usuario, adapterName: HiveAdapters.usuario)
+class Usuario extends HiveObject{
+	@HiveField(UsuarioFields.id)
   String? id;
+	@HiveField(UsuarioFields.usuario)
   String? usuario;
+	@HiveField(UsuarioFields.nombre)
   String? nombre;
+	@HiveField(UsuarioFields.apellido)
   String? apellido;
+	@HiveField(UsuarioFields.telefono)
   String? telefono;
+	@HiveField(UsuarioFields.password)
   String? password;
+	@HiveField(UsuarioFields.imagen)
   String? imagen;
+	@HiveField(UsuarioFields.sessionToken)
   String? sessionToken;
+	@HiveField(UsuarioFields.idRol)
   String? idRol;
+	@HiveField(UsuarioFields.idTurno)
   String? idTurno;
+	@HiveField(UsuarioFields.turno)
   String? turno;
+	@HiveField(UsuarioFields.via)
   String? via;
+	@HiveField(UsuarioFields.firma)
   String? firma;
+	@HiveField(UsuarioFields.nombreRol)
   String? nombreRol;
+	@HiveField(UsuarioFields.nombrePeaje)
   String? nombrePeaje;
+	@HiveField(UsuarioFields.idPeaje)
   String? idPeaje;
+	@HiveField(UsuarioFields.estado)
   String? estado;
+	@HiveField(UsuarioFields.grupo)
   String? grupo;
+	@HiveField(UsuarioFields.roles)
   List<Rol>? roles=[];
 
 

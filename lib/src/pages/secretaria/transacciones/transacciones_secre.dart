@@ -95,6 +95,7 @@ class TransaccionesSecre extends StatelessWidget {
             },
           );
         }
+
         return Center(child: Text("No hay datos disponibles"));
       },
     );

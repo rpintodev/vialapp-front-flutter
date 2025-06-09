@@ -3,6 +3,8 @@ import 'package:asistencia_vial_app/src/pages/supervisor/liquidaciones/liquidaci
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../helper/connection_controller.dart';
+import '../../../helper/offline_banner.dart';
 import '../../../models/usuario.dart';
 
 class LiquidacionesPage extends StatelessWidget {
@@ -23,33 +25,50 @@ class LiquidacionesPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-
-        title: Text(
-          'Liquidación - ${usuario!.nombre} ${usuario!.apellido}',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold,color: Colors.white),
+    return Stack(
+      children: [
+        Scaffold(
+          appBar: AppBar(
+            title: Text(
+              'Liquidación - ${usuario!.nombre} ${usuario!.apellido}',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold,color: Colors.white),
+            ),
+            backgroundColor: Color(0xFF368983),
+            elevation: 0,
+          ),
+          body: SingleChildScrollView(
+            padding: EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const OfflineBanner(),
+                _sectionTitle2('Recibe de Cajero'),
+                _recibeGrid(),
+                SizedBox(height: 10),
+                Divider(thickness: 1, color: Colors.grey[300]),
+                _sectionTitle('Retiros Parciales'),
+                SizedBox(height: 20),
+                _retirosParcialesList(),
+                SizedBox(height: 30),
+                _confirmButton(context),
+              ],
+            ),
+          ),
         ),
-        backgroundColor: Color(0xFF368983),
-        elevation: 0,
-      ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _sectionTitle2('Recibe de Cajero'),
-            _recibeGrid(),
-            SizedBox(height: 10),
-            Divider(thickness: 1, color: Colors.grey[300]),
-            _sectionTitle('Retiros Parciales'),
-            SizedBox(height: 20),
-            _retirosParcialesList(),
-            SizedBox(height: 30),
-            _confirmButton(context),
-          ],
+        // ✅ Banner flotante fijo en la parte superior de la app
+        Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          child: Obx(() {
+            if (Get.find<ConnectionController>().isOffline.value) {
+              return const OfflineBanner();
+            } else {
+              return const SizedBox.shrink();
+            }
+          }),
         ),
-      ),
+      ],
     );
   }
 

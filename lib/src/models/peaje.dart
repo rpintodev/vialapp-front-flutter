@@ -1,11 +1,17 @@
-import 'dart:convert';
+import 'package:hive/hive.dart';
+import 'package:asistencia_vial_app/hive_helper/hive_types.dart';
+import 'package:asistencia_vial_app/hive_helper/hive_adapters.dart';
+import 'package:asistencia_vial_app/hive_helper/fields/peaje_fields.dart';
 
-Peaje peajeFromJson(String str) => Peaje.fromJson(json.decode(str));
 
-String peajeToJson(Peaje data) => json.encode(data.toJson());
+part 'peaje.g.dart';
 
-class Peaje {
+
+@HiveType(typeId: HiveTypes.peaje, adapterName: HiveAdapters.peaje)
+class Peaje extends HiveObject{
+	@HiveField(PeajeFields.id)
   String id;
+	@HiveField(PeajeFields.nombre)
   String nombre;
 
   Peaje({

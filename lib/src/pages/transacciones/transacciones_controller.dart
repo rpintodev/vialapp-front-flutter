@@ -1,10 +1,12 @@
 
 import 'package:asistencia_vial_app/src/pages/detalle_transaccion/detalle_transaccion.dart';
+import 'package:asistencia_vial_app/src/provider/provider-offline/tipomovimiento_provider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 
+import '../../helper/connection_helper.dart';
 import '../../models/movimiento.dart';
 import '../../models/usuario.dart';
 import '../../provider/movimiento_provider.dart';
@@ -15,7 +17,7 @@ class TransaccionesController extends GetxController{
   MovimientoProvider movimientoProvider=MovimientoProvider();
 
   List<Movimiento> tipoMovimientos= <Movimiento>[].obs;
-
+  TipoMovimientoProviderOffline tipoMovimientoProviderOffline=TipoMovimientoProviderOffline();
   Movimiento movimiento=Movimiento();
   var fechaInicio = ''.obs;
   var fechaFin = ''.obs;
@@ -43,10 +45,20 @@ class TransaccionesController extends GetxController{
 
 
   void getTipoMovimiento() async{
-    var result = await movimientoProvider.getTipoMovimiento();
-    tipoMovimientos.clear();
-    tipoMovimientos.addAll(result);
-    update();
+    if(await isConnectedToServer()){
+      var result = await movimientoProvider.getTipoMovimiento();
+      await tipoMovimientoProviderOffline.saveTipoMovimientos(result);
+      tipoMovimientos.clear();
+      tipoMovimientos.addAll(result);
+      update();
+    }else{
+      tipoMovimientos.assignAll(tipoMovimientoProviderOffline.getAll());
+    }
+
+
+
+
+
   }
 
   Future<List<Movimiento>> getMovimientos(String fechainicio,String fechafin, String idTipoMovimiento,String idPeaje) async{

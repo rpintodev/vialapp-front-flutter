@@ -1,14 +1,19 @@
-import 'dart:convert';
+import 'package:hive/hive.dart';
+import 'package:asistencia_vial_app/hive_helper/hive_types.dart';
+import 'package:asistencia_vial_app/hive_helper/hive_adapters.dart';
+import 'package:asistencia_vial_app/hive_helper/fields/rol_fields.dart';
 
-import 'package:asistencia_vial_app/main.dart';
 
-Rol rolFromJson(String str) => Rol.fromJson(json.decode(str));
+part 'rol.g.dart';
 
-String rolToJson(Rol data) => json.encode(data.toJson());
 
-class Rol {
+@HiveType(typeId: HiveTypes.rol, adapterName: HiveAdapters.rol)
+class Rol extends HiveObject{
+	@HiveField(RolFields.id)
   String? id;
+	@HiveField(RolFields.nombre)
   String? nombre;
+	@HiveField(RolFields.ruta)
   String? ruta;
 
   Rol({
@@ -39,7 +44,6 @@ class Rol {
     return toList;
   }
 
-  @override
   String toString() {
     return 'Rol(id: $id, nombre: $nombre)';
   }

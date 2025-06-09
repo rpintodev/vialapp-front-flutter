@@ -3,6 +3,8 @@ import 'package:asistencia_vial_app/src/pages/supervisor/retiro_apertura/retiro_
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../helper/connection_controller.dart';
+import '../../../helper/offline_banner.dart';
 import '../../../models/usuario.dart';
 
 
@@ -24,40 +26,60 @@ class RetiroAperturaPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'Retiro de Apertura - ${usuario!.nombre} ${usuario!.apellido}',
-          style: TextStyle(
-              fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
-        ),
-        backgroundColor: Color(0xFF368983),
-        elevation: 0,
-      ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(16.0),
-        child: Obx(
-              () =>
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _sectionTitle('Recibe de Cajero'),
-                  _recibeGrid(!retiroAperturaController.enProgresoApertura.value &&
-                      retiroAperturaController.aperturaCompleta.value),
-                  SizedBox(height: 10),
-                  Divider(thickness: 1, color: Colors.grey[300]),
-                  _sectionTitle('Entregó Supervisor'),
-                  SizedBox(height: 10),
-                  _entregaGrid(),
-                  SizedBox(height: 10),
-                  _statusMessage(),
-                  SizedBox(height: 20),
-                  if (!retiroAperturaController.aperturaCompleta.value)
-                    _confirmButton(context),
-                ],
+    return Stack(
+        children: [
+          Scaffold(
+            appBar: AppBar(
+              title: Text(
+                'Retiro de Apertura - ${usuario!.nombre} ${usuario!.apellido}',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
               ),
+              backgroundColor: Color(0xFF368983),
+              elevation: 0,
+            ),
+            body: SingleChildScrollView(
+              padding: EdgeInsets.all(16.0),
+              child: Obx(
+                  () =>
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _sectionTitle('Recibe de Cajero'),
+                      _recibeGrid(!retiroAperturaController.enProgresoApertura.value &&
+                          retiroAperturaController.aperturaCompleta.value),
+                      SizedBox(height: 10),
+                      Divider(thickness: 1, color: Colors.grey[300]),
+                      _sectionTitle('Entregó Supervisor'),
+                      SizedBox(height: 10),
+                      _entregaGrid(),
+                      SizedBox(height: 10),
+                      _statusMessage(),
+                      SizedBox(height: 20),
+                      if (!retiroAperturaController.aperturaCompleta.value)
+                        _confirmButton(context),
+                    ],
+                  ),
+               ),
+          ),
         ),
-      ),
+          // ✅ Banner flotante fijo en la parte superior de la app
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: Obx(() {
+              if (Get.find<ConnectionController>().isOffline.value) {
+                return const OfflineBanner();
+              } else {
+                return const SizedBox.shrink();
+              }
+            }),
+          ),
+        ],
     );
   }
 

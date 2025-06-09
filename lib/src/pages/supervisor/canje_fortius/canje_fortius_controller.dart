@@ -1,6 +1,7 @@
 import 'package:asistencia_vial_app/src/models/movimiento.dart';
 import 'package:asistencia_vial_app/src/provider/movimiento_provider.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:sn_progress_dialog/progress_dialog.dart';
@@ -84,10 +85,17 @@ class CanjeFortiusController extends GetxController{
          if (response.statusCode == 201) {
             Get.snackbar('Canje Exitosa', 'El canje ha sido registrado');
             Get.offNamedUntil('/home', (route) => false, arguments: {'index': 0});
-         } else if (response.statusCode == 400) {
-            Get.snackbar('Error', 'Es posible que el cajero esté asignado');
-         } else {
-            Get.snackbar('Error', response.statusText ?? 'Error desconocido');
+         }
+
+         if (response.statusCode == 202) {
+            Get.snackbar(
+                'Transacción Offline',
+                'El canje ha sido registrado exitosamente sin conexión',
+                icon: Icon(Icons.cloud_off_outlined,color: Colors.white,),
+                backgroundColor: Colors.orange[800],
+                colorText: Colors.white
+            );
+            Get.offNamedUntil('/home', (route) => false, arguments: {'index': 2});
          }
       } catch (e) {
          print('Error: $e'); // Depuración

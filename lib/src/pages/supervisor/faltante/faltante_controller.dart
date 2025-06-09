@@ -277,13 +277,12 @@ class FaltanteController extends GetxController{
       if (totalRecibido > 0) {
 
         final yaExisteFaltante = movimientos.any((m) => m.idTipoMovimiento == '6');
-        print("Faltante: ${!yaExisteFaltante}");
         if(yaExisteFaltante){//SI SE MODIFICA EL FALTANTE
 
           ResponseApi responseApi = await movimientoProvider.updateLiquidacion(movimiento2);
-          ResponseApi responseapi2 = await movimientoProvider.update(movimiento4);
+          Response response = await movimientoProvider.update(movimiento4);
 
-          if(responseApi.success==true && responseapi2.success==true){
+          if(responseApi.success==true && response.statusCode== 201){
 
             Get.snackbar('Liquidacion existosa', 'La liquidacion ha sido modificada');
             var result = await movimientoProvider.getMovimientoByTurno(primerMovimiento.idturno??''); //cambiar getApertura

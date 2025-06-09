@@ -2,6 +2,8 @@
 import 'dart:io';
 
 import 'package:asistencia_vial_app/src/models/boveda.dart';
+import 'package:asistencia_vial_app/src/provider/provider-offline/boveda_provider_offline.dart';
+import 'package:hive/hive.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:asistencia_vial_app/src/pages/admin/modificar_boveda/modificar_boveda.dart';
 import 'package:asistencia_vial_app/src/pages/reportes/informe_boveda/informe_boveda.dart';
@@ -19,6 +21,7 @@ import 'package:sn_progress_dialog/progress_dialog.dart';
 import 'package:socket_io_client/socket_io_client.dart';
 
 import '../../environment/environment.dart';
+import '../../helper/connection_helper.dart';
 import '../../models/movimiento.dart';
 import '../../models/response_api.dart';
 import '../../models/usuario.dart';
@@ -32,7 +35,7 @@ class BovedaController extends GetxController{
   Usuario usuarioSessio = Usuario.fromJson(GetStorage().read('usuario')??{});
   PeajeProvider peajeProvider=PeajeProvider();
   MovimientoProvider movimientoProvider=MovimientoProvider();
-
+  BovedaProviderOffline bovedaOffline = BovedaProviderOffline();
   late String idPeajeSeleccionado;
 
   BovedaProvider bovedaProvider = BovedaProvider();
@@ -78,7 +81,7 @@ class BovedaController extends GetxController{
       }
 
       // 4. Si usas Hive, borrar todas las cajas
-      // await Hive.deleteFromDisk();
+       //await Hive.deleteFromDisk();
 
       // 5. Si usas sqflite, borrar la base de datos
       // await deleteDatabase('mi_base_de_datos.db');
@@ -113,13 +116,29 @@ class BovedaController extends GetxController{
 
 
   void getBoveda(String idpeaje) async{
-    if(usuarioSessio.roles?.first.id =='4'){
-      var result= await bovedaProvider.getSecreBoveda(idpeaje);
-      boveda.value = result;
-    }else {
-      var result = await bovedaProvider.getAll(idpeaje);
-      boveda.value = result;
+    if(await isConnectedToServer()){
+      if(usuarioSessio.roles?.first.id =='4'){
+        var result= await bovedaProvider.getSecreBoveda(idpeaje);
+        await bovedaOffline.saveBoveda(result!);
+        boveda.value = result;
+      }else {
+        var result = await bovedaProvider.getAll(idpeaje);
+        await bovedaOffline.saveBoveda(result!);
+        boveda.value = result;
+      }
+    }else{
+      /*
+      Get.snackbar(
+          'Modo Offline',
+          'No se ha podido conectar con el servidor',
+          backgroundColor: Colors.orange,
+          colorText: Colors.white,
+          isDismissible: true,
+          duration: const Duration(seconds: 60)
+      );*/
+      boveda.value=await bovedaOffline.getAll(idpeaje);
     }
+
 
     update();
   }

@@ -1,27 +1,47 @@
+import 'package:hive/hive.dart';
+import 'package:asistencia_vial_app/hive_helper/hive_types.dart';
+import 'package:asistencia_vial_app/hive_helper/hive_adapters.dart';
+import 'package:asistencia_vial_app/hive_helper/fields/boveda_fields.dart';
 
-import 'dart:convert';
 
-Boveda bovedaFromJson(String str) => Boveda.fromJson(json.decode(str));
+part 'boveda.g.dart';
 
-String bovedaToJson(Boveda data) => json.encode(data.toJson());
 
-class Boveda {
+@HiveType(typeId: HiveTypes.boveda, adapterName: HiveAdapters.boveda)
+class Boveda extends HiveObject{
+	@HiveField(BovedaFields.id)
   String? id;
+	@HiveField(BovedaFields.fecha)
   String? fecha;
+	@HiveField(BovedaFields.esactual)
   String? esactual;
+	@HiveField(BovedaFields.idpeaje)
   String? idpeaje;
+	@HiveField(BovedaFields.moneda001)
   String? moneda001;
+	@HiveField(BovedaFields.moneda005)
   String? moneda005;
+	@HiveField(BovedaFields.moneda01)
   String? moneda01;
+	@HiveField(BovedaFields.moneda025)
   String? moneda025;
+	@HiveField(BovedaFields.moneda05)
   String? moneda05;
+	@HiveField(BovedaFields.moneda1)
   String? moneda1;
+	@HiveField(BovedaFields.billete1)
   String? billete1;
+	@HiveField(BovedaFields.billete2)
   String? billete2;
+	@HiveField(BovedaFields.billete5)
   String? billete5;
+	@HiveField(BovedaFields.billete10)
   String? billete10;
+	@HiveField(BovedaFields.billete20)
   String? billete20;
+	@HiveField(BovedaFields.observacion)
   String? observacion;
+	@HiveField(BovedaFields.total)
   String? total;
 
   Boveda({
@@ -89,8 +109,10 @@ class Boveda {
 
     jsonList.forEach((jsonEstado){
       Boveda boveda = Boveda.fromJson(jsonEstado);
+
       toList.add(boveda);
     });
+
     return toList;
   }
 

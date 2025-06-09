@@ -1,3 +1,7 @@
+import 'package:asistencia_vial_app/src/helper/connection_controller.dart';
+import 'package:asistencia_vial_app/src/models/boveda.dart';
+import 'package:asistencia_vial_app/src/models/estado.dart';
+import 'package:asistencia_vial_app/src/models/movimiento.dart';
 import 'package:asistencia_vial_app/src/models/rol.dart';
 import 'package:asistencia_vial_app/src/models/usuario.dart';
 import 'package:asistencia_vial_app/src/pages/admin/Usuarios/usuarios_admin.dart';
@@ -20,6 +24,8 @@ import 'package:asistencia_vial_app/src/pages/supervisor/usuarios/usuarios_sup.d
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:hive/hive.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 import 'src/pages/detalle/detalle_usuario.dart';
 import 'src/pages/supervisor/canje_fortius/canje_fortius.dart';
@@ -30,9 +36,24 @@ Rol? rol = userSession.roles?.isNotEmpty == true ? userSession.roles!.first : nu
 
 
 void main() async{
+  WidgetsFlutterBinding.ensureInitialized();
+  await Hive.initFlutter();
+
+  Hive.registerAdapter(UsuarioAdapter());
+  Hive.registerAdapter(EstadoAdapter());
+  Hive.registerAdapter(MovimientoAdapter());
+  Hive.registerAdapter(BovedaAdapter());
+  await Hive.openBox<Boveda>('boveda');
+  await Hive.openBox<Usuario>('usuarios');
+  await Hive.openBox<Estado>('estado');
+  await Hive.openBox<Movimiento>('movimientos');
+  await Hive.openBox<Movimiento>('transacciones');
+  await Hive.openBox<Movimiento>('tipoMovimiento');
+
 
   await GetStorage.init();
   runApp(const MyApp());
+  Get.put(ConnectionController());
 }
 
 class MyApp extends StatefulWidget {

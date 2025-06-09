@@ -193,9 +193,9 @@ class DetalleTransaccion extends StatelessWidget {
     print("Movimiento id ${movimientos?.first.idTipoMovimiento}");
     switch (int.parse(movimientos?.first.idTipoMovimiento??'1')) {
       case 1: // Apertura
-        return _buildAperturaDetails();
+        return bandera==2?_buildLiquidacionDetails(): _buildAperturaDetails();
       case 2: // Retiro Parcial
-        return bandera==2?_buildLiquidacionDetails(): _buildFaltanteDetails();
+        return bandera==2?_buildLiquidacionDetails(): _buildRetiroParcialDetails();
       case 3: // Canje
         return _buildCanjeDetails();
       case 4: // Liquidación

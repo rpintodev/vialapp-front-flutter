@@ -2,6 +2,8 @@ import 'package:asistencia_vial_app/src/pages/supervisor/canje/canje_controller.
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../helper/connection_controller.dart';
+import '../../../helper/offline_banner.dart';
 import '../../../models/usuario.dart';
 import 'canje_fortius_controller.dart';
 
@@ -18,34 +20,51 @@ class CanjeFortiusPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'Canje de Fortius',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold,color: Colors.white),
-        ),
-        backgroundColor: Color(0xFF368983),
-        elevation: 0,
-      ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _sectionTitle('Recibe de Fortius'),
-            _recibeGrid(),
-            SizedBox(height: 10),
+    return Stack(
+      children: [
+        Scaffold(
+          appBar: AppBar(
+            title: Text(
+              'Canje de Fortius',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold,color: Colors.white),
+            ),
+            backgroundColor: Color(0xFF368983),
+            elevation: 0,
+          ),
+          body: SingleChildScrollView(
+            padding: EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const OfflineBanner(),
+                _sectionTitle('Recibe de Fortius'),
+                _recibeGrid(),
+                SizedBox(height: 10),
 
-            Divider(thickness: 1, color: Colors.grey[300]),
-            SizedBox(height: 20),
-            _sectionTitle('Entrega Supervisor'),
-            SizedBox(height: 10),
-            _entregaGrid(),
-            SizedBox(height: 30),
-            _confirmButton(context),
-          ],
+                Divider(thickness: 1, color: Colors.grey[300]),
+                SizedBox(height: 20),
+                _sectionTitle('Entrega Supervisor'),
+                SizedBox(height: 10),
+                _entregaGrid(),
+                SizedBox(height: 30),
+                _confirmButton(context),
+              ],
+            ),
+          ),
         ),
-      ),
+        Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          child: Obx(() {
+            if (Get.find<ConnectionController>().isOffline.value) {
+              return const OfflineBanner();
+            } else {
+              return const SizedBox.shrink();
+            }
+          }),
+        ),
+      ],
     );
   }
 

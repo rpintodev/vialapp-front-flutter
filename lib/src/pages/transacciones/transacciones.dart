@@ -4,6 +4,9 @@ import 'package:date_format/date_format.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../helper/connection_controller.dart';
+import '../../helper/offline_banner.dart';
+
 class Transacciones extends StatelessWidget {
 
   TransaccionesController transaccionesController = Get.put(TransaccionesController());
@@ -14,78 +17,100 @@ class Transacciones extends StatelessWidget {
   Widget build(BuildContext context) {
     return Obx(() => DefaultTabController(
       length: transaccionesController.tipoMovimientos.length,
-      child: Scaffold(
-        appBar: PreferredSize(
-          preferredSize: Size.fromHeight(110),
-          child: AppBar(
-            flexibleSpace: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 10),
-                  child: Row(
+      child: Stack(
+          children: [
+            Scaffold(
+              appBar: PreferredSize(
+                preferredSize: Size.fromHeight(110),
+                child: AppBar(
+                  flexibleSpace: Column(
                     children: [
-                      // Campo de Fecha Inicio
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () async {
-                            String? fechaSeleccionada = await _selectDate(context, true);
-                            if (fechaSeleccionada != null) {
-                              transaccionesController.fechaInicio.value = fechaSeleccionada;
-                              _checkAndSearch();
-                            }
-                          },
-                          child: _dateField(
-                            label: 'Fecha Inicio',
-                            value: transaccionesController.fechaInicio.value,
+                      const SizedBox(height: 50),
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 10),
+                            child: Row(
+                              children: [
+                                // Campo de Fecha Inicio
+                                Expanded(
+                                  child: GestureDetector(
+                                    onTap: () async {
+                                      String? fechaSeleccionada = await _selectDate(context, true);
+                                      if (fechaSeleccionada != null) {
+                                        transaccionesController.fechaInicio.value = fechaSeleccionada;
+                                        _checkAndSearch();
+                                      }
+                                    },
+                                    child: _dateField(
+                                      label: 'Fecha Inicio',
+                                      value: transaccionesController.fechaInicio.value,
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(width: 5),
+                                // Campo de Fecha Fin
+                                Expanded(
+                                  child: GestureDetector(
+                                    onTap: () async {
+                                      String? fechaSeleccionada = await _selectDate(context, false);
+                                      if (fechaSeleccionada != null) {
+                                        transaccionesController.fechaFin.value = fechaSeleccionada;
+                                        _checkAndSearch();
+                                      }
+                                    },
+                                    child: _dateField(
+                                      label: 'Fecha Fin',
+                                      value: transaccionesController.fechaFin.value,
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(width: 10),
+                                // Botón de Búsqueda
+                                IconButton(
+                                  icon: Icon(Icons.cleaning_services, color: Color(0xFF368983), size: 30),
+                                  onPressed: _clearFilters, // Limpia los filtros
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                      ),
-                      SizedBox(width: 5),
-                      // Campo de Fecha Fin
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () async {
-                            String? fechaSeleccionada = await _selectDate(context, false);
-                            if (fechaSeleccionada != null) {
-                              transaccionesController.fechaFin.value = fechaSeleccionada;
-                              _checkAndSearch();
-                            }
-                          },
-                          child: _dateField(
-                            label: 'Fecha Fin',
-                            value: transaccionesController.fechaFin.value,
-                          ),
-                        ),
-                      ),
-                      SizedBox(width: 10),
-                      // Botón de Búsqueda
-                      IconButton(
-                        icon: Icon(Icons.cleaning_services, color: Color(0xFF368983), size: 30),
-                        onPressed: _clearFilters, // Limpia los filtros
+                        ],
                       ),
                     ],
                   ),
+                  bottom: TabBar(
+                    tabAlignment: TabAlignment.center,
+                    isScrollable: true,
+                    indicatorColor: Color(0xFF368983),
+                    labelColor: Colors.black,
+                    unselectedLabelColor: Colors.grey[400],
+                    tabs: transaccionesController.tipoMovimientos
+                        .map((tipo) => Tab(text: tipo.nombreMovimiento ?? ' '))
+                        .toList(),
+                  ),
                 ),
-              ],
-            ),
-            bottom: TabBar(
-              tabAlignment: TabAlignment.center,
-              isScrollable: true,
-              indicatorColor: Color(0xFF368983),
-              labelColor: Colors.black,
-              unselectedLabelColor: Colors.grey[400],
-              tabs: transaccionesController.tipoMovimientos
-                  .map((tipo) => Tab(text: tipo.nombreMovimiento ?? ' '))
-                  .toList(),
-            ),
+              ),
+              body: TabBarView(
+                children: List.generate(transaccionesController.tipoMovimientos.length, (index) {
+                  return _buildTabContent(index + 1);
+                }),
+              ),
           ),
-        ),
-        body: TabBarView(
-          children: List.generate(transaccionesController.tipoMovimientos.length, (index) {
-            return _buildTabContent(index + 1);
-          }),
-        ),
+            // ✅ Aquí va la barra flotante "Offline"
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: Obx(() {
+                if (Get.find<ConnectionController>().isOffline.value) {
+                  return const OfflineBanner();
+                } else {
+                  return const SizedBox.shrink(); // Oculta si hay conexión
+                }
+              }),
+            ),
+          ],
       ),
     ));
   }

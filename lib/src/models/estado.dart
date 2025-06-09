@@ -1,11 +1,17 @@
-import 'dart:convert';
+import 'package:hive/hive.dart';
+import 'package:asistencia_vial_app/hive_helper/hive_types.dart';
+import 'package:asistencia_vial_app/hive_helper/hive_adapters.dart';
+import 'package:asistencia_vial_app/hive_helper/fields/estado_fields.dart';
 
-Estado estadoFromJson(String str) => Estado.fromJson(json.decode(str));
 
-String estadoToJson(Estado data) => json.encode(data.toJson());
+part 'estado.g.dart';
 
-class Estado {
+
+@HiveType(typeId: HiveTypes.estado, adapterName: HiveAdapters.estado)
+class Estado extends HiveObject{
+	@HiveField(EstadoFields.id)
   String id;
+	@HiveField(EstadoFields.nombre)
   String nombre;
 
   Estado({

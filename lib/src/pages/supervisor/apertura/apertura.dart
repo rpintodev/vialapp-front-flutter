@@ -2,6 +2,8 @@ import 'package:asistencia_vial_app/src/pages/supervisor/apertura/apertura_contr
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../helper/connection_controller.dart';
+import '../../../helper/offline_banner.dart';
 import '../../../models/usuario.dart';
 
 class AperturaPage extends StatelessWidget {
@@ -16,44 +18,69 @@ class AperturaPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Obx(() => Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'Apertura - ${usuario!.nombre} ${usuario!.apellido}',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold,color: Colors.white),
-        ),
-        backgroundColor: Color(0xFF368983),
-        elevation: 0,
-      ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _sectionTitle('Recibe de Cajero'),
-            _recibeGrid(),
-            SizedBox(height: 10),
-            if(usuario!.idRol != '4')...[
-              _confirmVia(context, usuario!.idTurno ?? ''),
-              SizedBox(height: 10),
-            ],
-              Center(child:
-              Text(aperturaController.asignacion.value == 'null'
-                  ? ''
-                  : 'Via Asignada ${aperturaController.asignacion.value}',
-                  style: TextStyle(
+    return Obx(() => Stack(
+      children: [
+        Scaffold(
+          appBar: AppBar(
+            title: Text(
+              'Apertura - ${usuario!.nombre} ${usuario!.apellido}',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+            backgroundColor: Color(0xFF368983),
+            elevation: 0,
+          ),
+          body: SingleChildScrollView(
+            padding: EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _sectionTitle('Recibe de Cajero'),
+                _recibeGrid(),
+                SizedBox(height: 10),
+                if (usuario!.idRol != '4') ...[
+                  _confirmVia(context, usuario!.idTurno ?? ''),
+                  SizedBox(height: 10),
+                ],
+                Center(
+                  child: Text(
+                    aperturaController.asignacion.value == 'null'
+                        ? ''
+                        : 'Via Asignada ${aperturaController.asignacion.value}',
+                    style: TextStyle(
                       color: aperturaController.asignacion.value == 'null'
                           ? Colors.redAccent
-                          : Colors.green, fontSize: 16),
-                  textAlign: TextAlign.center),
-              ),
-
-            Divider(thickness: 1, color: Colors.grey[300]),
-            SizedBox(height: 20),
-            _confirmButton(context),
-          ],
+                          : Colors.green,
+                      fontSize: 16,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                Divider(thickness: 1, color: Colors.grey[300]),
+                SizedBox(height: 20),
+                _confirmButton(context),
+              ],
+            ),
+          ),
         ),
-      ),
+
+        // ✅ Banner flotante fijo en la parte superior de la app
+        Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          child: Obx(() {
+            if (Get.find<ConnectionController>().isOffline.value) {
+              return const OfflineBanner();
+            } else {
+              return const SizedBox.shrink();
+            }
+          }),
+        ),
+      ],
     ));
   }
 

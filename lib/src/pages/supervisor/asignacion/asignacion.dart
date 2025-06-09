@@ -2,6 +2,8 @@ import 'package:asistencia_vial_app/src/pages/supervisor/asignacion/asignacion_c
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../helper/connection_controller.dart';
+import '../../../helper/offline_banner.dart';
 import '../../../models/movimiento.dart';
 import '../../../models/usuario.dart';
 
@@ -13,80 +15,101 @@ class AsignacionPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Obx(() => DefaultTabController(
       length: asignacionController.estados.length,
-      child: Scaffold(
-        appBar: PreferredSize(
-          preferredSize: Size.fromHeight(110),
-          child: AppBar(
-            flexibleSpace: Container(
-              margin: EdgeInsets.only(bottom: 10),
-              alignment: Alignment.center,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    'Asignación de Turnos',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
+      child: Stack(
+        children: [
+          Scaffold(
+            appBar: PreferredSize(
+              preferredSize: const Size.fromHeight(110),
+              child: AppBar(
+                flexibleSpace: Column(
+                  children: [
+                    const SizedBox(height: 10), // Separación superior
+                    Container(
+                      margin: const EdgeInsets.only(top: 40),
+                      alignment: Alignment.bottomCenter,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text(
+                            'Asignación de Turnos',
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          IconButton(
+                            onPressed: () {
+                              asignacionController.getEstados();
+                            },
+                            icon: const Icon(Icons.refresh, color: Colors.black),
+                            tooltip: 'Recargar',
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                bottom: TabBar(
+                  tabAlignment: TabAlignment.center,
+                  isScrollable: true,
+                  indicatorColor: const Color(0xFF368983),
+                  labelColor: Colors.black,
+                  unselectedLabelColor: Colors.grey[400],
+                  tabs: List<Widget>.generate(
+                    asignacionController.estados.length,
+                        (index) => Tab(
+                      child: Text(
+                        asignacionController.estados[index].nombre ?? ' ',
+                      ),
                     ),
                   ),
-                  SizedBox(width: 10),
-                  IconButton(
-                    onPressed: () {
-                      asignacionController.getEstados(); // método para recargar, o llama getUsuarios si prefieres
-                    },
-                    icon: Icon(Icons.refresh, color: Colors.black),
-                    tooltip: 'Recargar',
-                  ),
-                ],
+                ),
               ),
             ),
-            bottom: TabBar(
-              tabAlignment: TabAlignment.center,
-              isScrollable: true, // Permite desplazamiento
-              indicatorColor: Color(0xFF368983), // Color del indicador
-              labelColor: Colors.black, // Color de las etiquetas seleccionadas
-              unselectedLabelColor: Colors.grey[400], // Color de las etiquetas no seleccionadas
-              tabs: List<Widget>.generate(
-                asignacionController.estados.length,
-                    (index) {
-                  return Tab(
-                    child: Text(
-                      asignacionController.estados[index].nombre ?? ' ',
+            body: RefreshIndicator(
+              onRefresh: _pullToRefresh,
+              child: TabBarView(
+                children: List<Widget>.generate(asignacionController.estados.length, (index2) {
+                  return FutureBuilder(
+                    future: asignacionController.getUsuarios(
+                      (index2 + 1).toString(),
+                      asignacionController.usuario.idPeaje ?? '1',
                     ),
+                    builder: (context, AsyncSnapshot<List<Usuario>> snapshot) {
+                      if (snapshot.hasData) {
+                        return ListView.builder(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          itemCount: snapshot.data?.length ?? 0,
+                          itemBuilder: (_, index) {
+                            return _cardUsuario(context, snapshot.data![index], index2);
+                          },
+                        );
+                      } else {
+                        return Container();
+                      }
+                    },
                   );
-                },
+                }),
               ),
             ),
           ),
-
-        ),
-        body:  RefreshIndicator(
-          onRefresh: _pullToRefresh,
-          child: TabBarView(
-            children: List<Widget>.generate(asignacionController.estados.length, (index2) {
-              return FutureBuilder(
-                future: asignacionController
-                    .getUsuarios((index2 + 1).toString(),asignacionController.usuario.idPeaje??'1'), // Cambia para manejar los grupos
-                builder: (context, AsyncSnapshot<List<Usuario>> snapshot) {
-                  if (snapshot.hasData) {
-                    return ListView.builder(
-                      physics: AlwaysScrollableScrollPhysics(),
-                      itemCount: snapshot.data?.length ?? 0,
-                      itemBuilder: (_, index) {
-                        return _cardUsuario(
-                            context, snapshot.data![index], index2); // Pasamos el índice de la tarjeta aquí
-                      },
-                    );
-                  } else {
-                    return Container();
-                  }
-                },
-              );
+          // ✅ Aquí va la barra flotante "Offline"
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: Obx(() {
+              if (Get.find<ConnectionController>().isOffline.value) {
+                return const OfflineBanner();
+              } else {
+                return const SizedBox.shrink(); // Oculta si hay conexión
+              }
             }),
           ),
-        ),),
+        ],
+      ),
     ));
   }
 

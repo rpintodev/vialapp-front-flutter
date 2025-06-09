@@ -2,6 +2,8 @@ import 'package:asistencia_vial_app/src/pages/supervisor/usuarios/usuarios_sup_c
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../helper/connection_controller.dart';
+import '../../../helper/offline_banner.dart';
 import '../../../models/usuario.dart';
 
 class UsuariosSup extends StatelessWidget {
@@ -14,59 +16,76 @@ class UsuariosSup extends StatelessWidget {
   Widget build(BuildContext context) {
     return DefaultTabController(
       length: 5,
-      child: Scaffold(
-        appBar: PreferredSize(
-          preferredSize: Size.fromHeight(110),
-          child: AppBar(
-            flexibleSpace: Container(
-              margin: EdgeInsets.only(top: 10),
-              alignment: Alignment.topCenter,
-              child: Wrap(
-                direction: Axis.horizontal,
-                children: [
-                  _textFieldSearch(context),
-                  _iconAddUser(),
-                  _iconAsignar(),
-                ],
-              ),
-            ),
-            bottom: TabBar(
-              tabAlignment: TabAlignment.center,
-              isScrollable: true,
-              indicatorColor: Color(0xFF368983),
-              labelColor: Colors.black,
-              unselectedLabelColor: Colors.grey[400],
-              onTap: (index) {
-                usuariosSupController.updateTabIndex(index);
-              },
+      child: Stack(
+          children: [
+            Scaffold(
+              appBar: PreferredSize(
+                preferredSize: Size.fromHeight(110),
+                child: AppBar(
+                  flexibleSpace: Container(
+                    margin: EdgeInsets.only(top: 10),
+                    alignment: Alignment.topCenter,
+                    child: Wrap(
+                      direction: Axis.horizontal,
+                      children: [
+                        _textFieldSearch(context),
+                        _iconAddUser(),
+                        _iconAsignar(),
+                      ],
+                    ),
+                  ),
+                  bottom: TabBar(
+                    tabAlignment: TabAlignment.center,
+                    isScrollable: true,
+                    indicatorColor: Color(0xFF368983),
+                    labelColor: Colors.black,
+                    unselectedLabelColor: Colors.grey[400],
+                    onTap: (index) {
+                      usuariosSupController.updateTabIndex(index);
+                    },
 
-            tabs: List<Widget>.generate(5, (index) {
-              return Tab(
-                child: Text('Grupo ${groupLabels[index]}'),
-              );
-            }),
+                  tabs: List<Widget>.generate(5, (index) {
+                    return Tab(
+                      child: Text('Grupo ${groupLabels[index]}'),
+                    );
+                  }),
+                  ),
+                ),
+              ),
+            body: TabBarView(
+              children: List<Widget>.generate(5, (index2) {
+                return FutureBuilder(
+                  future: usuariosSupController.getUsuariosGrupo((index2 + 1).toString(),usuariosSupController.usuarioSession.idPeaje??'1'), // Cambia para manejar los grupos
+                  builder: (context, AsyncSnapshot<List<Usuario>> snapshot) {
+                    if (snapshot.hasData) {
+                      return ListView.builder(
+                        itemCount: snapshot.data?.length ?? 0,
+                        itemBuilder: (_, index) {
+                          return _cardUsuario(context, snapshot.data![index]);
+                        },
+                      );
+                    } else {
+                      return Container();
+                    }
+                  },
+                );
+              }),
             ),
           ),
-        ),
-        body: TabBarView(
-          children: List<Widget>.generate(5, (index2) {
-            return FutureBuilder(
-              future: usuariosSupController.getUsuariosGrupo((index2 + 1).toString(),usuariosSupController.usuarioSession.idPeaje??'1'), // Cambia para manejar los grupos
-              builder: (context, AsyncSnapshot<List<Usuario>> snapshot) {
-                if (snapshot.hasData) {
-                  return ListView.builder(
-                    itemCount: snapshot.data?.length ?? 0,
-                    itemBuilder: (_, index) {
-                      return _cardUsuario(context, snapshot.data![index]);
-                    },
-                  );
+            // ✅ Aquí va la barra flotante "Offline"
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: Obx(() {
+                if (Get.find<ConnectionController>().isOffline.value) {
+                  return const OfflineBanner();
                 } else {
-                  return Container();
+                  return const SizedBox.shrink(); // Oculta si hay conexión
                 }
-              },
-            );
-          }),
-        ),
+              }),
+            ),
+          ],
       ),
     );
   }

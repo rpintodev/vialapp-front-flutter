@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
+import '../../../helper/connection_controller.dart';
+import '../../../helper/offline_banner.dart';
 import '../../../models/movimiento.dart';
 import '../../../models/usuario.dart';
 
@@ -21,82 +23,98 @@ class FaltantesPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Usuario usuario = Get.arguments;
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Faltantes y Ajustes"),
-        backgroundColor: const Color(0xFF368983),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildSectionTitle("Parte de Trabajo"),
-            _buildNumberInputField("Parte de Trabajo", faltanteController.parteTrabajoController),
-            const SizedBox(height: 20),
-            if (bandera==2) ...[
-            ElevatedButton(
-              onPressed: () {
-                faltanteController.isFaltanteVisible.value =
-                !faltanteController.isFaltanteVisible.value;
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF368983),
-              ),
-              child: Obx(() => Text(
-                  faltanteController.isFaltanteVisible.value
-                      ? "Ocultar Faltantes"
-                      : "Agregar Faltantes",style: TextStyle(color: Colors.white),)),
+    return Stack(
+        children: [
+          Scaffold(
+            appBar: AppBar(
+              title: const Text("Faltantes y Ajustes"),
+              backgroundColor: const Color(0xFF368983),
             ),
-            const SizedBox(height: 10),
-            // Sección de faltantes (Recibido y Entregado)
-            Obx(() => Visibility(
-              visible: faltanteController.isFaltanteVisible.value,
+            body: SingleChildScrollView(
+              padding: const EdgeInsets.all(16.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildSectionTitle("Faltante Recibido de cajero"),
-                  const SizedBox(height: 8),
-                  _recibeGrid(),
+                  const OfflineBanner(),
+                  _buildSectionTitle("Parte de Trabajo"),
+                  _buildNumberInputField("Parte de Trabajo", faltanteController.parteTrabajoController),
                   const SizedBox(height: 20),
-                  _buildSectionTitle("Cambio entregado"),
+                  if (bandera==2) ...[
+                  ElevatedButton(
+                    onPressed: () {
+                      faltanteController.isFaltanteVisible.value =
+                      !faltanteController.isFaltanteVisible.value;
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF368983),
+                    ),
+                    child: Obx(() => Text(
+                        faltanteController.isFaltanteVisible.value
+                            ? "Ocultar Faltantes"
+                            : "Agregar Faltantes",style: TextStyle(color: Colors.white),)),
+                  ),
+                  const SizedBox(height: 10),
+                  // Sección de faltantes (Recibido y Entregado)
+                  Obx(() => Visibility(
+                    visible: faltanteController.isFaltanteVisible.value,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildSectionTitle("Faltante Recibido de cajero"),
+                        const SizedBox(height: 8),
+                        _recibeGrid(),
+                        const SizedBox(height: 20),
+                        _buildSectionTitle("Cambio entregado"),
+                        const SizedBox(height: 8),
+                        _entregaGrid(),
+                      ],
+                    ),
+                  )),
+
+                  const SizedBox(height: 5),
+                  _buildSectionTitle("Simulaciones"),
                   const SizedBox(height: 8),
-                  _entregaGrid(),
-                ],
-              ),
-            )),
-
-            const SizedBox(height: 5),
-            _buildSectionTitle("Simulaciones"),
-            const SizedBox(height: 8),
-            _buildDualInputRow(
-              "Cantidad",
-              faltanteController.simulacionesCantidadController,
-              "Valor (\$)",
-              faltanteController.simulacionesValorController,
+                  _buildDualInputRow(
+                    "Cantidad",
+                    faltanteController.simulacionesCantidadController,
+                    "Valor (\$)",
+                    faltanteController.simulacionesValorController,
+                  ),
+                  const SizedBox(height: 20),
+                  _buildSectionTitle("Anulaciones"),
+                  const SizedBox(height: 8),
+                  _buildDualInputRow(
+                    "Cantidad",
+                    faltanteController.anulacionesCantidadController,
+                    "Valor (\$)",
+                    faltanteController.anulacionesValorController,
+                  ),
+                  const SizedBox(height: 20),
+                  _buildSectionTitle("Sobrantes"),
+                  const SizedBox(height: 8),
+                  _buildNumberInputField("Sobrantes", faltanteController.sobrantesController),
+                  ],
+                  SizedBox(height: 30),
+                  bandera==1?_confirmParteTrabajo(usuario, context):
+                  _confirmButton(context),
+              ],
             ),
-            const SizedBox(height: 20),
-            _buildSectionTitle("Anulaciones"),
-            const SizedBox(height: 8),
-            _buildDualInputRow(
-              "Cantidad",
-              faltanteController.anulacionesCantidadController,
-              "Valor (\$)",
-              faltanteController.anulacionesValorController,
-            ),
-            const SizedBox(height: 20),
-            _buildSectionTitle("Sobrantes"),
-            const SizedBox(height: 8),
-            _buildNumberInputField("Sobrantes", faltanteController.sobrantesController),
-            ],
-            SizedBox(height: 30),
-            bandera==1?_confirmParteTrabajo(usuario, context):
-            _confirmButton(context),
-            ],
-
+          ),
         ),
-
-      ),
+          // ✅ Banner flotante fijo en la parte superior de la app
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: Obx(() {
+              if (Get.find<ConnectionController>().isOffline.value) {
+                return const OfflineBanner();
+              } else {
+                return const SizedBox.shrink();
+              }
+            }),
+          ),
+        ],
     );
   }
 

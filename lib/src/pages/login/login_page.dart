@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 
+import '../../helper/offline_banner.dart';
+
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -33,6 +35,7 @@ class _LoginPageState extends State<LoginPage> {
         ),
       ),
       child: Scaffold(
+
         backgroundColor: Colors.transparent,
         body: Stack(children: [
           Positioned(top: 80, child: _buildTop()),
@@ -53,7 +56,7 @@ class _LoginPageState extends State<LoginPage> {
             height: 80, // Ajusta el tamaño según lo necesites
           ),
           Text(
-            "Version 1.0.0",
+            "Version 1.2.0",
             style: TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.w500,

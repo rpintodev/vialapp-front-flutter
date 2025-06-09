@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/material.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:path/path.dart';
 import 'package:asistencia_vial_app/src/environment/environment.dart';
@@ -208,8 +209,25 @@ class UsuarioProvider extends GetConnect{
 
     );//ESPERA A QUE EL SERVIDOR RETORNE LA RESPUESTA
 
+    if (response.statusCode == 401) {
+      Get.snackbar(
+          'Error',
+          'Usuario o contraseña incorrecta',
+          backgroundColor: Colors.amber[700],
+          colorText: Colors.white,
+          isDismissible: true
+      );
+      return ResponseApi();
+    }
+
     if(response.body==null){
-      Get.snackbar('Error', 'No se pudo realizar la peticion');
+      Get.snackbar(
+          'Error',
+          'No se ha podido conectar con el servidor',
+          backgroundColor: Colors.redAccent,
+          colorText: Colors.white,
+          isDismissible: true
+      );
       return ResponseApi();
     }
 
@@ -325,6 +343,8 @@ class UsuarioProvider extends GetConnect{
     }
 
     List<Usuario> usuarios= Usuario.fromJsonList(response.body);
+
+
     return usuarios;
 
   }
