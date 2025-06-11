@@ -2,6 +2,7 @@ import 'package:asistencia_vial_app/src/environment/environment.dart';
 import 'package:asistencia_vial_app/src/models/response_api.dart';
 import 'package:asistencia_vial_app/src/provider/turno_provider.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:socket_io_client/socket_io_client.dart';
@@ -142,8 +143,38 @@ class LiquidacionesController extends GetxController{
       );
 
 
-      if(liquidacion.partetrabajo=='0'){ //SI NO SE AGREGÓ EL PARTE DE TRABAJO
+      if(liquidacion.partetrabajo=='0'){
+        //SI NO SE AGREGÓ EL PARTE DE TRABAJO
         Response response = await movimientoProvider.create(movimiento);
+        Response response2 = await turnoProvider.updateEstado(usuario.idTurno??'');
+
+        if(response.statusCode == 201){
+          socket.emit('actualizar_turno', {
+            'id_turno': usuario.idTurno
+          });
+          Get.snackbar(
+              'Transacción Exitosa',
+              'La transaccion ha sido registrado',
+              backgroundColor: Colors.green,
+              colorText: Colors.white
+          );          Get.offNamedUntil('/home', (route) => false, arguments: {'index': 2});
+        }
+
+
+        if (response.statusCode == 202) {
+          Get.snackbar(
+              'Transacción Offline',
+              'La liquidacion ha sido registrada exitosamente sin conexión',
+              icon: Icon(Icons.cloud_off_outlined,color: Colors.white,),
+              backgroundColor: Colors.orange[800],
+              colorText: Colors.white
+          );
+          Get.offNamedUntil('/home', (route) => false, arguments: {'index': 2});
+        }
+
+      }else{//SE AGREGÓ EL PARTE DE TRABAJO
+
+        Response response = await movimientoProvider.updateLiquidacionCompleta(movimiento);
         Response response2 = await turnoProvider.updateEstado(usuario.idTurno??'');
 
         if(response.statusCode == 201){
@@ -154,25 +185,21 @@ class LiquidacionesController extends GetxController{
           Get.offNamedUntil('/home', (route) => false, arguments: {'index': 2});
         }
 
-      }else{//SE AGREGÓ EL PARTE DE TRABAJO
-
-        ResponseApi responseApi = await movimientoProvider.updateLiquidacionCompleta(movimiento);
-        Response response2 = await turnoProvider.updateEstado(usuario.idTurno??'');
-
-        if(responseApi.success==true){
-          socket.emit('actualizar_turno', {
-            'id_turno': usuario.idTurno
-          });
-          Get.snackbar('Liquidación Existosa: ${liquidacion.id}', 'La apertura ha sido retirada');
+        if (response.statusCode == 202) {
+          Get.snackbar(
+              'Transacción Offline',
+              'La liquidacion ha sido registrada exitosamente sin conexión',
+              icon: Icon(Icons.cloud_off_outlined,color: Colors.white,),
+              backgroundColor: Colors.orange[800],
+              colorText: Colors.white
+          );
           Get.offNamedUntil('/home', (route) => false, arguments: {'index': 2});
-        }else{
-          Get.snackbar('ERROR ', responseApi.message??'');
-
         }
+
       }
 
     } catch (e) {
-      Get.snackbar('Error', 'Ocurrió un error inesperado');
+      Get.snackbar('Error', 'Ocurrió un error inesperado ${e}');
     }finally{
       cargando.value = false;
     }

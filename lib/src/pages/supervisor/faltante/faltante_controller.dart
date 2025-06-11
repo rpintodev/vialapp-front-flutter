@@ -1,6 +1,7 @@
 import 'package:asistencia_vial_app/src/pages/reportes/liquidacion_cajero/reporte_liquidacion.dart';
 import 'package:asistencia_vial_app/src/pages/supervisor/faltante/faltante.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:intl/intl.dart';
@@ -264,19 +265,32 @@ class FaltanteController extends GetxController{
         Response response = await movimientoProvider.create(movimiento3);
 
         if (response.statusCode == 201) {
-          Get.snackbar('Guardado', 'El parte de trabajo ha sido guardado');
+          Get.snackbar(
+              'Guardado',
+              'El parte de trabajo se ha registrado',
+              backgroundColor: Colors.green,
+              colorText: Colors.white
+          );
           Get.offNamedUntil('/home', (route) => false, arguments: {'index': 2});
-
-        } else if (response.statusCode == 400) {
-          Get.snackbar('Error','');
-          Get.offNamedUntil('/home', (route) => false, arguments: {'index': 2});
-
-
         }
+
+        if (response.statusCode == 202) {
+          Get.snackbar(
+              'Transacción Offline',
+              'El parte de trabajo se ha registrado',
+              icon: Icon(Icons.cloud_off_outlined,color: Colors.white,),
+              backgroundColor: Colors.orange[800],
+              colorText: Colors.white
+          );
+          Get.offNamedUntil('/home', (route) => false, arguments: {'index': 2});
+        }
+
+
       }else{ //
       if (totalRecibido > 0) {
 
         final yaExisteFaltante = movimientos.any((m) => m.idTipoMovimiento == '6');
+
         if(yaExisteFaltante){//SI SE MODIFICA EL FALTANTE
 
           ResponseApi responseApi = await movimientoProvider.updateLiquidacion(movimiento2);

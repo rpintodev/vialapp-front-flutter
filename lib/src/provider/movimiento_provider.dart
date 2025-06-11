@@ -118,15 +118,32 @@ class MovimientoProvider extends GetConnect{
 
   Future<Response> update(Movimiento movimiento) async{
 
-    Response response = await post(
-        '$url/updateApertura',
-        movimiento.toJson(),
-        headers: {
-          'Content-type': 'application/json',
-          'Authorization': usuario.sessionToken??''
-        }
-    );
-
+    Response response;
+    if(await isConnectedToServer()){
+      response = await post(
+          '$url/updateApertura',
+          movimiento.toJson(),
+          headers: {
+            'Content-type': 'application/json',
+            'Authorization': usuario.sessionToken??''
+          }
+      );
+    }else{
+      await movimientoOffline.updateTransaccion(movimiento);
+      // ⚠️ Simular un Response exitoso (status 202)
+      response= Response(
+        statusCode: 202,
+        body: {'message': 'Transacción guardada offline'},
+        statusText: 'Guardado en cache',
+        request: Request(
+            url: Uri.parse('$url/updateApertura'),
+            method: 'POST',
+            headers: {
+              'Content-type': 'application/json',
+              'Authorization': usuario.sessionToken??''
+            }),
+      );
+    }
 
     return response;
   }
@@ -184,7 +201,7 @@ class MovimientoProvider extends GetConnect{
     return responseApi;
   }
 
-  Future<ResponseApi> updateLiquidacionCompleta(Movimiento movimiento) async{
+  Future<Response> updateLiquidacionCompleta(Movimiento movimiento) async{
 
     Response response = await post(
         '$url/updateLiquidacionCompleta',
@@ -196,18 +213,7 @@ class MovimientoProvider extends GetConnect{
 
     );
 
-    if(response.body==null){
-      Get.snackbar('Error', 'No se pudo realizar la peticion');
-      return ResponseApi();
-    }
-
-    if(response.statusCode==401){
-      Get.snackbar('Error', 'No se esta autorizado para realizar esta peticion');
-      return ResponseApi();
-    }
-
-    ResponseApi responseApi = ResponseApi.fromJson(response.body);
-    return responseApi;
+    return response;
   }
 
 
@@ -521,7 +527,31 @@ class MovimientoProvider extends GetConnect{
           await box.delete(key); // Eliminar si fue exitoso
           print('Transacción enviada y eliminada: $key');
         } else {
-          print('No se pudo sincronizar: $key, status: ${movimiento.id}');
+          print('No se pudo sincronizar : $key, status: ${movimiento.id}');
+        }
+      } catch (e) {
+        print('Error al sincronizar $key: $e');
+      }
+    }
+  }
+
+  Future<void> sincronizarActualizacionDeTransaccionesPendientes() async {
+    final box = await Hive.openBox<Movimiento>('updateTransacciones');
+
+    final keys = box.keys.toList();
+
+    for (var key in keys) {
+      Movimiento? movimiento = box.get(key);
+
+      try {
+        // Intenta enviar al servidor
+        Response response = await update(movimiento!);
+
+        if (response.statusCode == 201) {
+          await box.delete(key); // Eliminar si fue exitoso
+          print('Transacción enviada y eliminada: $key');
+        } else {
+          print('No se pudo sincronizar movmientos: $key, status: ${movimiento.id}');
         }
       } catch (e) {
         print('Error al sincronizar $key: $e');

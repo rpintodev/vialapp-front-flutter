@@ -167,7 +167,6 @@ class AsignacionController extends GetxController{
     if(!await isConnectedToServer()){
       movimiento = await movimientoOffline.getApertura(movimiento.idturno??'');
     }
-    print('Id Apertura: ${movimiento.id}');
     Get.to(
           () => RetiroAperturaPage(usuario: usuario,movimiento: movimiento), // Página a la que navegas
       arguments: usuario, // Envía el objeto Usuario como argumento
@@ -177,10 +176,12 @@ class AsignacionController extends GetxController{
 
 
   void goToReportes(Usuario usuario) async{
-
     List<Movimiento>? movimientos;
-    var result = await movimientoProvider.getMovimientoByTurno(usuario.idTurno??''); //cambiar getApertura
-    movimientos = result;
+    if(await isConnectedToServer()){
+      movimientos = await movimientoProvider.getMovimientoByTurno(usuario.idTurno??''); //cambiar getApertura
+    }else{
+      movimientos= movimientoOffline.getMovimientoByTurno(usuario.idTurno??'0');
+    }
     Get.to(
           () => ReporteLiquidacion(movimientos: movimientos), // Página a la que navegas
       arguments: usuario, // Envía el objeto Usuario como argumento
@@ -189,10 +190,12 @@ class AsignacionController extends GetxController{
   }
 
   void goToFaltantes(Usuario usuario,int bandera) async{
-
     List<Movimiento>? movimientos;
-    var result = await movimientoProvider.getMovimientoByTurno(usuario.idTurno??''); //cambiar getApertura
-    movimientos = result;
+    if(await isConnectedToServer()){
+      movimientos = await movimientoProvider.getMovimientoByTurno(usuario.idTurno??''); //cambiar getApertura
+    }else{
+      movimientos= movimientoOffline.getMovimientoByTurno(usuario.idTurno??'0');
+    }
     Get.to(
           () => FaltantesPage(movimientos: movimientos, bandera: bandera), // Página a la que navegas
       arguments: usuario, // Envía el objeto Usuario como argumento

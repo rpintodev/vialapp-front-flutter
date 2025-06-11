@@ -138,7 +138,7 @@ class RetiroAperturaController extends GetxController{
       if(response.statusCode== 201){
         Get.snackbar(
             'Transacción Exitosa',
-            'El canje ha sido registrado',
+            'El retiro de la apertura ha sido registrado',
             backgroundColor: Colors.green,
             colorText: Colors.white
         );
@@ -159,7 +159,6 @@ class RetiroAperturaController extends GetxController{
 
 
     } catch (e) {
-      print('Error: $e'); // Depuración
       Get.snackbar('Error', 'Ocurrió un error inesperado');
     } finally{
       cargando.value = false;

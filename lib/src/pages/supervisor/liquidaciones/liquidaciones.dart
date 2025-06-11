@@ -41,7 +41,6 @@ class LiquidacionesPage extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const OfflineBanner(),
                 _sectionTitle2('Recibe de Cajero'),
                 _recibeGrid(),
                 SizedBox(height: 10),

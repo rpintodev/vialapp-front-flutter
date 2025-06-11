@@ -1,9 +1,13 @@
 
+import 'package:asistencia_vial_app/src/provider/provider-offline/turno_provider_offline.dart';
+import 'package:get/get_connect/http/src/request/request.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:asistencia_vial_app/src/environment/environment.dart';
 import 'package:asistencia_vial_app/src/models/usuario.dart';
 import 'package:get/get.dart';
+import 'package:hive/hive.dart';
 
+import '../helper/connection_helper.dart';
 import '../models/rol.dart';
 import '../models/turno.dart';
 
@@ -11,7 +15,7 @@ class TurnoProvider extends GetConnect{
 
   String url = Environment.API_URL+"api/turnos";
   Usuario usuario = Usuario.fromJson(GetStorage().read('usuario')??{});
-
+  TurnoProviderOffline turnoOffline = TurnoProviderOffline();
 
 
   Future<Response> create(Turno turno) async{
@@ -148,23 +152,63 @@ class TurnoProvider extends GetConnect{
   }
 
   Future<Response> updateEstado(String idTurno) async {
-    Response response = await post(
-      '$url/updateEstado',
-      {
-        'IdTurno': idTurno
-      },
-      headers: {
-        'Content-type': 'application/json',
-        'Authorization': usuario.sessionToken ?? ''
-      },
-    );
 
-    if (response.statusCode == 401) {
-      Get.snackbar('Petición Denegada', 'No tienes permiso para realizar esta acción');
+    Response response;
+
+    if(await isConnectedToServer() ){
+      response = await post(
+        '$url/updateEstado',
+        {
+          'IdTurno': idTurno
+        },
+        headers: {
+          'Content-type': 'application/json',
+          'Authorization': usuario.sessionToken ?? ''
+        },
+      );
+    }else{
+      await turnoOffline.saveTurno(Turno(id:idTurno,idSupervisor: '0',idCajero: '0',via: '0'));
+      response= Response(
+        statusCode: 202,
+        body: {'message': 'Transacción guardada offline'},
+        statusText: 'Guardado en cache',
+        request: Request(
+            url: Uri.parse('$url/updateEstado'),
+            method: 'POST',
+            headers: {
+              'Content-type': 'application/json',
+              'Authorization': usuario.sessionToken??''
+            }),
+      );
     }
-
     return response;
+
   }
+
+  Future<void> sincronizarTurnosPendientes() async {
+    final box = await Hive.openBox<Turno>('turno');
+
+    final keys = box.keys.toList();
+
+    for (var key in keys) {
+      Turno? turno = box.get(key);
+
+      try {
+        // Intenta enviar al servidor
+        Response response = await updateEstado(key.toString());
+
+        if (response.statusCode == 200) {
+          await box.delete(key); // Eliminar si fue exitoso
+          print('Transacción enviada y eliminada: $key');
+        } else {
+          print('No se pudo sincronizar turnos: $key');
+        }
+      } catch (e) {
+        print('Error al sincronizar $key: $e');
+      }
+    }
+  }
+
 
 
 

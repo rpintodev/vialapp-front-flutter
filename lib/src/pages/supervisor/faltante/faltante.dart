@@ -35,7 +35,6 @@ class FaltantesPage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const OfflineBanner(),
                   _buildSectionTitle("Parte de Trabajo"),
                   _buildNumberInputField("Parte de Trabajo", faltanteController.parteTrabajoController),
                   const SizedBox(height: 20),

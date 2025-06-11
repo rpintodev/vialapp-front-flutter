@@ -3,6 +3,7 @@ import 'package:asistencia_vial_app/src/models/boveda.dart';
 import 'package:asistencia_vial_app/src/models/estado.dart';
 import 'package:asistencia_vial_app/src/models/movimiento.dart';
 import 'package:asistencia_vial_app/src/models/rol.dart';
+import 'package:asistencia_vial_app/src/models/turno.dart';
 import 'package:asistencia_vial_app/src/models/usuario.dart';
 import 'package:asistencia_vial_app/src/pages/admin/Usuarios/usuarios_admin.dart';
 import 'package:asistencia_vial_app/src/pages/admin/estadisticas/estadisticas_page.dart';
@@ -43,12 +44,15 @@ void main() async{
   Hive.registerAdapter(EstadoAdapter());
   Hive.registerAdapter(MovimientoAdapter());
   Hive.registerAdapter(BovedaAdapter());
+  Hive.registerAdapter(TurnoAdapter());
   await Hive.openBox<Boveda>('boveda');
   await Hive.openBox<Usuario>('usuarios');
   await Hive.openBox<Estado>('estado');
   await Hive.openBox<Movimiento>('movimientos');
   await Hive.openBox<Movimiento>('transacciones');
+  await Hive.openBox<Movimiento>('updateTransacciones');
   await Hive.openBox<Movimiento>('tipoMovimiento');
+  await Hive.openBox<Turno>('turno');
 
 
   await GetStorage.init();

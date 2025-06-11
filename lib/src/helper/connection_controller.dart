@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:asistencia_vial_app/src/provider/turno_provider.dart';
 import 'package:get/get.dart';
 
 import '../provider/movimiento_provider.dart';
@@ -8,6 +9,7 @@ class ConnectionController extends GetxController {
   var isOffline = false.obs;
   Timer? _timer;
   MovimientoProvider movimientoProvider=MovimientoProvider();
+  TurnoProvider turnoProvider=TurnoProvider();
 
   @override
   void onInit() {
@@ -24,6 +26,8 @@ class ConnectionController extends GetxController {
     final connected = await isConnectedToServer();
     isOffline.value = !connected;
     connected?movimientoProvider.sincronizarTransaccionesPendientes():'';
+    connected?movimientoProvider.sincronizarActualizacionDeTransaccionesPendientes():'';
+    connected?turnoProvider.sincronizarTurnosPendientes():'';
   }
 
   @override

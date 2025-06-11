@@ -8,6 +8,7 @@ class MovimientoProviderOffline {
 
   final Box<Movimiento> _box= Hive.box<Movimiento>('movimientos');
   final Box<Movimiento> _boxTransacciones= Hive.box<Movimiento>('transacciones');
+  final Box<Movimiento> _boxActualizarTransacciones= Hive.box<Movimiento>('updateTransacciones');
 
   final uuid = Uuid();
   Future<void> saveMovimiento(Movimiento movimiento) async{
@@ -18,6 +19,11 @@ class MovimientoProviderOffline {
     movimiento.id = uuid.v4();
     await _boxTransacciones.put(movimiento.id, movimiento);
   }
+
+  Future<void> updateTransaccion(Movimiento movimiento) async{
+    await _boxActualizarTransacciones.put(movimiento.id, movimiento);
+  }
+
 
   Future<void> saveMovimientos(List<Movimiento> movivmientos) async{
     for(var movimiento in movivmientos){
